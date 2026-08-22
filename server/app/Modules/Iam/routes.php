@@ -11,6 +11,7 @@ use App\Modules\Iam\Http\Controllers\CampusController;
 use App\Modules\Iam\Http\Controllers\OrganizationController;
 use App\Modules\Iam\Http\Controllers\RoleController;
 use App\Modules\Iam\Http\Controllers\UserController;
+use App\Modules\Iam\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 // Public auth routes
@@ -23,6 +24,9 @@ Route::prefix('auth')->middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
 });
+
+// Dashboard (reporting layer — reads all modules, owns no data)
+Route::middleware('auth:sanctum')->get('/dashboard', [DashboardController::class, 'index']);
 
 // Organization management
 Route::middleware('auth:sanctum')->prefix('organizations')->group(function () {
