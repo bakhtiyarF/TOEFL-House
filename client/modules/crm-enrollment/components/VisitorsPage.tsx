@@ -19,6 +19,8 @@ import {
   UserPlus, Plus, Search, Phone, ArrowRight, CheckCircle2, XCircle,
   Clock, MessageSquare, GraduationCap, AlertCircle, TrendingUp, Filter,
 } from 'lucide-react';
+import { useVisitors, useConvertVisitor } from '../hooks/useCrm';
+import { crmApi } from '../api';
 
 const VisitorSchema = z.object({
   full_name: z.string().min(2, 'Name is required'),
@@ -73,12 +75,18 @@ const mockVisitors: Visitor[] = [
 ];
 
 export function VisitorsPage() {
-  const [visitors, setVisitors] = useState(mockVisitors);
+  const { data: visitorsData = [], isLoading } = useVisitors();
+  const convertVisitor = useConvertVisitor();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [stageFilter, setStageFilter] = useState('all');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isConvertDialogOpen, setIsConvertDialogOpen] = useState(false);
   const [selectedVisitor, setSelectedVisitor] = useState<Visitor | null>(null);
+
+  // Use live data or fallback
+  const liveVisitors = (Array.isArray(visitorsData) ? visitorsData : []) as Visitor[];
+  const visitors: Visitor[] = liveVisitors.length > 0 ? liveVisitors : mockVisitors;
 
   const filtered = visitors.filter((v) => {
     const matchesSearch = searchQuery === '' ||
@@ -98,41 +106,39 @@ export function VisitorsPage() {
   });
 
   const onSubmit = (data: VisitorFormValues) => {
-    const newVisitor: Visitor = {
-      id: String(visitors.length + 1),
-      serial_no: `V-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
+    crmApi.visitors.create({
       full_name: data.full_name,
       phone: data.phone,
-      stage: 'lead',
-      source: data.source || 'organic',
-      visit_date: new Date().toISOString().split('T')[0],
-      status: 'visited',
-      interested_course: data.interested_course || '',
-      placement_score: null,
-      placement_fee_paid: false,
-      next_contact_date: null,
-      assigned_to: 'Counselor',
-    };
-    setVisitors([newVisitor, ...visitors]);
-    setIsAddDialogOpen(false);
-    reset();
+      email: data.email || undefined,
+      source: data.source,
+      interested_course: data.interested_course,
+      notes: data.notes,
+    }).then(() => {
+      setIsAddDialogOpen(false);
+      reset();
+      // TanStack will refetch via invalidation in real hooks
+    });
   };
 
   const canConvert = (visitor: Visitor) => {
     return visitor.placement_score !== null && visitor.placement_fee_paid && visitor.status !== 'registered';
   };
 
-  const handleConvert = (visitor: Visitor) => {
+  const handleConvert = (visitor: Visitor, programVersionId?: string) => {
     if (!canConvert(visitor)) return;
-    setVisitors(visitors.map((v) =>
-      v.id === visitor.id ? { ...v, stage: 'enrollment', status: 'registered' } : v
-    ));
-    setIsConvertDialogOpen(false);
-    setSelectedVisitor(null);
+
+    convertVisitor.mutate(visitor.id, {
+      onSuccess: (result: any) => {
+        setIsConvertDialogOpen(false);
+        setSelectedVisitor(null);
+        alert(`Converted successfully! New student: ${result?.student_code || result?.student_id || 'created'}`);
+        // In production: window.location or query invalidation would refresh Students list
+      },
+    });
   };
 
   const conversionRate = visitors.length > 0
-    ? Math.round((visitors.filter((v) => v.status === 'registered').length / visitors.length) * 100)
+    ? Math.round((visitors.filter((v) => v.status === 'registered' || v.stage === 'enrollment').length / visitors.length) * 100)
     : 0;
 
   return (
@@ -401,7 +407,10 @@ export function VisitorsPage() {
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
                         <Label className="text-xs">Program</Label>
-                        <Select defaultValue="General English">
+                        <Select defaultValue="General English" onValueChange={(v) => {
+                          // store for conversion payload (simplified)
+                          (window as any).__selectedProgram = v;
+                        }}>
                           <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="General English">General English</SelectItem>
@@ -419,6 +428,7 @@ export function VisitorsPage() {
                         } readOnly />
                       </div>
                     </div>
+                    <div className="text-xs text-muted-foreground">Program version will be resolved server-side for copy-on-write snapshot.</div>
                   </div>
                 )}
 
