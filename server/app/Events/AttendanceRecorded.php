@@ -33,7 +33,7 @@ class AttendanceRecorded
         return [
             new PrivateChannel('attendance'),
             new PrivateChannel('student.' . $this->roster->student_id),
-            new PrivateChannel('class.' . $this->roster->session->class_id),
+            new PrivateChannel('session.' . $this->roster->session_id),
         ];
     }
 }

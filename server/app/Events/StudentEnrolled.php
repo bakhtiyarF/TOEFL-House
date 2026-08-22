@@ -2,7 +2,7 @@
 
 namespace App\Events;
 
-use App\Modules\Academic\Models\Grade;
+use App\Modules\Academic\Models\Enrollment;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -12,17 +12,17 @@ use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
 /**
- * Grade Posted Event
+ * Student Enrolled Event
  *
- * Fired when a grade is posted for an exam.
+ * Fired when a student is enrolled in a class.
  */
-class GradePosted
+class StudentEnrolled
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public function __construct(
-        public Grade $grade,
-        public ?string $postedBy = null
+        public Enrollment $enrollment,
+        public ?string $enrolledBy = null
     ) {}
 
     /**
@@ -31,9 +31,9 @@ class GradePosted
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('grades'),
-            new PrivateChannel('student.' . $this->grade->student_id),
-            new PrivateChannel('exam.' . $this->grade->exam_id),
+            new PrivateChannel('enrollments'),
+            new PrivateChannel('student.' . $this->enrollment->student_id),
+            new PrivateChannel('class.' . $this->enrollment->class_id),
         ];
     }
 }
