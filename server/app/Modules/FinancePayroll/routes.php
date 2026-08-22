@@ -1,8 +1,7 @@
 <?php
 
-namespace App\Modules\FinancePayroll;
-
 use App\Modules\FinancePayroll\Http\Controllers\PaymentController;
+use App\Modules\FinancePayroll\Http\Controllers\BudgetController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -20,4 +19,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/computed-salary', [PaymentController::class, 'teacherComputedSalary']);
         Route::post('/pay-salary', [PaymentController::class, 'payTeacherSalary']);
     });
+
+    // Budget management
+    Route::prefix('budget-lines')->group(function () {
+        Route::get('/', [BudgetController::class, 'index']);
+        Route::post('/', [BudgetController::class, 'store']);
+        Route::patch('/{id}', [BudgetController::class, 'update']);
+    });
+
+    // Budget overview for BOS dashboard (07 §8)
+    Route::get('/budget/overview', [BudgetController::class, 'overview']);
 });
