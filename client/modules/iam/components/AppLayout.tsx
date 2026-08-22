@@ -1,6 +1,7 @@
 /**
  * App Layout Component
  * Main application shell with sidebar navigation
+ * Uses mock auth for preview
  */
 
 import { useState } from 'react';
@@ -8,7 +9,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@shared/components/ui/button';
 import { Badge } from '@shared/components/ui/badge';
 import { cn } from '@shared/lib/utils';
-import { useAuth } from '../hooks/useAuth';
+import { useMockAuth } from '@app/mockAuth';
 import {
   LayoutDashboard,
   Users,
@@ -23,7 +24,11 @@ import {
   UserCircle,
   Building2,
   ClipboardList,
+  UserPlus,
+  Moon,
+  Sun,
 } from 'lucide-react';
+import { useUIStore } from '@shared/store';
 
 interface NavItem {
   label: string;
@@ -37,9 +42,10 @@ const navigation: NavItem[] = [
   { label: 'Students', icon: GraduationCap, href: '/academic/students', permission: 'Student.View' },
   { label: 'Classes', icon: ClipboardList, href: '/academic/classes', permission: 'Class.View' },
   { label: 'Teachers', icon: Users, href: '/people-hr/teachers', permission: 'Teacher.View' },
+  { label: 'Visitors & Leads', icon: UserPlus, href: '/crm/visitors', permission: 'Lead.View' },
   { label: 'Finance', icon: DollarSign, href: '/finance', permission: 'Payment.View' },
   { label: 'Inventory', icon: Package, href: '/inventory', permission: 'Book.View' },
-  { label: 'Funding', icon: Heart, href: '/funding', permission: 'Funding.View' },
+  { label: 'Funding & Impact', icon: Heart, href: '/funding', permission: 'Funding.View' },
   { label: 'Settings', icon: Settings, href: '/settings', permission: 'Settings.View' },
 ];
 
@@ -47,10 +53,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout, hasPermission, isLoggingOut } = useAuth();
+  const { user, logout, hasPermission } = useMockAuth();
+  const { darkMode, toggleDarkMode } = useUIStore();
 
-  const handleLogout = async () => {
-    await logout();
+  const handleLogout = () => {
+    logout();
     navigate('/login', { replace: true });
   };
 
@@ -96,7 +103,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <nav className="flex-1 overflow-y-auto p-4 space-y-1">
             {filteredNavigation.map((item) => {
               const Icon = item.icon;
-              const isActive = location.pathname === item.href || 
+              const isActive = location.pathname === item.href ||
                               (item.href !== '/' && location.pathname.startsWith(item.href));
               return (
                 <Link
@@ -125,8 +132,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 <p className="text-sm font-medium text-sidebar-foreground truncate">
                   {user?.full_name}
                 </p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {user?.role}
+                <p className="text-xs text-muted-foreground truncate capitalize">
+                  {user?.role?.replace('_', ' ')}
                 </p>
               </div>
             </div>
@@ -135,10 +142,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               size="sm"
               className="w-full"
               onClick={handleLogout}
-              disabled={isLoggingOut}
             >
               <LogOut className="h-4 w-4 me-2" />
-              {isLoggingOut ? 'Signing out...' : 'Sign out'}
+              Sign out
             </Button>
           </div>
         </div>
@@ -147,7 +153,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Main content */}
       <div className="lg:ps-64">
         {/* Top bar */}
-        <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-border bg-background px-6">
+        <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-border bg-background/95 backdrop-blur px-6">
           <Button
             variant="ghost"
             size="icon"
@@ -157,15 +163,18 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <Menu className="h-5 w-5" />
           </Button>
           <div className="flex-1" />
+          <Button variant="ghost" size="icon" onClick={toggleDarkMode}>
+            {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </Button>
           {user?.branch && (
-            <Badge variant="secondary">
+            <Badge variant="secondary" className="hidden sm:inline-flex">
               {user.branch.name}
             </Badge>
           )}
         </header>
 
         {/* Page content */}
-        <main className="p-6">
+        <main className="p-4 md:p-6">
           {children}
         </main>
       </div>
