@@ -32,6 +32,7 @@ import {
   Search,
 } from 'lucide-react';
 import { useUIStore } from '@shared/store';
+import { useLocaleStore } from '@shared/store/locale';
 
 interface NavItem {
   label: string;
@@ -58,6 +59,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const { user, logout, hasPermission } = useMockAuth();
   const { darkMode, toggleDarkMode } = useUIStore();
+  const { locale, toggleLocale, t } = useLocaleStore();
 
   const handleLogout = () => {
     logout();
@@ -180,6 +182,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
           <div className="flex-1 md:hidden" />
           <NotificationBell />
+          <Button variant="ghost" size="icon" onClick={toggleLocale} title={locale === 'en' ? 'Switch to Dari' : 'Switch to English'}>
+            <span className="text-xs font-bold">{locale === 'en' ? 'دری' : 'EN'}</span>
+          </Button>
           <Button variant="ghost" size="icon" onClick={toggleDarkMode}>
             {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
