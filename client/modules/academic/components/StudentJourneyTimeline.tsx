@@ -23,7 +23,7 @@ interface JourneyEvent {
 
 interface StudentJourneyTimelineProps {
   studentName: string;
-  events: JourneyEvent[];
+  events?: JourneyEvent[];
 }
 
 const eventConfig: Record<string, { icon: React.ElementType; color: string; isFinancial?: boolean }> = {

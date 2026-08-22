@@ -15,7 +15,9 @@ import { Label } from '@shared/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@shared/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@shared/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@shared/components/ui/select';
-import { GraduationCap, Plus, Search, Filter, Eye, Edit, Trash2, Phone, MapPin, User } from 'lucide-react';
+import { GraduationCap, Plus, Search, Filter, Eye, Edit, Trash2, Phone, MapPin, User, Download } from 'lucide-react';
+import { StudentJourneyTimeline } from './StudentJourneyTimeline';
+import { exportStudents } from '@shared/lib/export';
 
 const StudentSchema = z.object({
   full_name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -121,13 +123,18 @@ export function StudentsPage() {
           <p className="text-muted-foreground">Manage student records and enrollment</p>
         </div>
 
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 me-2" />
-              Add Student
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => exportStudents(students as any)}>
+            <Download className="h-4 w-4 me-2" />
+            Export CSV
+          </Button>
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 me-2" />
+                Add Student
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Register New Student</DialogTitle>
@@ -207,6 +214,7 @@ export function StudentsPage() {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* Stats */}
@@ -321,7 +329,7 @@ export function StudentsPage() {
 
       {/* Student Detail Dialog */}
       <Dialog open={!!selectedStudent} onOpenChange={() => setSelectedStudent(null)}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           {selectedStudent && (
             <>
               <DialogHeader>
@@ -332,7 +340,7 @@ export function StudentsPage() {
                 <DialogDescription>{selectedStudent.student_code}</DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   <div>
                     <p className="text-sm text-muted-foreground">Father's Name</p>
                     <p className="font-medium">{selectedStudent.father_name || '—'}</p>
@@ -362,6 +370,11 @@ export function StudentsPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant={statusVariants[selectedStudent.status]}>{selectedStudent.status}</Badge>
+                </div>
+
+                {/* Student Journey Timeline */}
+                <div className="border-t pt-4">
+                  <StudentJourneyTimeline studentName={selectedStudent.full_name} />
                 </div>
               </div>
               <DialogFooter>

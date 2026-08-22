@@ -1,14 +1,15 @@
 /**
  * Application Entry Point
- * Thin shell: routing + auth gate + providers only
+ * Thin shell: routing + auth gate + providers only (per 01_TARGET_ARCHITECTURE.md §7)
  */
 
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
+import { ErrorBoundary } from '@shared/components/ErrorBoundary';
 import { AppRoutes } from './routes';
 
-// TanStack Query client - one instance, shared globally
+// TanStack Query client — one instance, shared globally
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -21,18 +22,20 @@ const queryClient = new QueryClient({
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AppRoutes />
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            style: {
-              direction: 'ltr', // Toasts stay LTR even in RTL layout
-            },
-          }}
-        />
-      </BrowserRouter>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <AppRoutes />
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              style: {
+                direction: 'ltr', // Toasts stay LTR even in RTL layout
+              },
+            }}
+          />
+        </BrowserRouter>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }

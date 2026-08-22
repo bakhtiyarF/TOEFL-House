@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@shared/components/ui/
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@shared/components/ui/dialog';
 import { Label } from '@shared/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@shared/components/ui/select';
+import { AttendanceMarking } from './AttendanceMarking';
 import {
   ClipboardList, Plus, Search, Users, Calendar, Clock,
   CheckCircle2, XCircle, AlertCircle, BookOpen,
@@ -337,10 +338,13 @@ export function ClassesPage() {
                 </TabsContent>
 
                 <TabsContent value="attendance">
-                  <div className="text-center py-8 text-muted-foreground">
-                    <AlertCircle className="h-8 w-8 mx-auto mb-2" />
-                    <p>Select a completed session to mark or review attendance</p>
-                  </div>
+                  {selectedClass && (
+                    <AttendanceMarking
+                      sessionId="current"
+                      className={selectedClass.name}
+                      sessionDate={new Date().toISOString().split('T')[0]}
+                    />
+                  )}
                 </TabsContent>
 
                 <TabsContent value="details" className="space-y-4">

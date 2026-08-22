@@ -199,7 +199,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <CommandPalette />
 
         {/* Page content */}
-        <main className="p-4 md:p-6">
+        <main id="main-content" className="p-4 md:p-6">
           {children}
         </main>
       </div>
