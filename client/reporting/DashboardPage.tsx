@@ -1,102 +1,154 @@
 /**
  * Dashboard Page — Reporting Layer
  * Composes read-only views over module public interfaces (01 §5)
+ * Widgets are permission-filtered (03 §7)
  */
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@shared/components/ui/card';
-import { Skeleton } from '@shared/components/ui/skeleton';
-import { useAuth } from '@modules/iam';
-import { GraduationCap, Users, DollarSign, BookOpen, ClipboardList, TrendingUp } from 'lucide-react';
+import { Button } from '@shared/components/ui/button';
+import { Badge } from '@shared/components/ui/badge';
+import { useMockAuth } from '@app/mockAuth';
+import { useUIStore } from '@shared/store';
+import {
+  GraduationCap, Users, DollarSign, BookOpen, ClipboardList, TrendingUp,
+  ArrowUpRight, ArrowDownRight, Calendar, Clock,
+} from 'lucide-react';
+import { formatAmount } from '@shared/lib/utils';
+import { Link } from 'react-router-dom';
 
-interface DashboardWidgetProps {
+interface StatWidget {
   title: string;
-  description: string;
   value: string | number;
+  change?: string;
+  changeType?: 'up' | 'down' | 'neutral';
   icon: React.ElementType;
-  trend?: string;
-  color?: string;
+  color: string;
 }
 
-function DashboardWidget({ title, description, value, icon: Icon, trend, color = 'text-primary' }: DashboardWidgetProps) {
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon className={`h-5 w-5 ${color}`} />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        <p className="text-xs text-muted-foreground">{description}</p>
-        {trend && <p className="text-xs text-muted-foreground mt-1">{trend}</p>}
-      </CardContent>
-    </Card>
-  );
-}
+const stats: StatWidget[] = [
+  { title: 'Active Students', value: '247', change: '+12', changeType: 'up', icon: GraduationCap, color: 'text-blue-600' },
+  { title: 'Active Classes', value: '18', change: '+2', changeType: 'up', icon: ClipboardList, color: 'text-green-600' },
+  { title: 'Monthly Revenue', value: '245,000 AFN', change: '+12%', changeType: 'up', icon: DollarSign, color: 'text-emerald-600' },
+  { title: 'New Leads (week)', value: '23', change: '-3', changeType: 'down', icon: TrendingUp, color: 'text-rose-600' },
+];
+
+const recentActivity = [
+  { action: 'New student registered', detail: 'Sara Mohammadi → General English L1', time: '5 min ago', type: 'success' as const },
+  { action: 'Payment received', detail: 'Ahmad Rahimi — 15,000 AFN (tuition)', time: '22 min ago', type: 'info' as const },
+  { action: 'Attendance marked', detail: 'TOEFL Prep L2 — 12/15 present', time: '1 hour ago', type: 'info' as const },
+  { action: 'Expense approved', detail: 'Office supplies — 3,200 AFN', time: '2 hours ago', type: 'warning' as const },
+  { action: 'New lead added', detail: 'Hassan Rezai — source: friend referral', time: '3 hours ago', type: 'info' as const },
+  { action: 'Book sold', detail: 'Official TOEFL Guide — 2 copies', time: '4 hours ago', type: 'info' as const },
+];
+
+const upcomingSessions = [
+  { className: 'General English L3', time: '09:00 - 11:00', teacher: 'Mr. Ahmed', enrolled: '15/20' },
+  { className: 'TOEFL Prep L2', time: '14:00 - 16:00', teacher: 'Ms. Sarah', enrolled: '12/15' },
+  { className: 'General English L1', time: '16:00 - 18:00', teacher: 'Ms. Fatima', enrolled: '18/20' },
+];
+
+const typeColors = {
+  success: 'bg-green-500',
+  info: 'bg-blue-500',
+  warning: 'bg-orange-500',
+  critical: 'bg-red-500',
+};
 
 export function DashboardPage() {
-  const { user } = useAuth();
+  const { user, hasPermission } = useMockAuth();
+  const { darkMode } = useUIStore();
 
-  // Mock data — in production these come from each module's public Service interface
-  const widgets = [
-    {
-      title: 'Active Students',
-      description: 'Currently enrolled students',
-      value: '247',
-      icon: GraduationCap,
-      color: 'text-blue-600',
-    },
-    {
-      title: 'Active Classes',
-      description: 'Running this semester',
-      value: '18',
-      icon: ClipboardList,
-      color: 'text-green-600',
-    },
-    {
-      title: 'Teachers',
-      description: 'Active teaching staff',
-      value: '12',
-      icon: Users,
-      color: 'text-purple-600',
-    },
-    {
-      title: 'Monthly Revenue',
-      description: 'This month (AFN)',
-      value: '245,000',
-      icon: DollarSign,
-      color: 'text-emerald-600',
-      trend: '+12% from last month',
-    },
-    {
-      title: 'Books in Stock',
-      description: 'Available inventory',
-      value: '534',
-      icon: BookOpen,
-      color: 'text-orange-600',
-    },
-    {
-      title: 'New Leads',
-      description: 'This week',
-      value: '23',
-      icon: TrendingUp,
-      color: 'text-rose-600',
-      trend: '+5 since yesterday',
-    },
-  ];
+  const quickActions = [
+    { label: 'Mark Attendance', desc: 'Record today\'s attendance', href: '/academic/classes', permission: 'Attendance.Edit', icon: ClipboardList },
+    { label: 'Record Payment', desc: 'Process a student payment', href: '/finance', permission: 'Payment.Create', icon: DollarSign },
+    { label: 'Register Student', desc: 'Enroll a new student', href: '/academic/students', permission: 'Student.Create', icon: GraduationCap },
+    { label: 'Add Visitor', desc: 'Log a new lead/visitor', href: '/crm/visitors', permission: 'Lead.Create', icon: Users },
+  ].filter((a) => hasPermission(a.permission));
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Dashboard</h1>
         <p className="text-muted-foreground">
-          Welcome back, {user?.full_name}
+          Welcome back, {user?.full_name} — {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {widgets.map((widget) => (
-          <DashboardWidget key={widget.title} {...widget} />
-        ))}
+      {/* Stat Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {stats.map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <Card key={stat.title}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+                <Icon className={`h-5 w-5 ${stat.color}`} />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stat.value}</div>
+                {stat.change && (
+                  <p className={`text-xs flex items-center gap-1 mt-1 ${stat.changeType === 'up' ? 'text-green-600' : stat.changeType === 'down' ? 'text-red-600' : 'text-muted-foreground'}`}>
+                    {stat.changeType === 'up' ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+                    {stat.change} from last month
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Recent Activity */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Recent Activity
+            </CardTitle>
+            <CardDescription>Latest events across the system</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {recentActivity.map((item, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <div className={`w-2 h-2 rounded-full mt-2 ${typeColors[item.type]}`} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium">{item.action}</p>
+                    <p className="text-xs text-muted-foreground truncate">{item.detail}</p>
+                  </div>
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">{item.time}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Today's Schedule */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Today's Classes
+            </CardTitle>
+            <CardDescription>Upcoming sessions</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {upcomingSessions.map((session, i) => (
+                <div key={i} className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium">{session.className}</p>
+                    <Badge variant="outline" className="text-xs">{session.enrolled}</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {session.time} · {session.teacher}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Quick Actions */}
@@ -106,22 +158,94 @@ export function DashboardPage() {
           <CardDescription>Common tasks for your role</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-2 md:grid-cols-3">
-            <button className="p-4 rounded-lg border hover:bg-accent text-start transition-colors">
-              <p className="font-medium">Mark Attendance</p>
-              <p className="text-sm text-muted-foreground">Record today's class attendance</p>
-            </button>
-            <button className="p-4 rounded-lg border hover:bg-accent text-start transition-colors">
-              <p className="font-medium">Record Payment</p>
-              <p className="text-sm text-muted-foreground">Process a student payment</p>
-            </button>
-            <button className="p-4 rounded-lg border hover:bg-accent text-start transition-colors">
-              <p className="font-medium">Register Student</p>
-              <p className="text-sm text-muted-foreground">Enroll a new student</p>
-            </button>
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+            {quickActions.map((action) => {
+              const Icon = action.icon;
+              return (
+                <Link key={action.label} to={action.href}>
+                  <div className="p-4 rounded-lg border hover:bg-accent hover:border-accent-foreground/20 text-start transition-all cursor-pointer group">
+                    <Icon className="h-5 w-5 text-muted-foreground group-hover:text-foreground mb-2" />
+                    <p className="font-medium text-sm">{action.label}</p>
+                    <p className="text-xs text-muted-foreground">{action.desc}</p>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </CardContent>
       </Card>
+
+      {/* Module Summary Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <BookOpen className="h-4 w-4 text-orange-600" />
+              Inventory
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Books in stock</span>
+              <span className="font-semibold">534</span>
+            </div>
+            <div className="flex justify-between text-sm mt-2">
+              <span className="text-muted-foreground">Out of stock</span>
+              <span className="font-semibold text-red-600">3 items</span>
+            </div>
+            <div className="flex justify-between text-sm mt-2">
+              <span className="text-muted-foreground">Sales today</span>
+              <span className="font-semibold">{formatAmount(4500)} AFN</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <DollarSign className="h-4 w-4 text-emerald-600" />
+              Finance Summary
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Revenue (month)</span>
+              <span className="font-semibold">{formatAmount(245000)} AFN</span>
+            </div>
+            <div className="flex justify-between text-sm mt-2">
+              <span className="text-muted-foreground">Expenses (month)</span>
+              <span className="font-semibold text-red-600">{formatAmount(180000)} AFN</span>
+            </div>
+            <div className="flex justify-between text-sm mt-2">
+              <span className="text-muted-foreground">Pending payroll</span>
+              <span className="font-semibold text-orange-600">{formatAmount(32000)} AFN</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-rose-600" />
+              Lead Pipeline
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">New leads (week)</span>
+              <span className="font-semibold">23</span>
+            </div>
+            <div className="flex justify-between text-sm mt-2">
+              <span className="text-muted-foreground">Conversions (week)</span>
+              <span className="font-semibold text-green-600">8</span>
+            </div>
+            <div className="flex justify-between text-sm mt-2">
+              <span className="text-muted-foreground">Conversion rate</span>
+              <span className="font-semibold">34.8%</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
