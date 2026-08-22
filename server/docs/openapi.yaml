@@ -1,0 +1,629 @@
+openapi: '3.0.3'
+info:
+  title: TOEFL House ERP v3 API
+  description: |
+    Management Information System API for TOEFL House educational institute.
+    
+    Authentication: Laravel Sanctum (SPA cookie-based)
+    Currency: Afghan Afghani (AFN)
+    Dates: Gregorian ISO (YYYY-MM-DD)
+    Timezone: Asia/Kabul
+  version: '3.0.0'
+  contact:
+    name: TOEFL House Development
+
+servers:
+  - url: http://localhost:8000/api
+    description: Local development
+  - url: https://api.toeflhouse.af/api
+    description: Production
+
+tags:
+  - name: Auth
+    description: Authentication and session management
+  - name: Dashboard
+    description: Aggregated reporting data
+  - name: IAM
+    description: Organizations, campuses, branches, users, roles
+  - name: Academic
+    description: Students, classes, sessions, attendance, exams
+  - name: People HR
+    description: Teachers, employees, evaluations
+  - name: Finance
+    description: Payments, budget, payroll
+  - name: Platform Services
+    description: Rules, notifications, audit, settings
+  - name: CRM
+    description: Visitors, campaigns, conversion
+  - name: Inventory
+    description: Books, sales, stock
+  - name: Funding
+    description: Donors, campaigns, donations, scholarships
+
+paths:
+  # ── Auth ──
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login with username and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username: { type: string, example: admin }
+                password: { type: string, example: password }
+      responses:
+        '200':
+          description: Login successful, session cookie set
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { $ref: '#/components/schemas/User' }
+                  permissions: { type: array, items: { $ref: '#/components/schemas/Permission' } }
+        '401':
+          description: Invalid credentials
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout and invalidate session
+      security: [{ sanctum: [] }]
+      responses:
+        '204': { description: Logged out }
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Get current authenticated user with resolved permissions
+      security: [{ sanctum: [] }]
+      responses:
+        '200':
+          description: Current user data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { $ref: '#/components/schemas/User' }
+                  permissions: { type: array, items: { $ref: '#/components/schemas/Permission' } }
+
+  # ── Dashboard ──
+  /dashboard:
+    get:
+      tags: [Dashboard]
+      summary: Get aggregated dashboard data for current user's branch
+      security: [{ sanctum: [] }]
+      responses:
+        '200':
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  students: { type: object }
+                  classes: { type: object }
+                  teachers: { type: object }
+                  finance: { type: object }
+                  leads: { type: object }
+                  inventory: { type: object }
+
+  # ── Students ──
+  /students:
+    get:
+      tags: [Academic]
+      summary: List students (branch-scoped)
+      security: [{ sanctum: [] }]
+      parameters:
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: status
+          in: query
+          schema: { type: string, enum: [active, inactive, graduated, suspended] }
+        - name: branch_id
+          in: query
+          schema: { type: string, format: uuid }
+        - name: per_page
+          in: query
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Student list
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Student' }
+    post:
+      tags: [Academic]
+      summary: Create a new student
+      security: [{ sanctum: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/StudentCreate' }
+      responses:
+        '201': { description: Student created }
+
+  /students/{id}:
+    get:
+      tags: [Academic]
+      summary: Get student details with enrollments and certificates
+      security: [{ sanctum: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Student details }
+        '403': { description: Forbidden (branch scope) }
+        '404': { description: Not found }
+    patch:
+      tags: [Academic]
+      summary: Update student
+      security: [{ sanctum: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Updated }
+    delete:
+      tags: [Academic]
+      summary: Delete student
+      security: [{ sanctum: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '204': { description: Deleted }
+
+  /students/{id}/journey:
+    get:
+      tags: [Academic]
+      summary: Get student journey events (append-only timeline)
+      security: [{ sanctum: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Journey events
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/JourneyEvent' }
+
+  # ── Classes ──
+  /classes:
+    get:
+      tags: [Academic]
+      summary: List classes with enrolled count
+      security: [{ sanctum: [] }]
+      responses:
+        '200': { description: Class list with fill percentages }
+    post:
+      tags: [Academic]
+      summary: Create a new class
+      security: [{ sanctum: [] }]
+      responses:
+        '201': { description: Class created }
+
+  /classes/{id}/sessions:
+    get:
+      tags: [Academic]
+      summary: List sessions for a class
+      security: [{ sanctum: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Session list with attendance stats }
+    post:
+      tags: [Academic]
+      summary: Create session (auto-creates roster entries)
+      security: [{ sanctum: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '201': { description: Session created with roster }
+
+  /sessions/{sessionId}/attendance:
+    post:
+      tags: [Academic]
+      summary: Bulk update attendance for a session
+      security: [{ sanctum: [] }]
+      parameters:
+        - { name: sessionId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                attendance:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      student_id: { type: string, format: uuid }
+                      status: { type: string, enum: [present, absent, sick, leave] }
+      responses:
+        '200': { description: Attendance saved, session marked completed }
+
+  # ── Payments ──
+  /payments:
+    get:
+      tags: [Finance]
+      summary: List payments (branch-scoped, filterable)
+      security: [{ sanctum: [] }]
+      responses:
+        '200': { description: Payment list }
+    post:
+      tags: [Finance]
+      summary: Record a payment (creates matching financial_transaction + 5% savings)
+      security: [{ sanctum: [] }]
+      responses:
+        '201': { description: Payment recorded atomically }
+
+  /students/{studentId}/finance-summary:
+    get:
+      tags: [Finance]
+      summary: Get student finance summary (discount/scholarship/payable pipeline)
+      security: [{ sanctum: [] }]
+      parameters:
+        - { name: studentId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Finance summary
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FinanceSummary' }
+
+  # ── Budget ──
+  /budget-lines:
+    get:
+      tags: [Finance]
+      summary: List budget lines with utilization
+      security: [{ sanctum: [] }]
+      responses:
+        '200': { description: Budget lines with utilization_percent and remaining }
+
+  /budget/overview:
+    get:
+      tags: [Finance]
+      summary: BOS dashboard (reserve fund target, saving balance, met status)
+      security: [{ sanctum: [] }]
+      responses:
+        '200':
+          description: Budget overview
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reserve_fund_target: { type: number }
+                  saving_balance: { type: number }
+                  reserve_fund_met: { type: boolean }
+
+  # ── Teachers ──
+  /teachers:
+    get:
+      tags: [People HR]
+      summary: List teachers
+      security: [{ sanctum: [] }]
+      responses:
+        '200': { description: Teacher list }
+    post:
+      tags: [People HR]
+      summary: Create teacher
+      security: [{ sanctum: [] }]
+      responses:
+        '201': { description: Teacher created }
+
+  /teachers/{teacherId}/computed-salary:
+    get:
+      tags: [People HR]
+      summary: Compute teacher's due amount for a period
+      security: [{ sanctum: [] }]
+      parameters:
+        - { name: teacherId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: period, in: query, schema: { type: string, example: '2026-08' } }
+      responses:
+        '200':
+          description: Salary breakdown
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dueAmount: { type: number }
+                  model: { type: string }
+                  breakdown: { type: array }
+
+  /teachers/{teacherId}/pay-salary:
+    post:
+      tags: [People HR]
+      summary: Pay teacher salary (no-double-full-pay guard)
+      security: [{ sanctum: [] }]
+      parameters:
+        - { name: teacherId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '201': { description: Salary paid, ledger + transaction created }
+        '409': { description: Full payment already recorded for this period }
+
+  # ── Rules ──
+  /rules:
+    get:
+      tags: [Platform Services]
+      summary: List rule definitions
+      security: [{ sanctum: [] }]
+      parameters:
+        - { name: category, in: query, schema: { type: string } }
+      responses:
+        '200': { description: Rule list }
+    post:
+      tags: [Platform Services]
+      summary: Create a new rule definition
+      security: [{ sanctum: [] }]
+      responses:
+        '201': { description: Rule created }
+
+  /rules/{id}/evaluate:
+    get:
+      tags: [Platform Services]
+      summary: Dry-run evaluate a rule with test data
+      security: [{ sanctum: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Evaluation result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  finalOutputs: { type: object }
+                  isBlocked: { type: boolean }
+                  blockReason: { type: string, nullable: true }
+                  warnings: { type: array, items: { type: string } }
+
+  # ── Visitors / CRM ──
+  /visitors:
+    get:
+      tags: [CRM]
+      summary: List visitors (pipeline stages)
+      security: [{ sanctum: [] }]
+      responses:
+        '200': { description: Visitor list }
+    post:
+      tags: [CRM]
+      summary: Add a new visitor/lead
+      security: [{ sanctum: [] }]
+      responses:
+        '201': { description: Visitor created }
+
+  /visitors/{id}/conversion-readiness:
+    get:
+      tags: [CRM]
+      summary: Check if visitor is ready to convert (3-path fee check)
+      security: [{ sanctum: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Conversion readiness
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  canConvert: { type: boolean }
+                  reasons: { type: array, items: { type: string } }
+                  placementCompleted: { type: boolean }
+                  placementFeePaid: { type: boolean }
+
+  /visitors/{id}/convert:
+    post:
+      tags: [CRM]
+      summary: Convert visitor to student (atomic: student + enrollment + journey events)
+      security: [{ sanctum: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '201': { description: Conversion successful }
+        '400': { description: Not ready (reasons returned) }
+
+  # ── Books / Inventory ──
+  /books:
+    get:
+      tags: [Inventory]
+      summary: List books
+      security: [{ sanctum: [] }]
+      responses:
+        '200': { description: Book list }
+    post:
+      tags: [Inventory]
+      summary: Add a new book
+      security: [{ sanctum: [] }]
+      responses:
+        '201': { description: Book created }
+
+  /books/{id}/sell:
+    post:
+      tags: [Inventory]
+      summary: Record a book sale (stock guard + income tx + 5% savings)
+      security: [{ sanctum: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '201': { description: Sale recorded }
+        '409': { description: Insufficient stock }
+
+  /book-sales/{saleId}/refund:
+    post:
+      tags: [Inventory]
+      summary: Refund a book sale (restock + expense tx)
+      security: [{ sanctum: [] }]
+      parameters:
+        - { name: saleId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Refund processed }
+        '409': { description: Already refunded }
+
+  # ── Funding ──
+  /donors:
+    get:
+      tags: [Funding]
+      summary: List donors with aggregated totals
+      security: [{ sanctum: [] }]
+      responses:
+        '200': { description: Donor list with total_donated }
+
+  /donations:
+    post:
+      tags: [Funding]
+      summary: Record a donation (income tx + savings + campaign increment)
+      security: [{ sanctum: [] }]
+      responses:
+        '201': { description: Donation recorded }
+
+  /scholarships/{scholarshipId}/awards:
+    post:
+      tags: [Funding]
+      summary: Award scholarship to student (auto-updates tuition)
+      security: [{ sanctum: [] }]
+      parameters:
+        - { name: scholarshipId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '201': { description: Award created, tuition recomputed }
+        '400': { description: Budget exceeded or no matching enrollment }
+
+  # ── Settings ──
+  /settings:
+    get:
+      tags: [Platform Services]
+      summary: Get all system settings
+      security: [{ sanctum: [] }]
+      responses:
+        '200': { description: Key-value settings map }
+
+  /settings/{key}:
+    patch:
+      tags: [Platform Services]
+      summary: Update a system setting
+      security: [{ sanctum: [] }]
+      parameters:
+        - { name: key, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Setting updated }
+
+  /notifications:
+    get:
+      tags: [Platform Services]
+      summary: Get user notifications with unread count
+      security: [{ sanctum: [] }]
+      responses:
+        '200':
+          description: Notifications
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  notifications: { type: array }
+                  unread_count: { type: integer }
+
+  /audit-logs:
+    get:
+      tags: [Platform Services]
+      summary: Get audit logs (searchable, paginatable)
+      security: [{ sanctum: [] }]
+      parameters:
+        - { name: action, in: query, schema: { type: string } }
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
+        - { name: per_page, in: query, schema: { type: integer } }
+      responses:
+        '200': { description: Audit log entries }
+
+components:
+  securitySchemes:
+    sanctum:
+      type: apiKey
+      in: cookie
+      name: laravel_session
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        username: { type: string }
+        full_name: { type: string }
+        role: { type: string, enum: [owner, manager, finance, registrar, teacher, head_of_department, counselor, donor_manager] }
+        branch_id: { type: string, format: uuid }
+        is_active: { type: boolean }
+
+    Permission:
+      type: object
+      properties:
+        code: { type: string, example: Student.View }
+        scope: { type: string, enum: [own, class, program, department, branch, campus, organization] }
+        source: { type: string, enum: [role, delegation, override] }
+
+    Student:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        student_code: { type: string, example: STU-2026-0001 }
+        full_name: { type: string }
+        phone: { type: string }
+        gender: { type: string, enum: [male, female] }
+        status: { type: string, enum: [active, inactive, graduated, suspended] }
+        tazkira_no: { type: string }
+        father_name: { type: string }
+        discount_percent: { type: number }
+        branch_id: { type: string, format: uuid }
+
+    StudentCreate:
+      type: object
+      required: [full_name, branch_id]
+      properties:
+        full_name: { type: string }
+        phone: { type: string }
+        email: { type: string, format: email }
+        gender: { type: string, enum: [male, female] }
+        father_name: { type: string }
+        tazkira_no: { type: string }
+        whatsapp: { type: string }
+        dob: { type: string, format: date }
+        discount_percent: { type: number }
+        branch_id: { type: string, format: uuid }
+
+    JourneyEvent:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        event_type: { type: string }
+        occurred_at: { type: string, format: date-time }
+        payload: { type: object }
+        actor_name: { type: string }
+
+    FinanceSummary:
+      type: object
+      properties:
+        grossTuition: { type: number }
+        discountPercent: { type: number }
+        scholarshipPercent: { type: number }
+        discountAmount: { type: number }
+        scholarshipAmount: { type: number }
+        netTuition: { type: number }
+        totalPaid: { type: number }
+        remainingDebt: { type: number }
+        paidPercentage: { type: number }
+        finalPayable: { type: number }
+        isFullyPaid: { type: boolean }
