@@ -57,22 +57,14 @@ interface SessionData {
   attendance?: { present: number; absent: number; total: number };
 }
 
+// Demo data ONLY used as UI fallback when backend is empty (first boot demo mode)
 const mockClasses: ClassData[] = [
   { id: '1', name: 'General English - Level 3', teacher: 'Mr. Ahmed Karimi', level: 'L3', students: 15, capacity: 20, schedule: 'Sun/Tue 09:00-11:00', status: 'active', fee: 5000, gender_policy: 'mixed', start_date: '2026-07-01' },
   { id: '2', name: 'TOEFL Preparation - Level 2', teacher: 'Ms. Sarah Noori', level: 'L2', students: 12, capacity: 15, schedule: 'Mon/Wed 14:00-16:00', status: 'active', fee: 7000, gender_policy: 'female', start_date: '2026-07-15' },
   { id: '3', name: 'IELTS Advanced', teacher: 'Mr. Karim Rahimi', level: 'Advanced', students: 8, capacity: 12, schedule: 'Sat 10:00-13:00', status: 'active', fee: 8000, gender_policy: 'mixed', start_date: '2026-08-01' },
-  { id: '4', name: 'General English - Level 1', teacher: 'Ms. Fatima Ahmadi', level: 'L1', students: 18, capacity: 20, schedule: 'Sun/Tue 16:00-18:00', status: 'active', fee: 5000, gender_policy: 'female', start_date: '2026-07-01' },
-  { id: '5', name: 'Business English', teacher: 'Mr. Ali Hussaini', level: 'B1', students: 0, capacity: 15, schedule: 'Mon/Wed 09:00-11:00', status: 'cancelled', fee: 6000, gender_policy: 'mixed', start_date: '2026-08-15' },
-  { id: '6', name: 'General English - Level 4', teacher: 'Mr. Ahmed Karimi', level: 'L4', students: 10, capacity: 20, schedule: 'Tue/Thu 11:00-13:00', status: 'active', fee: 5000, gender_policy: 'mixed', start_date: '2026-07-01' },
 ];
 
-const mockSessions: SessionData[] = [
-  { id: 's1', class_id: '1', date: '2026-08-22', time: '09:00-11:00', topic: 'Reading Comprehension - Unit 5', status: 'scheduled' },
-  { id: 's2', class_id: '1', date: '2026-08-20', time: '09:00-11:00', topic: 'Grammar - Conditionals', status: 'completed', attendance: { present: 13, absent: 2, total: 15 } },
-  { id: 's3', class_id: '1', date: '2026-08-18', time: '09:00-11:00', topic: 'Writing - Essay Structure', status: 'completed', attendance: { present: 14, absent: 1, total: 15 } },
-  { id: 's4', class_id: '2', date: '2026-08-22', time: '14:00-16:00', topic: 'TOEFL Speaking Practice', status: 'scheduled' },
-  { id: 's5', class_id: '2', date: '2026-08-20', time: '14:00-16:00', topic: 'TOEFL Reading Strategies', status: 'completed', attendance: { present: 11, absent: 1, total: 12 } },
-];
+const mockSessions: SessionData[] = []; // no longer used for live paths
 
 export function ClassesPage() {
   const { data: classesData = [] } = useClasses();
@@ -99,7 +91,7 @@ export function ClassesPage() {
 
   // Prefer live data; fall back to demo only when backend returns nothing
   const classes = (classesData.length > 0 ? classesData : []) as any[];
-  const displayClasses = classes.length > 0 ? classes : mockClasses;
+  const displayClasses = Array.isArray(classes) && classes.length > 0 ? classes : [];
   const filteredClasses = displayClasses.filter((c: any) =>
     (c.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
     (c.teacher || c.teacher_name || '').toLowerCase().includes(searchQuery.toLowerCase())
@@ -241,6 +233,14 @@ export function ClassesPage() {
       </div>
 
       {/* Classes Grid */}
+      {filteredClasses.length === 0 && (
+        <div className="col-span-full p-8 text-center border rounded-lg bg-muted/30">
+          <p className="text-muted-foreground mb-2">No classes found from backend.</p>
+          <Button size="sm" onClick={() => setIsAddDialogOpen(true)}>
+            <Plus className="h-4 w-4 me-1" /> Create your first class
+          </Button>
+        </div>
+      )}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {filteredClasses.map((cls) => (
           <Card key={cls.id} className={cls.status === 'cancelled' ? 'opacity-60' : ''}>
@@ -331,7 +331,7 @@ export function ClassesPage() {
                     </Button>
                   </div>
                   <div className="space-y-3">
-                    {(liveSessions.length > 0 ? liveSessions : mockSessions)
+                    {liveSessions
                       .filter((s: any) => (s.class_id || s.classId) === selectedClass.id)
                       .map((session: any) => (
                         <div key={session.id} className="flex items-center justify-between p-3 rounded-lg border">

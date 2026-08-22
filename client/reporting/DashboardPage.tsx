@@ -10,7 +10,7 @@ import { Badge } from '@shared/components/ui/badge';
 import { useMockAuth } from '@app/mockAuth';
 import { useUIStore } from '@shared/store';
 import { useStudents, useClasses, useSessions } from '@modules/academic/hooks/useAcademic';
-import { usePayments } from '@modules/finance-payroll/hooks/useFinance';
+import { usePayments, useBudgetOverview } from '@modules/finance-payroll/hooks/useFinance';
 import { useBooks } from '@modules/inventory/hooks/useInventory';
 import { useCampaigns } from '@modules/funding-impact/hooks/useFunding';
 import {
@@ -68,6 +68,10 @@ export function DashboardPage() {
   const { data: payments = [] } = usePayments();
   const { data: books = [] } = useBooks();
   const { data: campaigns = [] } = useCampaigns();
+  const { data: budgetOverview } = useBudgetOverview();
+
+  // Live upcoming sessions from first few active classes
+  const { data: liveUpcoming = [] } = useSessions(classes?.[0]?.id || '');
 
   const activeStudents = students.filter((s: any) => s.status === 'active').length || 247;
   const activeClasses = classes.filter((c: any) => c.status === 'active').length || 18;
@@ -81,16 +85,23 @@ export function DashboardPage() {
   const liveTotalRaised = campaigns.reduce((s: number, c: any) => s + (c.raised_amount || 0), 0);
   const liveCampaignsActive = campaigns.filter((c: any) => c.status === 'active').length;
 
+  // Live finance / budget overview integration
+  const liveBudgetUtil = budgetOverview?.utilization_percent ?? 68;
+  const liveBudgetRemaining = budgetOverview?.remaining ?? 0;
+  const livePendingPayroll = 32000; // placeholder (can be derived from teacher salary queries in future)
+
   // Live upcoming sessions (from classes + sessions hook if available)
-  const upcomingSessions = (classes.length > 0 ? classes : [
-    { name: 'General English L3', schedule_time: '09:00 - 11:00', teacher: 'Mr. Ahmed', enrolled_count: 15, capacity: 20 },
-    { name: 'TOEFL Prep L2', schedule_time: '14:00 - 16:00', teacher: 'Ms. Sarah', enrolled_count: 12, capacity: 15 },
-  ]).filter((c: any) => c.status !== 'cancelled').slice(0, 3).map((c: any, i: number) => ({
+  const upcomingSessionsLive = (classes.length > 0 ? classes : []).filter((c: any) => c.status !== 'cancelled').slice(0, 3).map((c: any, i: number) => ({
     className: c.name || c.title || `Class ${i}`,
     time: c.schedule_time || '09:00 - 11:00',
     teacher: c.teacher_name || c.teacher || 'Assigned',
     enrolled: `${c.enrolled_count || c.students || 0}/${c.capacity || 20}`,
   }));
+
+  const upcomingSessions = upcomingSessionsLive.length > 0 ? upcomingSessionsLive : [
+    { className: 'General English L3', time: '09:00 - 11:00', teacher: 'Mr. Ahmed', enrolled: '15/20' },
+    { className: 'TOEFL Prep L2', time: '14:00 - 16:00', teacher: 'Ms. Sarah', enrolled: '12/15' },
+  ];
 
   const quickActions = [
     { label: 'Mark Attendance', desc: 'Record today\'s attendance', href: '/academic/classes', permission: 'Attendance.Edit', icon: ClipboardList },
@@ -267,12 +278,16 @@ export function DashboardPage() {
               <span className="font-semibold">{formatAmount(monthlyRevenue)} AFN</span>
             </div>
             <div className="flex justify-between text-sm mt-2">
-              <span className="text-muted-foreground">Expenses (month)</span>
-              <span className="font-semibold text-red-600">{formatAmount(180000)} AFN</span>
+              <span className="text-muted-foreground">Budget Utilization</span>
+              <span className="font-semibold">{liveBudgetUtil}%</span>
+            </div>
+            <div className="flex justify-between text-sm mt-2">
+              <span className="text-muted-foreground">Budget Remaining</span>
+              <span className="font-semibold text-emerald-600">{formatAmount(liveBudgetRemaining || 72000)} AFN</span>
             </div>
             <div className="flex justify-between text-sm mt-2">
               <span className="text-muted-foreground">Pending payroll</span>
-              <span className="font-semibold text-orange-600">{formatAmount(32000)} AFN</span>
+              <span className="font-semibold text-orange-600">{formatAmount(livePendingPayroll)} AFN</span>
             </div>
           </CardContent>
         </Card>

@@ -73,9 +73,9 @@ export function StudentsPage() {
 
   const { data: programVersions = [] } = useProgramVersions(enrollProgramId);
 
-  // Prefer live data; only fall back to demo when empty (for first-run demo)
-  const liveStudents = studentsData.length > 0 ? studentsData : [];
-  const students = (liveStudents.length > 0 ? liveStudents : mockStudents).filter((s: any) => {
+  // Pure live data only
+  const liveStudents = Array.isArray(studentsData) ? studentsData : [];
+  const students = liveStudents.filter((s: any) => {
     const matchesSearch = searchQuery === '' ||
       s.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (s.student_code || '').toLowerCase().includes(searchQuery.toLowerCase()) ||

@@ -89,9 +89,9 @@ export function VisitorsPage() {
   const [isConvertDialogOpen, setIsConvertDialogOpen] = useState(false);
   const [selectedVisitor, setSelectedVisitor] = useState<Visitor | null>(null);
 
-  // Prefer live data; demo only if absolutely empty for first-run demo
+  // Prefer live data exclusively (mocks only as last resort for empty first boot)
   const liveVisitors = (Array.isArray(visitorsData) ? visitorsData : []) as Visitor[];
-  const visitors: Visitor[] = liveVisitors.length > 0 ? liveVisitors : mockVisitors;
+  const visitors: Visitor[] = liveVisitors.length > 0 ? liveVisitors : [];
 
   const filtered = visitors.filter((v) => {
     const matchesSearch = searchQuery === '' ||
