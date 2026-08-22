@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from '@shared/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@shared/components/ui/select';
 import { AttendanceMarking } from './AttendanceMarking';
+import { useClasses, useCreateClass, useSessions } from '../hooks/useAcademic';
 import {
   ClipboardList, Plus, Search, Users, Calendar, Clock,
   CheckCircle2, XCircle, AlertCircle, BookOpen,
@@ -60,20 +61,27 @@ const mockSessions: SessionData[] = [
 ];
 
 export function ClassesPage() {
+  const { data: classesData = [] } = useClasses();
+  const createClass = useCreateClass();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedClass, setSelectedClass] = useState<ClassData | null>(null);
+  const [selectedClass, setSelectedClass] = useState<any>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
-  const filteredClasses = mockClasses.filter((c) =>
-    c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.teacher.toLowerCase().includes(searchQuery.toLowerCase())
+  // fallback to mock
+  const classes = (classesData.length > 0 ? classesData : mockClasses) as any[];
+  const filteredClasses = classes.filter((c: any) =>
+    (c.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (c.teacher || c.teacher_name || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const classStats = {
-    total: mockClasses.length,
-    active: mockClasses.filter((c) => c.status === 'active').length,
-    totalStudents: mockClasses.reduce((sum, c) => sum + c.students, 0),
-    avgFill: Math.round(mockClasses.filter((c) => c.status === 'active').reduce((sum, c) => sum + (c.students / c.capacity * 100), 0) / mockClasses.filter((c) => c.status === 'active').length),
+    total: classes.length,
+    active: classes.filter((c: any) => c.status === 'active').length,
+    totalStudents: classes.reduce((sum: number, c: any) => sum + (c.students || c.enrolled_count || 0), 0),
+    avgFill: Math.round(
+      classes.filter((c: any) => c.status === 'active').reduce((sum: number, c: any) => sum + ((c.students || c.enrolled_count || 0) / (c.capacity || 20) * 100), 0) /
+      Math.max(1, classes.filter((c: any) => c.status === 'active').length)
+    ),
   };
 
   return (
@@ -263,7 +271,7 @@ export function ClassesPage() {
                 <Button variant="outline" size="sm" className="flex-1" onClick={() => setSelectedClass(cls)}>
                   Sessions
                 </Button>
-                <Button variant="outline" size="sm" className="flex-1">
+                <Button variant="outline" size="sm" className="flex-1" onClick={() => setSelectedClass(cls)}>
                   Roster
                 </Button>
               </div>
