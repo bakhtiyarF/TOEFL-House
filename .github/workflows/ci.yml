@@ -1,0 +1,107 @@
+# TOEFL House ERP v3 — CI/CD Pipeline
+# Per 13_INFRASTRUCTURE_AND_DEPLOYMENT.md §5
+
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # Backend: Pest + static analysis
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: secret
+          MYSQL_DATABASE: toefl_house_v3_test
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_mysql, redis, bcmath
+          coverage: none
+
+      - name: Install dependencies
+        working-directory: server
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Run Pest tests
+        working-directory: server
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_DATABASE: toefl_house_v3_test
+          DB_USERNAME: root
+          DB_PASSWORD: secret
+          CACHE_STORE: redis
+          QUEUE_CONNECTION: sync
+        run: ./vendor/bin/pest
+
+      - name: PHP static analysis (Laravel Pint)
+        working-directory: server
+        run: ./vendor/bin/pint --test
+
+  # Frontend: Vitest + TypeScript
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install dependencies
+        working-directory: client
+        run: npm ci
+
+      - name: TypeScript check
+        working-directory: client
+        run: npx tsc --noEmit
+
+      - name: Run Vitest
+        working-directory: client
+        run: npx vitest run
+
+      - name: Build
+        working-directory: client
+        run: npm run build
+
+  # Deploy to staging on merge to main
+  deploy-staging:
+    needs: [backend, frontend]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to staging
+        run: echo "Deploy to staging server would run here"
+        # In production: SSH deploy script or similar
+
+  # Deploy to production on tagged release only (13 §5)
+  deploy-production:
+    needs: [backend, frontend]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to production
+        run: echo "Deploy to production server would run here"
+        # In production: SSH deploy with maintenance window
