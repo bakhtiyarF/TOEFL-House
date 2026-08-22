@@ -4,6 +4,9 @@
  */
 
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Card, CardContent, CardHeader, CardTitle } from '@shared/components/ui/card';
 import { Button } from '@shared/components/ui/button';
 import { Badge } from '@shared/components/ui/badge';
@@ -14,10 +17,21 @@ import { Label } from '@shared/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@shared/components/ui/select';
 import { AttendanceMarking } from './AttendanceMarking';
 import { useClasses, useCreateClass, useSessions, useCreateSession, useUpdateAttendance } from '../hooks/useAcademic';
+import { useTeachers } from '@modules/people-hr/hooks/usePeopleHr';
 import {
   ClipboardList, Plus, Search, Users, Calendar, Clock,
   CheckCircle2, XCircle, AlertCircle, BookOpen,
 } from 'lucide-react';
+
+const ClassSchema = z.object({
+  name: z.string().min(3, 'Name required'),
+  teacher_id: z.string().optional(),
+  capacity: z.string().min(1),
+  min_viable_size: z.string().optional(),
+  fee: z.string().optional(),
+});
+
+type ClassForm = z.infer<typeof ClassSchema>;
 
 interface ClassData {
   id: string;
@@ -62,6 +76,7 @@ const mockSessions: SessionData[] = [
 
 export function ClassesPage() {
   const { data: classesData = [] } = useClasses();
+  const { data: teachers = [] } = useTeachers();
   const createClass = useCreateClass();
   const createSession = useCreateSession();
   const updateAttendance = useUpdateAttendance();
@@ -69,13 +84,29 @@ export function ClassesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedClass, setSelectedClass] = useState<any>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [selectedAttendanceSession, setSelectedAttendanceSession] = useState<any>(null);
 
-  // fallback to mock
-  const classes = (classesData.length > 0 ? classesData : mockClasses) as any[];
-  const filteredClasses = classes.filter((c: any) =>
+  const classForm = useForm<ClassForm>({
+    resolver: zodResolver(ClassSchema),
+    defaultValues: {
+      name: '',
+      teacher_id: '',
+      capacity: '20',
+      min_viable_size: '5',
+      fee: '5000',
+    },
+  });
+
+  // Prefer live data; fall back to demo only when backend returns nothing
+  const classes = (classesData.length > 0 ? classesData : []) as any[];
+  const displayClasses = classes.length > 0 ? classes : mockClasses;
+  const filteredClasses = displayClasses.filter((c: any) =>
     (c.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
     (c.teacher || c.teacher_name || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Live sessions for selected class
+  const { data: liveSessions = [] } = useSessions(selectedClass?.id || '');
 
   const classStats = {
     total: classes.length,
@@ -87,15 +118,21 @@ export function ClassesPage() {
     ),
   };
 
-  const handleCreateClass = () => {
-    // Simple demo create
+  const onCreateClassSubmit = (data: ClassForm) => {
     createClass.mutate({
-      name: 'New Class ' + (classes.length + 1),
+      name: data.name,
+      teacher_id: data.teacher_id || undefined,
+      capacity: parseInt(data.capacity),
+      min_viable_size: data.min_viable_size ? parseInt(data.min_viable_size) : 5,
+      fee: data.fee ? parseFloat(data.fee) : 5000,
       branch_id: 'branch-1',
-      capacity: 20,
-      min_viable_size: 5,
+      status: 'active',
+    } as any, {
+      onSuccess: () => {
+        setIsAddDialogOpen(false);
+        classForm.reset();
+      },
     });
-    setIsAddDialogOpen(false);
   };
 
   return (
@@ -120,84 +157,46 @@ export function ClassesPage() {
               <DialogTitle>Create New Class</DialogTitle>
               <DialogDescription>Set up a new class with schedule and capacity</DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
+            <form onSubmit={classForm.handleSubmit(onCreateClassSubmit)} className="space-y-4">
               <div className="space-y-2">
-                <Label>Class Name</Label>
-                <Input placeholder="e.g. General English - Level 5" />
+                <Label>Class Name *</Label>
+                <Input placeholder="e.g. General English - Level 5" {...classForm.register('name')} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Teacher</Label>
-                  <Select>
+                  <Select onValueChange={(v) => classForm.setValue('teacher_id' as any, v)}>
                     <SelectTrigger><SelectValue placeholder="Select teacher" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="1">Mr. Ahmed Karimi</SelectItem>
-                      <SelectItem value="2">Ms. Sarah Noori</SelectItem>
-                      <SelectItem value="3">Mr. Karim Rahimi</SelectItem>
-                      <SelectItem value="4">Ms. Fatima Ahmadi</SelectItem>
+                      {teachers.length > 0 ? teachers.map((t: any) => (
+                        <SelectItem key={t.id} value={t.id}>{t.full_name}</SelectItem>
+                      )) : <SelectItem value="">No teachers loaded</SelectItem>}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Program Level</Label>
-                  <Select>
-                    <SelectTrigger><SelectValue placeholder="Select level" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="L1">Level 1</SelectItem>
-                      <SelectItem value="L2">Level 2</SelectItem>
-                      <SelectItem value="L3">Level 3</SelectItem>
-                      <SelectItem value="L4">Level 4</SelectItem>
-                      <SelectItem value="L5">Level 5</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label>Capacity *</Label>
+                  <Input type="number" {...classForm.register('capacity')} />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Capacity</Label>
-                  <Input type="number" placeholder="20" />
-                </div>
                 <div className="space-y-2">
                   <Label>Min. Viable Size</Label>
-                  <Input type="number" placeholder="5" />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Schedule</Label>
-                  <Input placeholder="e.g. Sun/Tue 09:00-11:00" />
+                  <Input type="number" {...classForm.register('min_viable_size')} />
                 </div>
                 <div className="space-y-2">
                   <Label>Monthly Fee (AFN)</Label>
-                  <Input type="number" placeholder="5000" />
+                  <Input type="number" {...classForm.register('fee')} />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label>Gender Policy</Label>
-                <Select>
-                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="mixed">Mixed</SelectItem>
-                    <SelectItem value="female">Female only</SelectItem>
-                    <SelectItem value="male">Male only</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Start Date</Label>
-                  <Input type="date" />
-                </div>
-                <div className="space-y-2">
-                  <Label>End Date</Label>
-                  <Input type="date" />
-                </div>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
-              <Button onClick={() => setIsAddDialogOpen(false)}>Create Class</Button>
-            </DialogFooter>
+
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
+                <Button type="submit" disabled={createClass.isPending}>
+                  {createClass.isPending ? 'Creating...' : 'Create Class'}
+                </Button>
+              </DialogFooter>
+            </form>
           </DialogContent>
         </Dialog>
       </div>
@@ -332,8 +331,8 @@ export function ClassesPage() {
                     </Button>
                   </div>
                   <div className="space-y-3">
-                    {(useSessions(selectedClass.id).data || mockSessions)
-                      .filter((s: any) => s.class_id === selectedClass.id)
+                    {(liveSessions.length > 0 ? liveSessions : mockSessions)
+                      .filter((s: any) => (s.class_id || s.classId) === selectedClass.id)
                       .map((session: any) => (
                         <div key={session.id} className="flex items-center justify-between p-3 rounded-lg border">
                           <div className="flex items-center gap-3">
@@ -369,20 +368,54 @@ export function ClassesPage() {
 
                 <TabsContent value="attendance">
                   {selectedClass && (
-                    <AttendanceMarking
-                      sessionId={selectedClass.id}
-                      className={selectedClass.name}
-                      sessionDate={new Date().toISOString().split('T')[0]}
-                      initialRoster={[]}
-                      onSave={(attendance) => {
-                        // For demo we simulate saving attendance to a "current" session
-                        // In real: would select a real sessionId from sessions list
-                        updateAttendance.mutate({
-                          sessionId: selectedClass.id,
-                          attendance,
-                        });
-                      }}
-                    />
+                    <div className="space-y-4">
+                      <div>
+                        <Label className="text-sm">Select Session to Mark</Label>
+                        <Select
+                          value={selectedAttendanceSession?.id || ''}
+                          onValueChange={(sid) => {
+                            const sessList = (liveSessions.length > 0 ? liveSessions : []) as any[];
+                            const sess = sessList.find((s: any) => s.id === sid) || null;
+                            setSelectedAttendanceSession(sess);
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Choose a session" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {((liveSessions.length > 0 ? liveSessions : []) as any[])
+                              .filter((s: any) => (s.class_id || s.classId) === selectedClass.id)
+                              .map((s: any) => (
+                                <SelectItem key={s.id} value={s.id}>
+                                  {s.date} · {s.start_time || s.time || ''} — {s.topic || 'Session'}
+                                </SelectItem>
+                              ))}
+                            {((liveSessions.length > 0 ? liveSessions : []) as any[]).filter((s: any) => (s.class_id || s.classId) === selectedClass.id).length === 0 && (
+                              <SelectItem value="">No sessions yet — create one in Sessions tab</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {selectedAttendanceSession ? (
+                        <AttendanceMarking
+                          sessionId={selectedAttendanceSession.id}
+                          className={selectedClass.name}
+                          sessionDate={selectedAttendanceSession.date || new Date().toISOString().split('T')[0]}
+                          initialRoster={[]}
+                          onSave={(attendance) => {
+                            updateAttendance.mutate({
+                              sessionId: selectedAttendanceSession.id,
+                              attendance,
+                            });
+                          }}
+                        />
+                      ) : (
+                        <div className="p-4 text-center text-muted-foreground border rounded">
+                          Select a session above to mark attendance. Roster will load from backend.
+                        </div>
+                      )}
+                    </div>
                   )}
                 </TabsContent>
 

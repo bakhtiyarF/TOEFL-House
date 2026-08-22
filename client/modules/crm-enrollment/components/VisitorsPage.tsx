@@ -19,8 +19,8 @@ import {
   UserPlus, Plus, Search, Phone, ArrowRight, CheckCircle2, XCircle,
   Clock, MessageSquare, GraduationCap, AlertCircle, TrendingUp, Filter,
 } from 'lucide-react';
-import { useVisitors, useConvertVisitor } from '../hooks/useCrm';
-import { crmApi } from '../api';
+import { useVisitors, useConvertVisitor, useCreateVisitor } from '../hooks/useCrm';
+import { useClasses } from '@modules/academic/hooks/useAcademic';
 
 const VisitorSchema = z.object({
   full_name: z.string().min(2, 'Name is required'),
@@ -76,6 +76,7 @@ const mockVisitors: Visitor[] = [
 
 export function VisitorsPage() {
   const { data: visitorsData = [], isLoading } = useVisitors();
+  const createVisitor = useCreateVisitor();
   const convertVisitor = useConvertVisitor();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -84,7 +85,7 @@ export function VisitorsPage() {
   const [isConvertDialogOpen, setIsConvertDialogOpen] = useState(false);
   const [selectedVisitor, setSelectedVisitor] = useState<Visitor | null>(null);
 
-  // Use live data or fallback
+  // Prefer live data; demo only if absolutely empty for first-run demo
   const liveVisitors = (Array.isArray(visitorsData) ? visitorsData : []) as Visitor[];
   const visitors: Visitor[] = liveVisitors.length > 0 ? liveVisitors : mockVisitors;
 
@@ -106,17 +107,19 @@ export function VisitorsPage() {
   });
 
   const onSubmit = (data: VisitorFormValues) => {
-    crmApi.visitors.create({
+    createVisitor.mutate({
       full_name: data.full_name,
       phone: data.phone,
       email: data.email || undefined,
       source: data.source,
       interested_course: data.interested_course,
       notes: data.notes,
-    }).then(() => {
-      setIsAddDialogOpen(false);
-      reset();
-      // TanStack will refetch via invalidation in real hooks
+      branch_id: 'branch-1',
+    } as any, {
+      onSuccess: () => {
+        setIsAddDialogOpen(false);
+        reset();
+      },
     });
   };
 
@@ -124,15 +127,16 @@ export function VisitorsPage() {
     return visitor.placement_score !== null && visitor.placement_fee_paid && visitor.status !== 'registered';
   };
 
-  const handleConvert = (visitor: Visitor, programVersionId?: string) => {
+  const handleConvert = (visitor: Visitor) => {
     if (!canConvert(visitor)) return;
 
+    const program = (window as any).__selectedProgram || 'general-english';
+    // Backend ConversionService expects placement + fee snapshot readiness
     convertVisitor.mutate(visitor.id, {
       onSuccess: (result: any) => {
         setIsConvertDialogOpen(false);
         setSelectedVisitor(null);
-        alert(`Converted successfully! New student: ${result?.student_code || result?.student_id || 'created'}`);
-        // In production: window.location or query invalidation would refresh Students list
+        // TanStack auto-refreshes students + visitors
       },
     });
   };

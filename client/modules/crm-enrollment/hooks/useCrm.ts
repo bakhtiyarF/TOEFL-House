@@ -5,10 +5,23 @@ export function useVisitors(params?: any) {
   return useQuery({ queryKey: ['crm', 'visitors', params], queryFn: () => crmApi.visitors.list(params) });
 }
 
+export function useCreateVisitor() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: crmApi.visitors.create,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['crm', 'visitors'] });
+    },
+  });
+}
+
 export function useConvertVisitor() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => crmApi.visitors.convert(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['crm'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['crm'] });
+      qc.invalidateQueries({ queryKey: ['academic', 'students'] });
+    },
   });
 }

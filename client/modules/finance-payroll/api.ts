@@ -24,7 +24,12 @@ export const financeApi = {
   payTeacher: (teacherId: string, data: any) =>
     request(`/teachers/${teacherId}/pay-salary`, { method: 'POST', body: JSON.stringify(data) }),
   budgetLines: {
-    list: () => request('/budget-lines'),
+    list: (params?: any) => {
+      const q = new URLSearchParams(params || {}).toString();
+      return request<any[]>(`/budget-lines?${q}`);
+    },
     create: (d: any) => request('/budget-lines', { method: 'POST', body: JSON.stringify(d) }),
   },
+  // Payroll processing entry
+  processPayroll: (data: any) => request('/payroll/process', { method: 'POST', body: JSON.stringify(data) }),
 };

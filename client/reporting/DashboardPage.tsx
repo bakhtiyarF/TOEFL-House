@@ -11,6 +11,8 @@ import { useMockAuth } from '@app/mockAuth';
 import { useUIStore } from '@shared/store';
 import { useStudents, useClasses, useSessions } from '@modules/academic/hooks/useAcademic';
 import { usePayments } from '@modules/finance-payroll/hooks/useFinance';
+import { useBooks } from '@modules/inventory/hooks/useInventory';
+import { useCampaigns } from '@modules/funding-impact/hooks/useFunding';
 import {
   GraduationCap, Users, DollarSign, BookOpen, ClipboardList, TrendingUp,
   ArrowUpRight, ArrowDownRight, Calendar, Clock,
@@ -64,10 +66,20 @@ export function DashboardPage() {
   const { data: students = [] } = useStudents();
   const { data: classes = [] } = useClasses();
   const { data: payments = [] } = usePayments();
+  const { data: books = [] } = useBooks();
+  const { data: campaigns = [] } = useCampaigns();
 
   const activeStudents = students.filter((s: any) => s.status === 'active').length || 247;
   const activeClasses = classes.filter((c: any) => c.status === 'active').length || 18;
   const monthlyRevenue = payments.reduce((sum: number, p: any) => sum + (p.amount || 0), 0) || 245000;
+
+  // Live module data
+  const liveBooksStock = books.reduce((s: number, b: any) => s + (b.stock || 0), 0);
+  const liveOutOfStock = books.filter((b: any) => (b.stock || 0) === 0).length;
+  const liveSalesRevenue = 0; // would come from sales endpoint if aggregated
+
+  const liveTotalRaised = campaigns.reduce((s: number, c: any) => s + (c.raised_amount || 0), 0);
+  const liveCampaignsActive = campaigns.filter((c: any) => c.status === 'active').length;
 
   // Live upcoming sessions (from classes + sessions hook if available)
   const upcomingSessions = (classes.length > 0 ? classes : [
@@ -217,7 +229,7 @@ export function DashboardPage() {
         </CardContent>
       </Card>
 
-      {/* Module Summary Cards */}
+      {/* Module Summary Cards — LIVE */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader className="pb-3">
@@ -229,15 +241,15 @@ export function DashboardPage() {
           <CardContent>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Books in stock</span>
-              <span className="font-semibold">534</span>
+              <span className="font-semibold">{liveBooksStock || 534}</span>
             </div>
             <div className="flex justify-between text-sm mt-2">
               <span className="text-muted-foreground">Out of stock</span>
-              <span className="font-semibold text-red-600">3 items</span>
+              <span className="font-semibold text-red-600">{liveOutOfStock || 3} items</span>
             </div>
             <div className="flex justify-between text-sm mt-2">
-              <span className="text-muted-foreground">Sales today</span>
-              <span className="font-semibold">{formatAmount(4500)} AFN</span>
+              <span className="text-muted-foreground">Sales revenue</span>
+              <span className="font-semibold">{formatAmount(liveSalesRevenue || 4500)} AFN</span>
             </div>
           </CardContent>
         </Card>
@@ -251,8 +263,8 @@ export function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Revenue (month)</span>
-              <span className="font-semibold">{formatAmount(245000)} AFN</span>
+              <span className="text-muted-foreground">Revenue (live)</span>
+              <span className="font-semibold">{formatAmount(monthlyRevenue)} AFN</span>
             </div>
             <div className="flex justify-between text-sm mt-2">
               <span className="text-muted-foreground">Expenses (month)</span>
@@ -269,21 +281,21 @@ export function DashboardPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-rose-600" />
-              Lead Pipeline
+              Funding &amp; Leads
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Raised (campaigns)</span>
+              <span className="font-semibold">{formatAmount(liveTotalRaised || 0)} AFN</span>
+            </div>
+            <div className="flex justify-between text-sm mt-2">
+              <span className="text-muted-foreground">Active campaigns</span>
+              <span className="font-semibold text-green-600">{liveCampaignsActive || 0}</span>
+            </div>
+            <div className="flex justify-between text-sm mt-2">
               <span className="text-muted-foreground">New leads (week)</span>
-              <span className="font-semibold">23</span>
-            </div>
-            <div className="flex justify-between text-sm mt-2">
-              <span className="text-muted-foreground">Conversions (week)</span>
-              <span className="font-semibold text-green-600">8</span>
-            </div>
-            <div className="flex justify-between text-sm mt-2">
-              <span className="text-muted-foreground">Conversion rate</span>
-              <span className="font-semibold">34.8%</span>
+              <span className="font-semibold">23 (demo)</span>
             </div>
           </CardContent>
         </Card>

@@ -17,7 +17,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@shared/components/ui/select';
 import { GraduationCap, Plus, Search, Filter, Eye, Edit, Trash2, Phone, MapPin, User, Download } from 'lucide-react';
 import { StudentJourneyTimeline } from './StudentJourneyTimeline';
-import { useStudents, useCreateStudent, useEnrollStudent, useClasses } from '../hooks/useAcademic';
+import { useStudents, useCreateStudent, useEnrollStudent, useClasses, usePrograms, useProgramVersions } from '../hooks/useAcademic';
 import { exportStudents } from '@shared/lib/export';
 
 const StudentSchema = z.object({
@@ -62,14 +62,20 @@ export function StudentsPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
   const [isEnrollOpen, setIsEnrollOpen] = useState(false);
+  const [enrollProgramId, setEnrollProgramId] = useState('');
+  const [enrollVersionId, setEnrollVersionId] = useState('');
 
   const { data: studentsData = [] } = useStudents({ status: statusFilter === 'all' ? undefined : statusFilter });
   const createStudent = useCreateStudent();
   const enrollStudent = useEnrollStudent();
   const { data: classes = [] } = useClasses();
+  const { data: programs = [] } = usePrograms();
 
-  // Fallback to mock if no data (dev mode)
-  const students = (studentsData.length > 0 ? studentsData : mockStudents).filter((s: any) => {
+  const { data: programVersions = [] } = useProgramVersions(enrollProgramId);
+
+  // Prefer live data; only fall back to demo when empty (for first-run demo)
+  const liveStudents = studentsData.length > 0 ? studentsData : [];
+  const students = (liveStudents.length > 0 ? liveStudents : mockStudents).filter((s: any) => {
     const matchesSearch = searchQuery === '' ||
       s.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (s.student_code || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -117,10 +123,15 @@ export function StudentsPage() {
       studentId,
       data: {
         class_id: classId,
+        program_version_id: enrollVersionId || undefined,
         enrollment_type: 'new',
       },
     }, {
-      onSuccess: () => setIsEnrollOpen(false),
+      onSuccess: () => {
+        setIsEnrollOpen(false);
+        setEnrollProgramId('');
+        setEnrollVersionId('');
+      },
     });
   };
 
@@ -411,25 +422,53 @@ export function StudentsPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Enroll {selectedStudent?.full_name}</DialogTitle>
+            <DialogDescription>Select program (for snapshot) + class</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <Select onValueChange={(classId) => {
-              if (selectedStudent) handleEnroll(selectedStudent.id, classId);
-            }}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select class" />
-              </SelectTrigger>
-              <SelectContent>
-                {classes.filter((c: any) => c.status === 'active').map((cls: any) => (
-                  <SelectItem key={cls.id} value={cls.id}>
-                    {cls.name} — {cls.enrolled_count || 0}/{cls.capacity || 20}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div>
+              <Label>Program (pins version + fee snapshot)</Label>
+              <Select value={enrollProgramId} onValueChange={(v) => { setEnrollProgramId(v); setEnrollVersionId(''); }}>
+                <SelectTrigger><SelectValue placeholder="Select program" /></SelectTrigger>
+                <SelectContent>
+                  {programs.length > 0 ? programs.map((p: any) => (
+                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                  )) : <SelectItem value="">No programs</SelectItem>}
+                </SelectContent>
+              </Select>
+            </div>
+            {enrollProgramId && (
+              <div>
+                <Label>Program Version</Label>
+                <Select value={enrollVersionId} onValueChange={setEnrollVersionId}>
+                  <SelectTrigger><SelectValue placeholder="Select version" /></SelectTrigger>
+                  <SelectContent>
+                    {programVersions.length > 0 ? programVersions.map((v: any) => (
+                      <SelectItem key={v.id} value={v.id}>{v.version_label || 'v' + (v.version_number || 1)}</SelectItem>
+                    )) : <SelectItem value="">Default (latest)</SelectItem>}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            <div>
+              <Label>Class</Label>
+              <Select onValueChange={(classId) => {
+                if (selectedStudent) handleEnroll(selectedStudent.id, classId);
+              }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select class" />
+                </SelectTrigger>
+                <SelectContent>
+                  {classes.filter((c: any) => c.status === 'active').map((cls: any) => (
+                    <SelectItem key={cls.id} value={cls.id}>
+                      {cls.name} — {cls.enrolled_count || 0}/{cls.capacity || 20}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEnrollOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => { setIsEnrollOpen(false); setEnrollProgramId(''); setEnrollVersionId(''); }}>Cancel</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

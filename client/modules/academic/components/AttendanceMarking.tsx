@@ -2,11 +2,12 @@
  * Attendance Marking Component — Academic Module
  * Live version: accepts roster + onSave callback
  */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@shared/components/ui/card';
 import { Button } from '@shared/components/ui/button';
 import { Badge } from '@shared/components/ui/badge';
 import { CheckCircle2, XCircle, Thermometer, CalendarOff, Clock, Save, Users } from 'lucide-react';
+import { useRoster } from '../hooks/useAcademic';
 
 type AttendanceStatus = 'present' | 'absent' | 'sick' | 'leave' | 'not_marked';
 
@@ -41,9 +42,26 @@ const defaultRoster: RosterEntry[] = [
   { student_id: 's3', student_name: 'Zahra Noori', student_code: 'STU-2026-0004', attendance_status: 'not_marked' },
 ];
 
-export function AttendanceMarking({ sessionId, className, sessionDate, initialRoster = defaultRoster, onSave }: AttendanceMarkingProps) {
-  const [roster, setRoster] = useState<RosterEntry[]>(initialRoster);
+export function AttendanceMarking({ sessionId, className, sessionDate, initialRoster = [], onSave }: AttendanceMarkingProps) {
+  const { data: liveRoster = [] } = useRoster(sessionId);
+
+  const [roster, setRoster] = useState<RosterEntry[]>(initialRoster.length ? initialRoster : []);
   const [isSaved, setIsSaved] = useState(false);
+
+  // Prefer live roster data when available
+  useEffect(() => {
+    if (liveRoster.length > 0) {
+      const normalized = liveRoster.map((r: any) => ({
+        student_id: r.student_id || r.id,
+        student_name: r.student_name || r.full_name,
+        student_code: r.student_code,
+        attendance_status: (r.attendance_status || 'not_marked') as AttendanceStatus,
+      }));
+      setRoster(normalized);
+    } else if (initialRoster.length > 0) {
+      setRoster(initialRoster);
+    }
+  }, [liveRoster, initialRoster]);
 
   const setStatus = (studentId: string, status: AttendanceStatus) => {
     setRoster(roster.map((r) => r.student_id === studentId ? { ...r, attendance_status: status } : r));

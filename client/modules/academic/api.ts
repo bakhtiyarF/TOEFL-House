@@ -60,4 +60,10 @@ export const academicApi = {
     updateAttendance: (sessionId: string, data: Record<string, string>) =>
       request<void>(`/sessions/${sessionId}/attendance`, { method: 'POST', body: JSON.stringify({ attendance: data }) }),
   },
+
+  // Programs / Catalog (for enrollment copy-on-write, programs list & versions)
+  programs: {
+    list: () => request<any[]>('/programs'),
+    versions: (programId: string) => request<any[]>(`/programs/${programId}/versions`),
+  },
 };

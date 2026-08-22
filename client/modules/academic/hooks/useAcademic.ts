@@ -13,6 +13,8 @@ export const academicKeys = {
   classes: (p?: any) => [...academicKeys.all, 'classes', p] as const,
   class: (id: string) => [...academicKeys.classes(), id] as const,
   sessions: (classId: string) => [...academicKeys.all, 'sessions', classId] as const,
+  programs: () => [...academicKeys.all, 'programs'] as const,
+  programVersions: (programId: string) => [...academicKeys.all, 'programVersions', programId] as const,
 };
 
 export function useStudents(params?: any) {
@@ -96,8 +98,30 @@ export function useUpdateAttendance() {
     mutationFn: ({ sessionId, attendance }: { sessionId: string; attendance: any }) =>
       academicApi.sessions.updateAttendance(sessionId, attendance),
     onSuccess: () => {
-      // Invalidate sessions broadly
       qc.invalidateQueries({ queryKey: ['academic', 'sessions'] });
     },
+  });
+}
+
+export function useRoster(sessionId: string) {
+  return useQuery({
+    queryKey: [...academicKeys.all, 'roster', sessionId],
+    queryFn: () => academicApi.sessions.roster(sessionId),
+    enabled: !!sessionId,
+  });
+}
+
+export function usePrograms() {
+  return useQuery({
+    queryKey: academicKeys.programs(),
+    queryFn: () => academicApi.programs.list(),
+  });
+}
+
+export function useProgramVersions(programId: string) {
+  return useQuery({
+    queryKey: academicKeys.programVersions(programId),
+    queryFn: () => academicApi.programs.versions(programId),
+    enabled: !!programId,
   });
 }

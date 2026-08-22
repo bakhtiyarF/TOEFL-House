@@ -5,6 +5,7 @@ export const financeKeys = {
   payments: (p?: any) => ['finance', 'payments', p] as const,
   studentFinance: (id: string) => ['finance', 'student', id] as const,
   teacherSalary: (id: string) => ['finance', 'teacher', id] as const,
+  budget: () => ['finance', 'budget'] as const,
 };
 
 export function usePayments(params?: any) {
@@ -28,5 +29,24 @@ export function useTeacherSalary(teacherId: string, period?: string) {
     queryKey: financeKeys.teacherSalary(teacherId),
     queryFn: () => financeApi.teacherSalary(teacherId, period),
     enabled: !!teacherId,
+  });
+}
+
+export function useBudgetLines() {
+  return useQuery({
+    queryKey: financeKeys.budget(),
+    queryFn: () => financeApi.budgetLines.list(),
+  });
+}
+
+export function usePayTeacherSalary() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ teacherId, data }: { teacherId: string; data: any }) =>
+      financeApi.payTeacher(teacherId, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['finance'] });
+      qc.invalidateQueries({ queryKey: ['people-hr'] });
+    },
   });
 }

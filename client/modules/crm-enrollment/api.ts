@@ -9,7 +9,7 @@ export const crmApi = {
   visitors: {
     list: (params?: any) => request(`/visitors?${new URLSearchParams(params || {}).toString()}`),
     create: (d: any) => request('/visitors', { method: 'POST', body: JSON.stringify(d) }),
-    convert: (id: string) => request(`/visitors/${id}/convert`, { method: 'POST' }),
+    convert: (id: string, data?: any) => request(`/visitors/${id}/convert`, { method: 'POST', body: JSON.stringify(data || {}) }),
   },
   followups: (visitorId: string) => request(`/visitors/${visitorId}/followups`),
 };
