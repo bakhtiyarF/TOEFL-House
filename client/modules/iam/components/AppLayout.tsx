@@ -10,6 +10,8 @@ import { Button } from '@shared/components/ui/button';
 import { Badge } from '@shared/components/ui/badge';
 import { cn } from '@shared/lib/utils';
 import { useMockAuth } from '@app/mockAuth';
+import { CommandPalette } from '@shared/components/CommandPalette';
+import { NotificationBell } from '@shared/components/NotificationBell';
 import {
   LayoutDashboard,
   Users,
@@ -27,6 +29,7 @@ import {
   UserPlus,
   Moon,
   Sun,
+  Search,
 } from 'lucide-react';
 import { useUIStore } from '@shared/store';
 
@@ -162,7 +165,21 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           >
             <Menu className="h-5 w-5" />
           </Button>
-          <div className="flex-1" />
+
+          {/* Command palette trigger */}
+          <button
+            onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
+            className="hidden md:flex items-center gap-2 rounded-md border border-input bg-muted/50 px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors flex-1 max-w-sm"
+          >
+            <Search className="h-4 w-4" />
+            <span>Search...</span>
+            <kbd className="ms-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium">
+              ⌘K
+            </kbd>
+          </button>
+
+          <div className="flex-1 md:hidden" />
+          <NotificationBell />
           <Button variant="ghost" size="icon" onClick={toggleDarkMode}>
             {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
@@ -172,6 +189,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             </Badge>
           )}
         </header>
+
+        {/* Command Palette */}
+        <CommandPalette />
 
         {/* Page content */}
         <main className="p-4 md:p-6">
