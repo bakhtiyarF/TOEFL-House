@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from '@shared/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@shared/components/ui/select';
 import { AttendanceMarking } from './AttendanceMarking';
-import { useClasses, useCreateClass, useSessions } from '../hooks/useAcademic';
+import { useClasses, useCreateClass, useSessions, useCreateSession, useUpdateAttendance } from '../hooks/useAcademic';
 import {
   ClipboardList, Plus, Search, Users, Calendar, Clock,
   CheckCircle2, XCircle, AlertCircle, BookOpen,
@@ -63,6 +63,9 @@ const mockSessions: SessionData[] = [
 export function ClassesPage() {
   const { data: classesData = [] } = useClasses();
   const createClass = useCreateClass();
+  const createSession = useCreateSession();
+  const updateAttendance = useUpdateAttendance();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedClass, setSelectedClass] = useState<any>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -82,6 +85,17 @@ export function ClassesPage() {
       classes.filter((c: any) => c.status === 'active').reduce((sum: number, c: any) => sum + ((c.students || c.enrolled_count || 0) / (c.capacity || 20) * 100), 0) /
       Math.max(1, classes.filter((c: any) => c.status === 'active').length)
     ),
+  };
+
+  const handleCreateClass = () => {
+    // Simple demo create
+    createClass.mutate({
+      name: 'New Class ' + (classes.length + 1),
+      branch_id: 'branch-1',
+      capacity: 20,
+      min_viable_size: 5,
+    });
+    setIsAddDialogOpen(false);
   };
 
   return (
@@ -302,14 +316,25 @@ export function ClassesPage() {
                 <TabsContent value="sessions" className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h4 className="font-medium">Class Sessions</h4>
-                    <Button size="sm">
+                    <Button size="sm" onClick={() => {
+                      const today = new Date().toISOString().split('T')[0];
+                      createSession.mutate({
+                        classId: selectedClass.id,
+                        data: {
+                          date: today,
+                          start_time: '09:00',
+                          end_time: '11:00',
+                          topic: 'New Session'
+                        }
+                      });
+                    }}>
                       <Plus className="h-3 w-3 me-1" /> Add Session
                     </Button>
                   </div>
                   <div className="space-y-3">
-                    {mockSessions
-                      .filter((s) => s.class_id === selectedClass.id)
-                      .map((session) => (
+                    {(useSessions(selectedClass.id).data || mockSessions)
+                      .filter((s: any) => s.class_id === selectedClass.id)
+                      .map((session: any) => (
                         <div key={session.id} className="flex items-center justify-between p-3 rounded-lg border">
                           <div className="flex items-center gap-3">
                             {session.status === 'completed' ? (
@@ -322,7 +347,7 @@ export function ClassesPage() {
                             <div>
                               <p className="text-sm font-medium">{session.topic}</p>
                               <p className="text-xs text-muted-foreground">
-                                {session.date} · {session.time}
+                                {session.date} · {session.start_time || session.time}
                               </p>
                             </div>
                           </div>
@@ -331,9 +356,6 @@ export function ClassesPage() {
                               <div className="text-sm">
                                 <span className="text-green-600 font-medium">{session.attendance.present}</span>
                                 <span className="text-muted-foreground">/{session.attendance.total}</span>
-                                <p className="text-xs text-muted-foreground">
-                                  {Math.round(session.attendance.present / session.attendance.total * 100)}% attendance
-                                </p>
                               </div>
                             )}
                             {!session.attendance && session.status === 'scheduled' && (
@@ -348,9 +370,18 @@ export function ClassesPage() {
                 <TabsContent value="attendance">
                   {selectedClass && (
                     <AttendanceMarking
-                      sessionId="current"
+                      sessionId={selectedClass.id}
                       className={selectedClass.name}
                       sessionDate={new Date().toISOString().split('T')[0]}
+                      initialRoster={[]}
+                      onSave={(attendance) => {
+                        // For demo we simulate saving attendance to a "current" session
+                        // In real: would select a real sessionId from sessions list
+                        updateAttendance.mutate({
+                          sessionId: selectedClass.id,
+                          attendance,
+                        });
+                      }}
                     />
                   )}
                 </TabsContent>

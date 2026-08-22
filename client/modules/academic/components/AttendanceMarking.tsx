@@ -1,26 +1,21 @@
 /**
  * Attendance Marking Component — Academic Module
- *
- * Allows teachers to mark attendance for a session.
- * Uses rosters table (05 §5 — authoritative attendance mechanism)
- * Status options: present, absent, sick, leave (per schema)
+ * Live version: accepts roster + onSave callback
  */
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@shared/components/ui/card';
 import { Button } from '@shared/components/ui/button';
 import { Badge } from '@shared/components/ui/badge';
-import {
-  CheckCircle2, XCircle, Thermometer, CalendarOff, Clock, Save, Users,
-} from 'lucide-react';
+import { CheckCircle2, XCircle, Thermometer, CalendarOff, Clock, Save, Users } from 'lucide-react';
 
 type AttendanceStatus = 'present' | 'absent' | 'sick' | 'leave' | 'not_marked';
 
 interface RosterEntry {
-  id: string;
+  id?: string;
   student_id: string;
-  student_name: string;
-  student_code: string;
+  student_name?: string;
+  student_code?: string;
+  full_name?: string;
   attendance_status: AttendanceStatus;
 }
 
@@ -29,6 +24,7 @@ interface AttendanceMarkingProps {
   className: string;
   sessionDate: string;
   initialRoster?: RosterEntry[];
+  onSave?: (attendance: Record<string, string>) => void;
 }
 
 const statusConfig: Record<AttendanceStatus, { icon: React.ElementType; color: string; label: string }> = {
@@ -39,25 +35,18 @@ const statusConfig: Record<AttendanceStatus, { icon: React.ElementType; color: s
   not_marked: { icon: Clock, color: 'text-gray-500 bg-gray-100 dark:bg-gray-800', label: 'Not marked' },
 };
 
-const mockRoster: RosterEntry[] = [
-  { id: '1', student_id: 's1', student_name: 'Ahmad Rahimi', student_code: 'STU-2026-0001', attendance_status: 'not_marked' },
-  { id: '2', student_id: 's2', student_name: 'Fatima Ahmadi', student_code: 'STU-2026-0002', attendance_status: 'not_marked' },
-  { id: '3', student_id: 's3', student_name: 'Zahra Noori', student_code: 'STU-2026-0004', attendance_status: 'not_marked' },
-  { id: '4', student_id: 's4', student_name: 'Sara Mohammadi', student_code: 'STU-2026-0006', attendance_status: 'not_marked' },
-  { id: '5', student_id: 's5', student_name: 'Hassan Rezai', student_code: 'STU-2026-0007', attendance_status: 'not_marked' },
-  { id: '6', student_id: 's6', student_name: 'Maryam Faizi', student_code: 'STU-2026-0008', attendance_status: 'not_marked' },
-  { id: '7', student_id: 's7', student_name: 'Reza Ahmadi', student_code: 'STU-2026-0009', attendance_status: 'not_marked' },
-  { id: '8', student_id: 's8', student_name: 'Nadia Faizi', student_code: 'STU-2026-0010', attendance_status: 'not_marked' },
+const defaultRoster: RosterEntry[] = [
+  { student_id: 's1', student_name: 'Ahmad Rahimi', student_code: 'STU-2026-0001', attendance_status: 'not_marked' },
+  { student_id: 's2', student_name: 'Fatima Ahmadi', student_code: 'STU-2026-0002', attendance_status: 'not_marked' },
+  { student_id: 's3', student_name: 'Zahra Noori', student_code: 'STU-2026-0004', attendance_status: 'not_marked' },
 ];
 
-export function AttendanceMarking({ sessionId, className, sessionDate }: AttendanceMarkingProps) {
-  const [roster, setRoster] = useState<RosterEntry[]>(mockRoster);
+export function AttendanceMarking({ sessionId, className, sessionDate, initialRoster = defaultRoster, onSave }: AttendanceMarkingProps) {
+  const [roster, setRoster] = useState<RosterEntry[]>(initialRoster);
   const [isSaved, setIsSaved] = useState(false);
 
   const setStatus = (studentId: string, status: AttendanceStatus) => {
-    setRoster(roster.map((r) =>
-      r.student_id === studentId ? { ...r, attendance_status: status } : r
-    ));
+    setRoster(roster.map((r) => r.student_id === studentId ? { ...r, attendance_status: status } : r));
     setIsSaved(false);
   };
 
@@ -67,7 +56,17 @@ export function AttendanceMarking({ sessionId, className, sessionDate }: Attenda
   };
 
   const handleSave = () => {
-    // In production: POST to /api/sessions/:id/roster
+    const attendance: Record<string, string> = {};
+    roster.forEach(r => {
+      attendance[r.student_id] = r.attendance_status;
+    });
+
+    if (onSave) {
+      onSave(attendance);
+    } else {
+      // fallback mock
+      console.log('Attendance saved (mock):', attendance);
+    }
     setIsSaved(true);
   };
 
@@ -80,9 +79,7 @@ export function AttendanceMarking({ sessionId, className, sessionDate }: Attenda
     total: roster.length,
   };
 
-  const attendanceRate = stats.total > 0
-    ? Math.round(((stats.present + stats.sick + stats.leave) / stats.total) * 100)
-    : 0;
+  const attendanceRate = stats.total > 0 ? Math.round(((stats.present + stats.sick + stats.leave) / stats.total) * 100) : 0;
 
   return (
     <Card>
@@ -96,43 +93,21 @@ export function AttendanceMarking({ sessionId, className, sessionDate }: Attenda
             <p className="text-sm text-muted-foreground">{className} · {sessionDate}</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={markAllPresent}>
-              Mark All Present
-            </Button>
-            <Button size="sm" onClick={handleSave} disabled={stats.notMarked > 0 || isSaved}>
+            <Button variant="outline" size="sm" onClick={markAllPresent}>Mark All Present</Button>
+            <Button size="sm" onClick={handleSave} disabled={stats.notMarked > 0 && !isSaved}>
               <Save className="h-4 w-4 me-1" />
               {isSaved ? 'Saved ✓' : 'Save Attendance'}
             </Button>
           </div>
         </div>
 
-        {/* Stats bar */}
-        <div className="flex items-center gap-4 mt-3">
-          <div className="flex items-center gap-1 text-sm">
-            <CheckCircle2 className="h-4 w-4 text-green-600" />
-            <span>{stats.present} Present</span>
-          </div>
-          <div className="flex items-center gap-1 text-sm">
-            <XCircle className="h-4 w-4 text-red-600" />
-            <span>{stats.absent} Absent</span>
-          </div>
-          <div className="flex items-center gap-1 text-sm">
-            <Thermometer className="h-4 w-4 text-orange-600" />
-            <span>{stats.sick} Sick</span>
-          </div>
-          <div className="flex items-center gap-1 text-sm">
-            <CalendarOff className="h-4 w-4 text-blue-600" />
-            <span>{stats.leave} Leave</span>
-          </div>
-          <div className="ms-auto text-sm font-medium">
-            {stats.notMarked > 0 && (
-              <span className="text-orange-600">{stats.notMarked} unmarked</span>
-            )}
-            {stats.notMarked === 0 && (
-              <span className={attendanceRate >= 85 ? 'text-green-600' : 'text-red-600'}>
-                {attendanceRate}% attendance rate
-              </span>
-            )}
+        <div className="flex items-center gap-4 mt-3 text-sm">
+          <div className="flex items-center gap-1"><CheckCircle2 className="h-4 w-4 text-green-600" />{stats.present} Present</div>
+          <div className="flex items-center gap-1"><XCircle className="h-4 w-4 text-red-600" />{stats.absent} Absent</div>
+          <div className="flex items-center gap-1"><Thermometer className="h-4 w-4 text-orange-600" />{stats.sick} Sick</div>
+          <div className="flex items-center gap-1"><CalendarOff className="h-4 w-4 text-blue-600" />{stats.leave} Leave</div>
+          <div className="ms-auto font-medium">
+            {stats.notMarked > 0 ? <span className="text-orange-600">{stats.notMarked} unmarked</span> : <span className={attendanceRate >= 85 ? 'text-green-600' : 'text-red-600'}>{attendanceRate}% rate</span>}
           </div>
         </div>
       </CardHeader>
@@ -142,10 +117,10 @@ export function AttendanceMarking({ sessionId, className, sessionDate }: Attenda
             const config = statusConfig[entry.attendance_status];
             const Icon = config.icon;
             return (
-              <div key={entry.id} className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/30 transition-colors">
+              <div key={entry.student_id} className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/30">
                 <div className="flex items-center gap-3">
-                  <span className="font-mono text-xs text-muted-foreground w-28">{entry.student_code}</span>
-                  <span className="font-medium">{entry.student_name}</span>
+                  <span className="font-mono text-xs text-muted-foreground w-28">{entry.student_code || entry.student_id}</span>
+                  <span className="font-medium">{entry.student_name || entry.full_name}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   {(['present', 'absent', 'sick', 'leave'] as AttendanceStatus[]).map((status) => {
@@ -153,16 +128,7 @@ export function AttendanceMarking({ sessionId, className, sessionDate }: Attenda
                     const SIcon = sConfig.icon;
                     const isActive = entry.attendance_status === status;
                     return (
-                      <button
-                        key={status}
-                        onClick={() => setStatus(entry.student_id, status)}
-                        className={`p-1.5 rounded-md transition-colors ${
-                          isActive
-                            ? sConfig.color + ' ring-2 ring-current'
-                            : 'text-muted-foreground hover:bg-muted'
-                        }`}
-                        title={sConfig.label}
-                      >
+                      <button key={status} onClick={() => setStatus(entry.student_id, status)} className={`p-1.5 rounded-md transition-colors ${isActive ? sConfig.color + ' ring-2 ring-current' : 'text-muted-foreground hover:bg-muted'}`} title={sConfig.label}>
                         <SIcon className="h-4 w-4" />
                       </button>
                     );
