@@ -27,15 +27,21 @@ class StoreDonationRequest extends FormRequest
     {
         return [
             'donor_id' => ['required', 'uuid', 'exists:donors,id'],
-            'campaign_id' => ['nullable', 'uuid', 'exists:campaigns,id'],
+            'campaign_id' => ['nullable', 'uuid', 'exists:funding_campaigns,id'],
+            'branch_id' => ['required', 'uuid', 'exists:branches,id'],
             'amount' => ['required', 'numeric', 'min:0.01', 'max:99999999.99'],
             'currency' => ['nullable', 'string', 'size:3'],
             'donation_date' => ['required', 'date', 'before_or_equal:today'],
             'payment_method' => ['required', Rule::in(['cash', 'check', 'bank_transfer', 'credit_card', 'online', 'other'])],
+            'reference_number' => ['nullable', 'string', 'max:100'],
+            'receipt_number' => ['nullable', 'string', 'max:100', 'unique:donations,receipt_number'],
             'is_recurring' => ['nullable', 'boolean'],
             'recurrence_frequency' => ['required_if:is_recurring,true', 'nullable', Rule::in(['weekly', 'monthly', 'quarterly', 'yearly'])],
+            'recurrence_end_date' => ['required_if:is_recurring,true', 'nullable', 'date', 'after:donation_date'],
+            'designation' => ['nullable', Rule::in(['general', 'scholarship', 'infrastructure', 'program', 'other'])],
+            'designation_note' => ['nullable', 'string', 'max:500'],
             'notes' => ['nullable', 'string', 'max:2000'],
-            'branch_id' => ['required', 'uuid', 'exists:branches,id'],
+            'send_receipt' => ['nullable', 'boolean'],
         ];
     }
 
@@ -45,38 +51,19 @@ class StoreDonationRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'donor_id.required' => 'Donor is required.',
             'donor_id.exists' => 'Selected donor does not exist.',
             'campaign_id.exists' => 'Selected campaign does not exist.',
-            'amount.required' => 'Donation amount is required.',
+            'branch_id.exists' => 'Selected branch does not exist.',
             'amount.min' => 'Donation amount must be at least 0.01.',
             'amount.max' => 'Donation amount cannot exceed 99,999,999.99.',
             'currency.size' => 'Currency must be a 3-letter code (e.g., USD, EUR).',
-            'donation_date.required' => 'Donation date is required.',
             'donation_date.before_or_equal' => 'Donation date cannot be in the future.',
-            'payment_method.required' => 'Payment method is required.',
             'payment_method.in' => 'Invalid payment method selected.',
+            'receipt_number.unique' => 'A donation with this receipt number already exists.',
             'recurrence_frequency.required_if' => 'Recurrence frequency is required for recurring donations.',
             'recurrence_frequency.in' => 'Invalid recurrence frequency selected.',
-            'branch_id.exists' => 'Selected branch does not exist.',
-        ];
-    }
-
-    /**
-     * Get custom attributes for validator errors.
-     */
-    public function attributes(): array
-    {
-        return [
-            'donor_id' => 'donor',
-            'campaign_id' => 'campaign',
-            'amount' => 'donation amount',
-            'currency' => 'currency',
-            'donation_date' => 'donation date',
-            'payment_method' => 'payment method',
-            'is_recurring' => 'recurring donation',
-            'recurrence_frequency' => 'recurrence frequency',
-            'branch_id' => 'branch',
+            'recurrence_end_date.after' => 'Recurrence end date must be after donation date.',
+            'designation.in' => 'Invalid designation selected.',
         ];
     }
 
@@ -86,51 +73,41 @@ class StoreDonationRequest extends FormRequest
     public function withValidator($validator): void
     {
         $validator->after(function ($validator) {
-            // Check if campaign belongs to the same branch
+            // Check if campaign belongs to the branch
             if ($this->campaign_id && $this->branch_id) {
-                $campaign = \App\Modules\FundingImpact\Models\Campaign::find($this->campaign_id);
+                $campaign = \App\Modules\FundingImpact\Models\FundingCampaign::find($this->campaign_id);
+                
                 if ($campaign && $campaign->branch_id !== $this->branch_id) {
-                    $validator->errors()->add(
-                        'campaign_id',
-                        'Selected campaign does not belong to the selected branch.'
-                    );
+                    $validator->errors()->add('campaign_id', 'Campaign does not belong to the selected branch.');
                 }
             }
 
             // Check if donor has email for receipt
-            if ($this->donor_id) {
+            if ($this->send_receipt && $this->donor_id) {
                 $donor = \App\Modules\FundingImpact\Models\Donor::find($this->donor_id);
+                
                 if ($donor && !$donor->email) {
-                    // This is a warning, not an error
-                    // Could be logged or shown as a flash message
+                    $validator->errors()->add('send_receipt', 'Donor does not have an email address for receipt delivery.');
+                }
+            }
+
+            // Check if campaign is active
+            if ($this->campaign_id) {
+                $campaign = \App\Modules\FundingImpact\Models\FundingCampaign::find($this->campaign_id);
+                
+                if ($campaign && $campaign->status !== 'active') {
+                    $validator->errors()->add('campaign_id', 'Campaign is not active.');
+                }
+
+                // Check if donation would exceed campaign goal
+                if ($campaign && $campaign->goal_amount) {
+                    $totalDonations = $campaign->donations()->sum('amount') + ($this->amount ?? 0);
+                    
+                    if ($totalDonations > $campaign->goal_amount * 1.1) { // Allow 10% over goal
+                        $validator->errors()->add('amount', 'Donation would significantly exceed campaign goal.');
+                    }
                 }
             }
         });
-    }
-
-    /**
-     * Prepare the data for validation.
-     */
-    protected function prepareForValidation(): void
-    {
-        // Set default currency if not provided
-        if (!$this->has('currency')) {
-            $this->merge(['currency' => 'USD']);
-        }
-
-        // Set default status
-        if (!$this->has('status')) {
-            $this->merge(['status' => 'completed']);
-        }
-
-        // Set default is_recurring
-        if (!$this->has('is_recurring')) {
-            $this->merge(['is_recurring' => false]);
-        }
-
-        // Trim string fields
-        $this->merge(array_map(function ($value) {
-            return is_string($value) ? trim($value) : $value;
-        }, $this->all()));
     }
 }
