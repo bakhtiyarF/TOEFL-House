@@ -15,7 +15,7 @@ export function GlobalSearch() {
   const { data, isLoading } = useGlobalSearch(query);
   const navigate = useNavigate();
 
-  const results = data?.results || [];
+  const results = (data as any)?.results || [];
 
   const handleSelect = (result: any) => {
     setOpen(false);
