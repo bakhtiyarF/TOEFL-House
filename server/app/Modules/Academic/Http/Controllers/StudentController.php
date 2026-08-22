@@ -4,6 +4,7 @@ namespace App\Modules\Academic\Http\Controllers;
 
 use App\Modules\Academic\Models\Student;
 use App\Modules\Academic\Models\StudentJourneyEvent;
+use App\Modules\Academic\Services\EnrollmentService;
 use App\Modules\Iam\Services\BranchScopeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,8 +14,17 @@ use Illuminate\Support\Str;
 class StudentController extends Controller
 {
     public function __construct(
-        private BranchScopeService $branchScopeService
+        private BranchScopeService $branchScopeService,
+        private EnrollmentService $enrollmentService
     ) {}
+
+    // Use Catalog for program info if needed
+    public function programs(Request $request): JsonResponse
+    {
+        // Simple fallback if needed
+        $programs = DB::table('programs')->where('is_active', true)->get();
+        return response()->json($programs);
+    }
 
     public function index(Request $request): JsonResponse
     {
@@ -82,18 +92,16 @@ class StudentController extends Controller
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
-        // Generate unique student code
         $validated['student_code'] = $this->generateStudentCode();
         $validated['registration_date'] = now()->toDateString();
         $validated['status'] = 'active';
 
         $student = Student::create($validated);
 
-        // Record journey event (02 §9.1)
         StudentJourneyEvent::create([
             'id' => Str::uuid()->toString(),
             'student_id' => $student->id,
-            'event_type' => StudentJourneyEvent::STUDENT_REGISTERED,
+            'event_type' => 'student_registered',
             'occurred_at' => now(),
             'actor_user_id' => $request->user()->id,
             'actor_name' => $request->user()->full_name,
@@ -167,5 +175,33 @@ class StudentController extends Controller
             : 1;
 
         return sprintf('STU-%s-%04d', $year, $next);
+    }
+
+    /**
+     * Enroll via service (new endpoint)
+     */
+    public function enroll(Request $request, string $id): JsonResponse
+    {
+        $student = Student::findOrFail($id);
+
+        $validated = $request->validate([
+            'program_id' => 'required|uuid',
+            'class_id' => 'nullable|uuid',
+            'program_version_id' => 'nullable|uuid',
+            'enrollment_type' => 'in:new,repeat,partial_repeat,resume,jump',
+            'semester_name' => 'nullable|string',
+            'skills_focus' => 'nullable|array',
+        ]);
+
+        try {
+            $enrollment = $this->enrollmentService->enrollStudent(
+                $id,
+                $validated,
+                $request->user()->id
+            );
+            return response()->json($enrollment, 201);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
     }
 }

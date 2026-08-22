@@ -28,15 +28,29 @@ services:
     volumes:
       - redis_data:/data
 
-  # Mailpit (email testing — replaces v2's nonexistent mail setup)
+  # Mailpit (email testing)
   mailpit:
     image: axllent/mailpit
     container_name: toefl-mailpit
     restart: unless-stopped
     ports:
-      - "8025:8025"   # Web UI
-      - "1025:1025"   # SMTP
+      - "8025:8025"
+      - "1025:1025"
+
+  # Elasticsearch for advanced search (multi-tenant)
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
+    container_name: toefl-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
 
 volumes:
   mysql_data:
   redis_data:
+  es_data:
