@@ -47,6 +47,14 @@ export function useCreateBudgetLine() {
   });
 }
 
+export function useUpdateBudgetLine() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => financeApi.budgetLines.update(id, data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['finance', 'budget'] }),
+  });
+}
+
 export function usePayTeacherSalary() {
   const qc = useQueryClient();
   return useMutation({

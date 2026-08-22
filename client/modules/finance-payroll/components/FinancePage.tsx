@@ -21,7 +21,7 @@ import {
   DollarSign, Plus, TrendingUp, TrendingDown, Receipt, Search, Download,
 } from 'lucide-react';
 import { formatAmount } from '@shared/lib/utils';
-import { usePayments, useCreatePayment, useTeacherSalary, useBudgetLines, usePayTeacherSalary, useCreateBudgetLine, useProcessPayroll, useBudgetOverview } from '../hooks/useFinance';
+import { usePayments, useCreatePayment, useTeacherSalary, useBudgetLines, usePayTeacherSalary, useCreateBudgetLine, useUpdateBudgetLine, useProcessPayroll, useBudgetOverview } from '../hooks/useFinance';
 import { useStudents } from '@modules/academic/hooks/useAcademic';
 import { useTeachers } from '@modules/people-hr/hooks/usePeopleHr';
 
@@ -41,7 +41,33 @@ export function FinancePage() {
   const { data: budgetOverview } = useBudgetOverview();
   const createPayment = useCreatePayment();
   const createBudgetLine = useCreateBudgetLine();
+  const updateBudgetLine = useUpdateBudgetLine();
   const processPayroll = useProcessPayroll();
+  const [editingBudget, setEditingBudget] = useState<any>(null);
+  const [isEditBudgetOpen, setIsEditBudgetOpen] = useState(false);
+
+  const budgetEditForm = useForm<any>({
+    defaultValues: { allocated_amount: '' },
+  });
+
+  const openEditBudget = (line: any) => {
+    setEditingBudget(line);
+    budgetEditForm.reset({ allocated_amount: String(line.allocated_amount || line.allocated || 0) });
+    setIsEditBudgetOpen(true);
+  };
+
+  const onUpdateBudget = (data: any) => {
+    if (!editingBudget) return;
+    updateBudgetLine.mutate({
+      id: editingBudget.id,
+      data: { allocated_amount: parseFloat(data.allocated_amount) },
+    }, {
+      onSuccess: () => {
+        setIsEditBudgetOpen(false);
+        setEditingBudget(null);
+      },
+    });
+  };
 
   const { data: students = [] } = useStudents({ status: 'active' });
   const { data: teachers = [] } = useTeachers();
@@ -256,6 +282,28 @@ export function FinancePage() {
                 <Button type="button" variant="outline" onClick={() => setIsBudgetDialogOpen(false)}>Cancel</Button>
                 <Button type="submit" disabled={createBudgetLine.isPending}>
                   {createBudgetLine.isPending ? 'Creating...' : 'Create Budget Line'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Budget Line Dialog */}
+        <Dialog open={isEditBudgetOpen} onOpenChange={setIsEditBudgetOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Budget Line</DialogTitle>
+              <DialogDescription>Update allocated amount for {editingBudget?.name}</DialogDescription>
+            </DialogHeader>
+            <form onSubmit={budgetEditForm.handleSubmit(onUpdateBudget)} className="space-y-4">
+              <div className="space-y-2">
+                <Label>New Allocated Amount (AFN)</Label>
+                <Input type="number" step="0.01" {...budgetEditForm.register('allocated_amount')} />
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => { setIsEditBudgetOpen(false); setEditingBudget(null); }}>Cancel</Button>
+                <Button type="submit" disabled={updateBudgetLine.isPending}>
+                  {updateBudgetLine.isPending ? 'Saving...' : 'Save Changes'}
                 </Button>
               </DialogFooter>
             </form>
@@ -505,6 +553,11 @@ export function FinancePage() {
                         <div className="flex justify-between text-xs text-muted-foreground">
                           <span>{percent}% spent • Remaining: {formatAmount(allocated - spent)} AFN</span>
                           {line.utilization_percent !== undefined && <span>{line.utilization_percent}%</span>}
+                        </div>
+                        <div className="flex gap-2 pt-1">
+                          <Button size="sm" variant="outline" onClick={() => openEditBudget(line)}>
+                            Edit
+                          </Button>
                         </div>
                       </div>
                     );

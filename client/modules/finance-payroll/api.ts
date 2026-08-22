@@ -29,6 +29,7 @@ export const financeApi = {
       return request<any[]>(`/budget-lines?${q}`);
     },
     create: (d: any) => request('/budget-lines', { method: 'POST', body: JSON.stringify(d) }),
+    update: (id: string, d: any) => request(`/budget-lines/${id}`, { method: 'PATCH', body: JSON.stringify(d) }),
   },
   budgetOverview: () => request<any>('/budget/overview'),
   // Payroll processing entry
