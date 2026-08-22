@@ -2,25 +2,25 @@
 
 namespace App\Listeners;
 
-use App\Events\TeacherCreated;
+use App\Events\TeacherUpdated;
 use App\Modules\Iam\Models\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Send Teacher Created Notification Listener
+ * Send Teacher Updated Notification Listener
  *
- * Sends notifications when a new teacher is created.
+ * Sends notifications when a teacher is updated.
  */
-class SendTeacherCreatedNotification implements ShouldQueue
+class SendTeacherUpdatedNotification implements ShouldQueue
 {
     use InteractsWithQueue;
 
     /**
      * Handle the event.
      */
-    public function handle(TeacherCreated $event): void
+    public function handle(TeacherUpdated $event): void
     {
         $teacher = $event->teacher;
 
@@ -35,22 +35,21 @@ class SendTeacherCreatedNotification implements ShouldQueue
             foreach ($admins as $admin) {
                 Notification::create([
                     'user_id' => $admin->id,
-                    'type' => 'success',
-                    'title' => 'New Teacher Added',
-                    'message' => "A new teacher '{$teacher->full_name}' has been added to your branch.",
+                    'type' => 'info',
+                    'title' => 'Teacher Updated',
+                    'message' => "Teacher '{$teacher->full_name}' has been updated.",
                     'data' => [
                         'teacher_id' => $teacher->id,
                         'teacher_name' => $teacher->full_name,
-                        'branch_name' => $teacher->branch->name,
                     ],
                     'action_url' => "/teachers/{$teacher->id}",
                     'read' => false,
                 ]);
             }
 
-            Log::info("Teacher created notifications sent for teacher {$teacher->id}");
+            Log::info("Teacher updated notifications sent for teacher {$teacher->id}");
         } catch (\Exception $e) {
-            Log::error("Failed to send teacher created notifications: " . $e->getMessage());
+            Log::error("Failed to send teacher updated notifications: " . $e->getMessage());
         }
     }
 }
