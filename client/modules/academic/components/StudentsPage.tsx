@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@shared/components/ui/select';
 import { GraduationCap, Plus, Search, Filter, Eye, Edit, Trash2, Phone, MapPin, User, Download } from 'lucide-react';
 import { StudentJourneyTimeline } from './StudentJourneyTimeline';
+import { useStudents, useCreateStudent } from '../hooks/useAcademic';
 import { exportStudents } from '@shared/lib/export';
 
 const StudentSchema = z.object({
@@ -37,8 +38,6 @@ const StudentSchema = z.object({
 
 type StudentFormValues = z.infer<typeof StudentSchema>;
 
-// Mock data
-const mockStudents = [
   { id: '1', student_code: 'STU-2026-0001', full_name: 'Ahmad Rahimi', gender: 'male', phone: '+93 700 123 456', status: 'active', class_name: 'General English L3', father_name: 'Mohammad Rahim', registration_date: '2026-01-15', discount_percent: 0, branch_id: 'branch-1' },
   { id: '2', student_code: 'STU-2026-0002', full_name: 'Fatima Ahmadi', gender: 'female', phone: '+93 700 234 567', status: 'active', class_name: 'TOEFL Prep L2', father_name: 'Ali Ahmadi', registration_date: '2026-01-20', discount_percent: 10, branch_id: 'branch-1' },
   { id: '3', student_code: 'STU-2026-0003', full_name: 'Mohammad Karimi', gender: 'male', phone: '+93 700 345 678', status: 'graduated', class_name: 'IELTS Advanced', father_name: 'Hassan Karim', registration_date: '2025-09-01', discount_percent: 0, branch_id: 'branch-1' },

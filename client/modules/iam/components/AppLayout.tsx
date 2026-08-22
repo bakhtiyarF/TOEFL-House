@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import { useUIStore } from '@shared/store';
 import { useLocaleStore } from '@shared/store/locale';
+import { GlobalSearch } from '@shared/components/GlobalSearch';
 
 interface NavItem {
   label: string;
@@ -168,17 +169,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <Menu className="h-5 w-5" />
           </Button>
 
-          {/* Command palette trigger */}
-          <button
-            onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
-            className="hidden md:flex items-center gap-2 rounded-md border border-input bg-muted/50 px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors flex-1 max-w-sm"
-          >
-            <Search className="h-4 w-4" />
-            <span>Search...</span>
-            <kbd className="ms-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium">
-              ⌘K
-            </kbd>
-          </button>
+          {/* Command palette / Global Search trigger */}
+          <div className="hidden md:block flex-1 max-w-sm">
+            <GlobalSearch />
+          </div>
 
           <div className="flex-1 md:hidden" />
           <NotificationBell />

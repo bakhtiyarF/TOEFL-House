@@ -2,44 +2,35 @@
 
 namespace App\Modules\PeopleHr\Http\Controllers;
 
+use App\Modules\PeopleHr\Models\Teacher;
+use App\Modules\PeopleHr\Services\TeacherService;
 use App\Modules\Iam\Services\BranchScopeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\DB;
 
 class TeacherController extends Controller
 {
     public function __construct(
+        private TeacherService $teacherService,
         private BranchScopeService $branchScopeService
     ) {}
 
     public function index(Request $request): JsonResponse
     {
-        $scope = $this->branchScopeService->resolve($request->user(), $request->query('branch_id', 'all'));
+        $teachers = $this->teacherService->listTeachers(
+            $request->query('branch_id'),
+            $request->only(['status', 'search'])
+        );
 
-        $query = DB::table('teachers')
-            ->when($request->query('search'), function ($q, $s) {
-                $q->where('full_name', 'like', "%{$s}%");
-            })
-            ->when($request->query('status'), fn($q, $s) => $q->where('status', $s))
-            ->orderBy('full_name');
-
-        if (!$scope['isAll']) {
-            $query->where('branch_id', $scope['branchId']);
-        }
-
-        return response()->json($query->get());
+        return response()->json($teachers);
     }
 
-    public function show(Request $request, string $id): JsonResponse
+    public function show(string $id): JsonResponse
     {
-        $teacher = DB::table('teachers')->where('id', $id)->first();
-        if (!$teacher) {
-            return response()->json(['message' => 'Not found'], 404);
-        }
+        $teacher = Teacher::with(['branch', 'activeClasses', 'evaluations'])->findOrFail($id);
 
-        if (!$this->branchScopeService->canAccessBranch($request->user(), $teacher->branch_id)) {
+        if (!$this->branchScopeService->canAccessBranch(request()->user(), $teacher->branch_id)) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
@@ -50,43 +41,24 @@ class TeacherController extends Controller
     {
         $validated = $request->validate([
             'full_name' => 'required|string|max:255',
-            'phone' => 'nullable|string|max:50',
-            'email' => 'nullable|email|max:255',
-            'base_salary' => 'nullable|numeric|min:0',
-            'salary_type' => 'required|in:fixed,per_skill,per_session,hybrid,per_level',
-            'status' => 'in:active,inactive,on_leave',
-            'branch_id' => 'required|uuid|exists:branches,id',
+            'phone' => 'nullable|string',
+            'email' => 'nullable|email',
+            'base_salary' => 'numeric|min:0',
+            'salary_type' => 'in:fixed,per_skill,per_session,hybrid,per_level',
+            'specialization' => 'nullable|string',
+            'qualification' => 'nullable|string',
+            'contract_type' => 'nullable|string',
             'joined_date' => 'required|date',
-            'specialization' => 'nullable|string|max:255',
-            'qualification' => 'nullable|string|max:255',
-            'contract_type' => 'nullable|in:monthly,hourly,per_session',
-            'user_id' => 'nullable|uuid|exists:users,id',
+            'branch_id' => 'required|uuid|exists:branches,id',
         ]);
 
-        if (!$this->branchScopeService->canAccessBranch($request->user(), $validated['branch_id'])) {
-            return response()->json(['message' => 'Forbidden'], 403);
-        }
-
-        $id = \Illuminate\Support\Str::uuid()->toString();
-        DB::table('teachers')->insert([
-            'id' => $id,
-            ...$validated,
-            'base_salary' => $validated['base_salary'] ?? 0,
-            'performance_score' => 0,
-            'status' => $validated['status'] ?? 'active',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        return response()->json(DB::table('teachers')->where('id', $id)->first(), 201);
+        $teacher = $this->teacherService->createTeacher($validated);
+        return response()->json($teacher, 201);
     }
 
     public function update(Request $request, string $id): JsonResponse
     {
-        $teacher = DB::table('teachers')->where('id', $id)->first();
-        if (!$teacher) {
-            return response()->json(['message' => 'Not found'], 404);
-        }
+        $teacher = Teacher::findOrFail($id);
 
         if (!$this->branchScopeService->canAccessBranch($request->user(), $teacher->branch_id)) {
             return response()->json(['message' => 'Forbidden'], 403);
@@ -94,56 +66,37 @@ class TeacherController extends Controller
 
         $validated = $request->validate([
             'full_name' => 'string|max:255',
-            'phone' => 'nullable|string|max:50',
-            'email' => 'nullable|email|max:255',
-            'base_salary' => 'nullable|numeric|min:0',
+            'base_salary' => 'numeric|min:0',
             'salary_type' => 'in:fixed,per_skill,per_session,hybrid,per_level',
-            'status' => 'in:active,inactive,on_leave',
-            'specialization' => 'nullable|string|max:255',
+            'status' => 'in:active,on_leave,inactive',
+            'performance_score' => 'numeric|min:0|max:5',
         ]);
 
-        DB::table('teachers')->where('id', $id)->update([
-            ...$validated,
-            'updated_at' => now(),
-        ]);
-
-        return response()->json(DB::table('teachers')->where('id', $id)->first());
+        $teacher = $this->teacherService->updateTeacher($id, $validated);
+        return response()->json($teacher);
     }
 
-    public function destroy(Request $request, string $id): JsonResponse
+    public function destroy(string $id): JsonResponse
     {
-        $teacher = DB::table('teachers')->where('id', $id)->first();
-        if (!$teacher) {
-            return response()->json(['message' => 'Not found'], 404);
-        }
+        $teacher = Teacher::findOrFail($id);
 
-        if (!$this->branchScopeService->canAccessBranch($request->user(), $teacher->branch_id)) {
+        if (!$this->branchScopeService->canAccessBranch(request()->user(), $teacher->branch_id)) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
-        DB::table('teachers')->where('id', $id)->delete();
+        $teacher->delete();
         return response()->json(null, 204);
     }
 
-    /**
-     * Branch transfer (06 §6)
-     */
     public function transfer(Request $request, string $id): JsonResponse
     {
-        $teacher = DB::table('teachers')->where('id', $id)->first();
-        if (!$teacher) {
-            return response()->json(['message' => 'Not found'], 404);
-        }
-
         $validated = $request->validate([
-            'branch_id' => 'required|uuid|exists:branches,id',
+            'new_branch_id' => 'required|uuid|exists:branches,id',
+            'reason' => 'required|string|max:500',
         ]);
 
-        DB::table('teachers')->where('id', $id)->update([
-            'branch_id' => $validated['branch_id'],
-            'updated_at' => now(),
-        ]);
+        $success = $this->teacherService->transferTeacher($id, $validated['new_branch_id'], $validated['reason']);
 
-        return response()->json(DB::table('teachers')->where('id', $id)->first());
+        return response()->json(['success' => $success]);
     }
 }

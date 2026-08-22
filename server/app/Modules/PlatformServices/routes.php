@@ -33,3 +33,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/batch', [SettingsController::class, 'batchUpdate']);
     });
 });
+
+use App\Modules\PlatformServices\Http\Controllers\SearchController;
+use Illuminate\Support\Facades\Route;
+
+Route::middleware('auth:sanctum')->prefix('search')->group(function () {
+    Route::get('/', [SearchController::class, 'globalSearch']);
+});
