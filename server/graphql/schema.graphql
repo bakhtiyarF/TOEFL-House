@@ -1,0 +1,488 @@
+"A datetime string with format `Y-m-d H:i:s`, e.g. `2018-05-23 13:43:32`."
+scalar DateTime @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\DateTime")
+
+"Indicates what fields are available at the top level of a query operation."
+type Query {
+    "Find a single user by an identifying attribute."
+    user(
+      "Search by primary key."
+      id: ID @eq @rules(apply: ["prohibits:email", "required_without:email"])
+
+      "Search by email address."
+      email: String @eq @rules(apply: ["prohibits:id", "required_without:id", "email"])
+    ): User @find
+
+    "List multiple users."
+    users(
+      "Filters by name. Accepts SQL LIKE wildcards `%` and `_`."
+      name: String @where(operator: "like")
+    ): [User!]! @all
+
+    "Find a single student by an identifying attribute."
+    student(
+      "Search by primary key."
+      id: ID @eq @rules(apply: ["prohibits:student_code", "required_without:student_code"])
+
+      "Search by student code."
+      student_code: String @eq @rules(apply: ["prohibits:id", "required_without:id"])
+    ): Student @find
+
+    "List multiple students."
+    students(
+      "Filters by status."
+      status: String @eq
+      "Filters by branch."
+      branch_id: ID @eq
+    ): [Student!]! @all
+
+    "Find a single teacher by an identifying attribute."
+    teacher(
+      "Search by primary key."
+      id: ID @eq
+    ): Teacher @find
+
+    "List multiple teachers."
+    teachers(
+      "Filters by status."
+      status: String @eq
+      "Filters by branch."
+      branch_id: ID @eq
+    ): [Teacher!]! @all
+
+    "Find a single class by an identifying attribute."
+    class(
+      "Search by primary key."
+      id: ID @eq
+    ): AcademicClass @find
+
+    "List multiple classes."
+    classes(
+      "Filters by status."
+      status: String @eq
+      "Filters by branch."
+      branch_id: ID @eq
+    ): [AcademicClass!]! @all
+
+    "Find a single invoice by an identifying attribute."
+    invoice(
+      "Search by primary key."
+      id: ID @eq
+    ): Invoice @find
+
+    "List multiple invoices."
+    invoices(
+      "Filters by status."
+      status: String @eq
+      "Filters by student."
+      student_id: ID @eq
+    ): [Invoice!]! @all
+
+    "Find a single payment by an identifying attribute."
+    payment(
+      "Search by primary key."
+      id: ID @eq
+    ): Payment @find
+
+    "List multiple payments."
+    payments(
+      "Filters by status."
+      status: String @eq
+      "Filters by student."
+      student_id: ID @eq
+    ): [Payment!]! @all
+
+    "Get analytics dashboard overview."
+    dashboardOverview(branch_id: ID): DashboardOverview @field(resolver: "App\\GraphQL\\Resolvers\\AnalyticsResolver@dashboardOverview")
+
+    "Get revenue analytics."
+    revenueAnalytics(branch_id: ID, months: Int): RevenueAnalytics @field(resolver: "App\\GraphQL\\Resolvers\\AnalyticsResolver@revenueAnalytics")
+
+    "Get enrollment analytics."
+    enrollmentAnalytics(branch_id: ID, months: Int): EnrollmentAnalytics @field(resolver: "App\\GraphQL\\Resolvers\\AnalyticsResolver@enrollmentAnalytics")
+}
+
+"Indicates what fields are available at the top level of a mutation operation."
+type Mutation {
+    "Create a new user."
+    createUser(
+      "User input data."
+      input: CreateUserInput! @spread
+    ): User! @create
+
+    "Update an existing user."
+    updateUser(
+      "User input data."
+      id: ID! @eq
+      "User input data."
+      input: UpdateUserInput! @spread
+    ): User! @update
+
+    "Delete an existing user."
+    deleteUser(
+      "User ID."
+      id: ID! @eq
+    ): User! @delete
+
+    "Create a new student."
+    createStudent(
+      "Student input data."
+      input: CreateStudentInput! @spread
+    ): Student! @create
+
+    "Update an existing student."
+    updateStudent(
+      "Student ID."
+      id: ID! @eq
+      "Student input data."
+      input: UpdateStudentInput! @spread
+    ): Student! @update
+
+    "Delete an existing student."
+    deleteStudent(
+      "Student ID."
+      id: ID! @eq
+    ): Student! @delete
+
+    "Create a new teacher."
+    createTeacher(
+      "Teacher input data."
+      input: CreateTeacherInput! @spread
+    ): Teacher! @create
+
+    "Update an existing teacher."
+    updateTeacher(
+      "Teacher ID."
+      id: ID! @eq
+      "Teacher input data."
+      input: UpdateTeacherInput! @spread
+    ): Teacher! @update
+
+    "Delete an existing teacher."
+    deleteTeacher(
+      "Teacher ID."
+      id: ID! @eq
+    ): Teacher! @delete
+
+    "Create a new class."
+    createClass(
+      "Class input data."
+      input: CreateClassInput! @spread
+    ): AcademicClass! @create
+
+    "Update an existing class."
+    updateClass(
+      "Class ID."
+      id: ID! @eq
+      "Class input data."
+      input: UpdateClassInput! @spread
+    ): AcademicClass! @update
+
+    "Delete an existing class."
+    deleteClass(
+      "Class ID."
+      id: ID! @eq
+    ): AcademicClass! @delete
+
+    "Create a new invoice."
+    createInvoice(
+      "Invoice input data."
+      input: CreateInvoiceInput! @spread
+    ): Invoice! @create
+
+    "Update an existing invoice."
+    updateInvoice(
+      "Invoice ID."
+      id: ID! @eq
+      "Invoice input data."
+      input: UpdateInvoiceInput! @spread
+    ): Invoice! @update
+
+    "Delete an existing invoice."
+    deleteInvoice(
+      "Invoice ID."
+      id: ID! @eq
+    ): Invoice! @delete
+
+    "Create a new payment."
+    createPayment(
+      "Payment input data."
+      input: CreatePaymentInput! @spread
+    ): Payment! @create
+
+    "Update an existing payment."
+    updatePayment(
+      "Payment ID."
+      id: ID! @eq
+      "Payment input data."
+      input: UpdatePaymentInput! @spread
+    ): Payment! @update
+
+    "Delete an existing payment."
+    deletePayment(
+      "Payment ID."
+      id: ID! @eq
+    ): Payment! @delete
+}
+
+type User {
+    id: ID!
+    name: String!
+    email: String!
+    email_verified_at: DateTime
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type Student {
+    id: ID!
+    student_code: String!
+    full_name: String!
+    email: String
+    phone: String
+    date_of_birth: DateTime
+    gender: String
+    status: String!
+    enrollment_date: DateTime!
+    branch_id: ID!
+    branch: Branch @belongsTo
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type Teacher {
+    id: ID!
+    full_name: String!
+    email: String!
+    phone: String
+    specialization: String
+    qualification: String
+    experience_years: Int
+    status: String!
+    hire_date: DateTime!
+    branch_id: ID!
+    branch: Branch @belongsTo
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type AcademicClass {
+    id: ID!
+    name: String!
+    code: String!
+    description: String
+    capacity: Int!
+    status: String!
+    start_date: DateTime!
+    end_date: DateTime!
+    teacher_id: ID!
+    teacher: Teacher @belongsTo
+    branch_id: ID!
+    branch: Branch @belongsTo
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type Invoice {
+    id: ID!
+    invoice_number: String!
+    student_id: ID!
+    student: Student @belongsTo
+    total_amount: Float!
+    status: String!
+    due_date: DateTime!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type Payment {
+    id: ID!
+    invoice_id: ID!
+    invoice: Invoice @belongsTo
+    amount: Float!
+    payment_method: String!
+    status: String!
+    payment_date: DateTime!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type Branch {
+    id: ID!
+    name: String!
+    code: String!
+    address: String
+    phone: String
+    email: String
+    status: String!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type DashboardOverview {
+    students: StudentStats!
+    teachers: TeacherStats!
+    revenue: RevenueStats!
+    enrollments: EnrollmentStats!
+}
+
+type StudentStats {
+    total: Int!
+    active: Int!
+    new_this_month: Int!
+}
+
+type TeacherStats {
+    total: Int!
+    active: Int!
+}
+
+type RevenueStats {
+    total: Float!
+    this_month: Float!
+}
+
+type EnrollmentStats {
+    active: Int!
+}
+
+type RevenueAnalytics {
+    by_month: [MonthlyRevenue!]!
+    by_category: [CategoryRevenue!]!
+    average_payment: Float!
+    total_payments: Int!
+    total_revenue: Float!
+}
+
+type MonthlyRevenue {
+    month: String!
+    total: Float!
+}
+
+type CategoryRevenue {
+    category: String!
+    total: Float!
+}
+
+type EnrollmentAnalytics {
+    by_month: [MonthlyEnrollment!]!
+    by_status: [StatusEnrollment!]!
+    retention_rate: Float!
+    total_enrollments: Int!
+}
+
+type MonthlyEnrollment {
+    month: String!
+    count: Int!
+}
+
+type StatusEnrollment {
+    status: String!
+    count: Int!
+}
+
+input CreateUserInput {
+    name: String!
+    email: String!
+    password: String!
+}
+
+input UpdateUserInput {
+    name: String
+    email: String
+    password: String
+}
+
+input CreateStudentInput {
+    student_code: String!
+    full_name: String!
+    email: String
+    phone: String
+    date_of_birth: DateTime
+    gender: String
+    status: String
+    enrollment_date: DateTime!
+    branch_id: ID!
+}
+
+input UpdateStudentInput {
+    full_name: String
+    email: String
+    phone: String
+    date_of_birth: DateTime
+    gender: String
+    status: String
+}
+
+input CreateTeacherInput {
+    full_name: String!
+    email: String!
+    phone: String
+    specialization: String
+    qualification: String
+    experience_years: Int
+    status: String
+    hire_date: DateTime!
+    branch_id: ID!
+}
+
+input UpdateTeacherInput {
+    full_name: String
+    email: String
+    phone: String
+    specialization: String
+    qualification: String
+    experience_years: Int
+    status: String
+}
+
+input CreateClassInput {
+    name: String!
+    code: String!
+    description: String
+    capacity: Int!
+    status: String
+    start_date: DateTime!
+    end_date: DateTime!
+    teacher_id: ID!
+    branch_id: ID!
+}
+
+input UpdateClassInput {
+    name: String
+    code: String
+    description: String
+    capacity: Int
+    status: String
+    start_date: DateTime
+    end_date: DateTime
+    teacher_id: ID
+}
+
+input CreateInvoiceInput {
+    invoice_number: String!
+    student_id: ID!
+    total_amount: Float!
+    status: String
+    due_date: DateTime!
+}
+
+input UpdateInvoiceInput {
+    total_amount: Float
+    status: String
+    due_date: DateTime
+}
+
+input CreatePaymentInput {
+    invoice_id: ID!
+    amount: Float!
+    payment_method: String!
+    status: String
+    payment_date: DateTime!
+}
+
+input UpdatePaymentInput {
+    amount: Float
+    payment_method: String
+    status: String
+    payment_date: DateTime
+}
