@@ -17,7 +17,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@shared/components/ui/select';
 import { GraduationCap, Plus, Search, Filter, Eye, Edit, Trash2, Phone, MapPin, User, Download } from 'lucide-react';
 import { StudentJourneyTimeline } from './StudentJourneyTimeline';
-import { useStudents, useCreateStudent } from '../hooks/useAcademic';
+import { useStudents, useCreateStudent, useEnrollStudent, useClasses } from '../hooks/useAcademic';
 import { exportStudents } from '@shared/lib/export';
 
 const StudentSchema = z.object({
@@ -61,9 +61,12 @@ export function StudentsPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
+  const [isEnrollOpen, setIsEnrollOpen] = useState(false);
 
   const { data: studentsData = [] } = useStudents({ status: statusFilter === 'all' ? undefined : statusFilter });
   const createStudent = useCreateStudent();
+  const enrollStudent = useEnrollStudent();
+  const { data: classes = [] } = useClasses();
 
   // Fallback to mock if no data (dev mode)
   const students = (studentsData.length > 0 ? studentsData : mockStudents).filter((s: any) => {
@@ -106,9 +109,19 @@ export function StudentsPage() {
   };
 
   const handleDelete = (id: string) => {
-    // In prod call delete mutation
-    // For now optimistic remove from local mock
-    // setStudents... handled by invalidation in real use
+    // TODO: real delete mutation
+  };
+
+  const handleEnroll = (studentId: string, classId: string) => {
+    enrollStudent.mutate({
+      studentId,
+      data: {
+        class_id: classId,
+        enrollment_type: 'new',
+      },
+    }, {
+      onSuccess: () => setIsEnrollOpen(false),
+    });
   };
 
   const stats = {
@@ -317,8 +330,8 @@ export function StudentsPage() {
                         <Button variant="ghost" size="icon" onClick={() => setSelectedStudent(student)}>
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon">
-                          <Edit className="h-4 w-4" />
+                        <Button variant="ghost" size="icon" onClick={() => { setSelectedStudent(student); setIsEnrollOpen(true); }}>
+                          Enroll
                         </Button>
                         <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete(student.id)}>
                           <Trash2 className="h-4 w-4" />
@@ -376,6 +389,7 @@ export function StudentsPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant={statusVariants[selectedStudent.status]}>{selectedStudent.status}</Badge>
+                  <Button size="sm" variant="outline" onClick={() => { setIsEnrollOpen(true); }}>Enroll in Class</Button>
                 </div>
 
                 {/* Student Journey Timeline */}
@@ -389,6 +403,34 @@ export function StudentsPage() {
               </DialogFooter>
             </>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Enroll Dialog */}
+      <Dialog open={isEnrollOpen} onOpenChange={setIsEnrollOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Enroll {selectedStudent?.full_name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Select onValueChange={(classId) => {
+              if (selectedStudent) handleEnroll(selectedStudent.id, classId);
+            }}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select class" />
+              </SelectTrigger>
+              <SelectContent>
+                {classes.filter((c: any) => c.status === 'active').map((cls: any) => (
+                  <SelectItem key={cls.id} value={cls.id}>
+                    {cls.name} — {cls.enrolled_count || 0}/{cls.capacity || 20}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEnrollOpen(false)}>Cancel</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
