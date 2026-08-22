@@ -30,19 +30,20 @@ class UpdateTeacherRequest extends FormRequest
         
         return [
             'full_name' => ['sometimes', 'string', 'max:255'],
+            'email' => ['sometimes', 'email', 'max:255', Rule::unique('teachers')->ignore($teacherId)],
             'phone' => ['nullable', 'string', 'max:20'],
-            'email' => ['nullable', 'email', 'max:255', Rule::unique('teachers')->ignore($teacherId)],
-            'gender' => ['nullable', Rule::in(['male', 'female', 'other'])],
             'specialization' => ['nullable', 'string', 'max:255'],
-            'qualification' => ['nullable', 'string', 'max:255'],
-            'experience_years' => ['nullable', 'integer', 'min:0', 'max:50'],
-            'salary_type' => ['sometimes', Rule::in(['fixed', 'per_hour', 'per_class', 'commission'])],
-            'base_salary' => ['required_if:salary_type,fixed', 'nullable', 'numeric', 'min:0', 'max:9999999.99'],
-            'hourly_rate' => ['required_if:salary_type,per_hour', 'nullable', 'numeric', 'min:0', 'max:99999.99'],
+            'qualifications' => ['nullable', 'string', 'max:2000'],
+            'salary_type' => ['sometimes', Rule::in(['fixed', 'hourly', 'per_class', 'commission'])],
+            'base_salary' => ['required_if:salary_type,fixed', 'sometimes', 'numeric', 'min:0', 'max:9999999.99'],
+            'hourly_rate' => ['required_if:salary_type,hourly', 'nullable', 'numeric', 'min:0', 'max:99999.99'],
             'per_class_rate' => ['required_if:salary_type,per_class', 'nullable', 'numeric', 'min:0', 'max:99999.99'],
-            'commission_percent' => ['required_if:salary_type,commission', 'nullable', 'numeric', 'min:0', 'max:100'],
-            'status' => ['nullable', Rule::in(['active', 'inactive', 'on_leave'])],
-            'user_id' => ['nullable', 'uuid', 'exists:users,id', Rule::unique('teachers')->ignore($teacherId)],
+            'commission_rate' => ['required_if:salary_type,commission', 'nullable', 'numeric', 'min:0', 'max:100'],
+            'status' => ['sometimes', Rule::in(['active', 'inactive', 'on_leave'])],
+            'hire_date' => ['sometimes', 'date', 'before_or_equal:today'],
+            'bank_account_number' => ['nullable', 'string', 'max:50'],
+            'bank_name' => ['nullable', 'string', 'max:100'],
+            'tax_id' => ['nullable', 'string', 'max:50'],
         ];
     }
 
@@ -53,25 +54,55 @@ class UpdateTeacherRequest extends FormRequest
     {
         return [
             'email.unique' => 'A teacher with this email already exists.',
-            'experience_years.min' => 'Experience years must be at least 0.',
-            'experience_years.max' => 'Experience years cannot exceed 50.',
             'base_salary.required_if' => 'Base salary is required for fixed salary type.',
-            'hourly_rate.required_if' => 'Hourly rate is required for per-hour salary type.',
+            'base_salary.min' => 'Base salary must be at least 0.',
+            'base_salary.max' => 'Base salary cannot exceed 9,999,999.99.',
+            'hourly_rate.required_if' => 'Hourly rate is required for hourly salary type.',
             'per_class_rate.required_if' => 'Per-class rate is required for per-class salary type.',
-            'commission_percent.required_if' => 'Commission percent is required for commission salary type.',
-            'commission_percent.max' => 'Commission percent cannot exceed 100.',
-            'user_id.unique' => 'This user is already assigned to another teacher.',
+            'commission_rate.required_if' => 'Commission rate is required for commission salary type.',
+            'commission_rate.max' => 'Commission rate cannot exceed 100%.',
+            'hire_date.before_or_equal' => 'Hire date cannot be in the future.',
         ];
     }
 
     /**
-     * Prepare the data for validation.
+     * Configure the validator instance.
      */
-    protected function prepareForValidation(): void
+    public function withValidator($validator): void
     {
-        // Trim string fields
-        $this->merge(array_map(function ($value) {
-            return is_string($value) ? trim($value) : $value;
-        }, $this->all()));
+        $validator->after(function ($validator) {
+            $teacher = $this->route('teacher');
+
+            // Check if teacher has active classes when trying to deactivate
+            if ($this->status === 'inactive' && $teacher->status === 'active') {
+                $activeClasses = $teacher->classes()->where('status', 'active')->count();
+                
+                if ($activeClasses > 0) {
+                    $validator->errors()->add('status', "Cannot deactivate teacher with {$activeClasses} active class(es). Please reassign or cancel classes first.");
+                }
+            }
+
+            // Validate salary type change
+            if ($this->salary_type && $this->salary_type !== $teacher->salary_type) {
+                // Check if teacher has active payroll records
+                $activePayroll = $teacher->payrolls()
+                    ->where('status', 'pending')
+                    ->where('period_start', '>=', now()->startOfMonth())
+                    ->exists();
+
+                if ($activePayroll) {
+                    $validator->errors()->add('salary_type', 'Cannot change salary type while there are pending payroll records for the current period.');
+                }
+            }
+
+            // Validate bank account information
+            if ($this->bank_account_number && !$this->bank_name) {
+                $validator->errors()->add('bank_name', 'Bank name is required when bank account number is provided.');
+            }
+
+            if ($this->bank_name && !$this->bank_account_number) {
+                $validator->errors()->add('bank_account_number', 'Bank account number is required when bank name is provided.');
+            }
+        });
     }
 }
