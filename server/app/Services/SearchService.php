@@ -2,329 +2,451 @@
 
 namespace App\Services;
 
-use App\Modules\Academic\Models\Student;
-use App\Modules\Academic\Models\AcademicClass;
-use App\Modules\PeopleHr\Models\Teacher;
-use App\Modules\CrmEnrollment\Models\Visitor;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Elasticsearch\Client;
+use Elasticsearch\ClientBuilder;
+use Illuminate\Support\Facades\Log;
 
 /**
- * Advanced Search Service
+ * Search Service
  *
- * Provides powerful search capabilities across multiple entities
- * with filtering, sorting, and pagination support.
+ * Provides advanced search functionality using Elasticsearch.
  */
 class SearchService
 {
-    /**
-     * Search students with advanced filters
-     */
-    public function searchStudents(array $filters): LengthAwarePaginator
+    protected Client $client;
+    protected string $indexPrefix;
+
+    public function __construct()
     {
-        $query = Student::with(['branch', 'currentEnrollment.class', 'currentEnrollment.programVersion']);
+        $this->client = ClientBuilder::create()
+            ->setHosts([config('services.elasticsearch.host')])
+            ->setBasicAuthentication(
+                config('services.elasticsearch.username'),
+                config('services.elasticsearch.password')
+            )
+            ->build();
 
-        // Text search
-        if (!empty($filters['search'])) {
-            $query->search($filters['search']);
-        }
+        $this->indexPrefix = config('services.elasticsearch.index_prefix', 'toeflhouse');
+    }
 
-        // Status filter
-        if (!empty($filters['status'])) {
-            $query->where('status', $filters['status']);
-        }
+    /**
+     * Index a document.
+     */
+    public function index(string $type, string $id, array $data, ?string $tenantId = null): bool
+    {
+        try {
+            $index = $this->getIndexName($type, $tenantId);
 
-        // Branch filter
-        if (!empty($filters['branch_id'])) {
-            $query->byBranch($filters['branch_id']);
-        }
+            $params = [
+                'index' => $index,
+                'id' => $id,
+                'body' => array_merge($data, [
+                    'indexed_at' => now()->toIso8601String(),
+                    'tenant_id' => $tenantId,
+                ]),
+            ];
 
-        // Gender filter
-        if (!empty($filters['gender'])) {
-            $query->where('gender', $filters['gender']);
-        }
+            $response = $this->client->index($params);
 
-        // Registration date range
-        if (!empty($filters['registered_from'])) {
-            $query->where('registration_date', '>=', $filters['registered_from']);
-        }
-        if (!empty($filters['registered_to'])) {
-            $query->where('registration_date', '<=', $filters['registered_to']);
-        }
+            Log::info("Document indexed", [
+                'type' => $type,
+                'id' => $id,
+                'index' => $index,
+            ]);
 
-        // Discount filter
-        if (isset($filters['has_discount'])) {
-            if ($filters['has_discount']) {
-                $query->where('discount_percent', '>', 0);
-            } else {
-                $query->where('discount_percent', 0);
+            return $response['result'] === 'created' || $response['result'] === 'updated';
+        } catch (\Exception $e) {
+            Log::error("Failed to index document", [
+                'type' => $type,
+                'id' => $id,
+                'error' => $e->getMessage(),
+            ]);
+            return false;
+        }
+    }
+
+    /**
+     * Delete a document.
+     */
+    public function delete(string $type, string $id, ?string $tenantId = null): bool
+    {
+        try {
+            $index = $this->getIndexName($type, $tenantId);
+
+            $params = [
+                'index' => $index,
+                'id' => $id,
+            ];
+
+            $response = $this->client->delete($params);
+
+            Log::info("Document deleted", [
+                'type' => $type,
+                'id' => $id,
+                'index' => $index,
+            ]);
+
+            return $response['result'] === 'deleted';
+        } catch (\Exception $e) {
+            Log::error("Failed to delete document", [
+                'type' => $type,
+                'id' => $id,
+                'error' => $e->getMessage(),
+            ]);
+            return false;
+        }
+    }
+
+    /**
+     * Search documents.
+     */
+    public function search(string $type, array $query, ?string $tenantId = null, int $from = 0, int $size = 20): array
+    {
+        try {
+            $index = $this->getIndexName($type, $tenantId);
+
+            // Add tenant filter if tenant_id is provided
+            if ($tenantId) {
+                $query = [
+                    'bool' => [
+                        'must' => $query['bool']['must'] ?? [],
+                        'filter' => array_merge(
+                            $query['bool']['filter'] ?? [],
+                            [['term' => ['tenant_id' => $tenantId]]]
+                        ),
+                    ],
+                ];
             }
+
+            $params = [
+                'index' => $index,
+                'body' => [
+                    'query' => $query,
+                    'from' => $from,
+                    'size' => $size,
+                ],
+            ];
+
+            $response = $this->client->search($params);
+
+            return [
+                'hits' => collect($response['hits']['hits'])->map(function ($hit) {
+                    return [
+                        'id' => $hit['_id'],
+                        'score' => $hit['_score'],
+                        'data' => $hit['_source'],
+                    ];
+                })->toArray(),
+                'total' => $response['hits']['total']['value'],
+                'took' => $response['took'],
+            ];
+        } catch (\Exception $e) {
+            Log::error("Search failed", [
+                'type' => $type,
+                'error' => $e->getMessage(),
+            ]);
+            return [
+                'hits' => [],
+                'total' => 0,
+                'took' => 0,
+            ];
         }
-
-        // Payment status filter
-        if (!empty($filters['payment_status'])) {
-            $query->whereHas('payments', function ($q) use ($filters) {
-                if ($filters['payment_status'] === 'has_payments') {
-                    $q->where('status', 'completed');
-                } elseif ($filters['payment_status'] === 'no_payments') {
-                    // Will be handled with left join
-                }
-            });
-        }
-
-        // Sorting
-        $sortBy = $filters['sort_by'] ?? 'created_at';
-        $sortDir = $filters['sort_dir'] ?? 'desc';
-        $query->orderBy($sortBy, $sortDir);
-
-        // Pagination
-        $perPage = $filters['per_page'] ?? 20;
-
-        return $query->paginate($perPage);
     }
 
     /**
-     * Search classes with advanced filters
+     * Full-text search.
      */
-    public function searchClasses(array $filters): LengthAwarePaginator
+    public function fullTextSearch(string $type, string $queryString, array $fields, ?string $tenantId = null, int $from = 0, int $size = 20): array
     {
-        $query = AcademicClass::with(['branch', 'teacher', 'program', 'level']);
-
-        // Text search
-        if (!empty($filters['search'])) {
-            $query->where('name', 'like', "%{$filters['search']}%");
-        }
-
-        // Status filter
-        if (!empty($filters['status'])) {
-            $query->where('status', $filters['status']);
-        }
-
-        // Branch filter
-        if (!empty($filters['branch_id'])) {
-            $query->byBranch($filters['branch_id']);
-        }
-
-        // Teacher filter
-        if (!empty($filters['teacher_id'])) {
-            $query->byTeacher($filters['teacher_id']);
-        }
-
-        // Program filter
-        if (!empty($filters['program_id'])) {
-            $query->where('program_id', $filters['program_id']);
-        }
-
-        // Level filter
-        if (!empty($filters['level'])) {
-            $query->where('level', $filters['level']);
-        }
-
-        // Gender policy filter
-        if (!empty($filters['gender_policy'])) {
-            $query->where('gender_policy', $filters['gender_policy']);
-        }
-
-        // Capacity filter
-        if (isset($filters['min_capacity'])) {
-            $query->where('capacity', '>=', $filters['min_capacity']);
-        }
-        if (isset($filters['max_capacity'])) {
-            $query->where('capacity', '<=', $filters['max_capacity']);
-        }
-
-        // Date range
-        if (!empty($filters['start_date_from'])) {
-            $query->where('start_date', '>=', $filters['start_date_from']);
-        }
-        if (!empty($filters['start_date_to'])) {
-            $query->where('start_date', '<=', $filters['start_date_to']);
-        }
-
-        // Fill rate filter
-        if (isset($filters['min_fill_percent'])) {
-            // This requires a subquery or join
-            $query->whereRaw('(SELECT COUNT(*) FROM student_semesters WHERE class_id = classes.id AND status = "active") / capacity * 100 >= ?', [$filters['min_fill_percent']]);
-        }
-
-        // Sorting
-        $sortBy = $filters['sort_by'] ?? 'created_at';
-        $sortDir = $filters['sort_dir'] ?? 'desc';
-        $query->orderBy($sortBy, $sortDir);
-
-        // Pagination
-        $perPage = $filters['per_page'] ?? 20;
-
-        return $query->paginate($perPage);
-    }
-
-    /**
-     * Search teachers with advanced filters
-     */
-    public function searchTeachers(array $filters): LengthAwarePaginator
-    {
-        $query = Teacher::with(['branch', 'user']);
-
-        // Text search
-        if (!empty($filters['search'])) {
-            $query->where(function ($q) use ($filters) {
-                $q->where('full_name', 'like', "%{$filters['search']}%")
-                  ->orWhere('email', 'like', "%{$filters['search']}%")
-                  ->orWhere('phone', 'like', "%{$filters['search']}%")
-                  ->orWhere('specialization', 'like', "%{$filters['search']}%");
-            });
-        }
-
-        // Status filter
-        if (!empty($filters['status'])) {
-            $query->where('status', $filters['status']);
-        }
-
-        // Branch filter
-        if (!empty($filters['branch_id'])) {
-            $query->byBranch($filters['branch_id']);
-        }
-
-        // Salary type filter
-        if (!empty($filters['salary_type'])) {
-            $query->bySalaryType($filters['salary_type']);
-        }
-
-        // Specialization filter
-        if (!empty($filters['specialization'])) {
-            $query->where('specialization', 'like', "%{$filters['specialization']}%");
-        }
-
-        // Performance score range
-        if (isset($filters['min_performance'])) {
-            $query->where('performance_score', '>=', $filters['min_performance']);
-        }
-        if (isset($filters['max_performance'])) {
-            $query->where('performance_score', '<=', $filters['max_performance']);
-        }
-
-        // Salary range
-        if (isset($filters['min_salary'])) {
-            $query->where('base_salary', '>=', $filters['min_salary']);
-        }
-        if (isset($filters['max_salary'])) {
-            $query->where('base_salary', '<=', $filters['max_salary']);
-        }
-
-        // Join date range
-        if (!empty($filters['joined_from'])) {
-            $query->where('joined_date', '>=', $filters['joined_from']);
-        }
-        if (!empty($filters['joined_to'])) {
-            $query->where('joined_date', '<=', $filters['joined_to']);
-        }
-
-        // Has active classes filter
-        if (isset($filters['has_active_classes'])) {
-            if ($filters['has_active_classes']) {
-                $query->has('activeClasses');
-            } else {
-                $query->doesntHave('activeClasses');
-            }
-        }
-
-        // Sorting
-        $sortBy = $filters['sort_by'] ?? 'created_at';
-        $sortDir = $filters['sort_dir'] ?? 'desc';
-        $query->orderBy($sortBy, $sortDir);
-
-        // Pagination
-        $perPage = $filters['per_page'] ?? 20;
-
-        return $query->paginate($perPage);
-    }
-
-    /**
-     * Search visitors with advanced filters
-     */
-    public function searchVisitors(array $filters): LengthAwarePaginator
-    {
-        $query = Visitor::with(['branch', 'campaign']);
-
-        // Text search
-        if (!empty($filters['search'])) {
-            $query->where(function ($q) use ($filters) {
-                $q->where('full_name', 'like', "%{$filters['search']}%")
-                  ->orWhere('phone', 'like', "%{$filters['search']}%")
-                  ->orWhere('email', 'like', "%{$filters['search']}%")
-                  ->orWhere('serial_no', 'like', "%{$filters['search']}%");
-            });
-        }
-
-        // Stage filter
-        if (!empty($filters['stage'])) {
-            $query->where('stage', $filters['stage']);
-        }
-
-        // Status filter
-        if (!empty($filters['status'])) {
-            $query->where('status', $filters['status']);
-        }
-
-        // Branch filter
-        if (!empty($filters['branch_id'])) {
-            $query->where('branch_id', $filters['branch_id']);
-        }
-
-        // Source filter
-        if (!empty($filters['source'])) {
-            $query->where('source', $filters['source']);
-        }
-
-        // Campaign filter
-        if (!empty($filters['campaign_id'])) {
-            $query->where('campaign_id', $filters['campaign_id']);
-        }
-
-        // Placement completed filter
-        if (isset($filters['placement_completed'])) {
-            if ($filters['placement_completed']) {
-                $query->whereNotNull('placement_score');
-            } else {
-                $query->whereNull('placement_score');
-            }
-        }
-
-        // Visit date range
-        if (!empty($filters['visit_from'])) {
-            $query->where('visit_date', '>=', $filters['visit_from']);
-        }
-        if (!empty($filters['visit_to'])) {
-            $query->where('visit_date', '<=', $filters['visit_to']);
-        }
-
-        // Sorting
-        $sortBy = $filters['sort_by'] ?? 'created_at';
-        $sortDir = $filters['sort_dir'] ?? 'desc';
-        $query->orderBy($sortBy, $sortDir);
-
-        // Pagination
-        $perPage = $filters['per_page'] ?? 20;
-
-        return $query->paginate($perPage);
-    }
-
-    /**
-     * Global search across all entities
-     */
-    public function globalSearch(string $query, int $limit = 10): array
-    {
-        $results = [
-            'students' => Student::search($query)->take($limit)->get(),
-            'classes' => AcademicClass::where('name', 'like', "%{$query}%")->take($limit)->get(),
-            'teachers' => Teacher::where('full_name', 'like', "%{$query}%")->take($limit)->get(),
-            'visitors' => Visitor::where('full_name', 'like', "%{$query}%")->take($limit)->get(),
+        $query = [
+            'bool' => [
+                'must' => [
+                    [
+                        'multi_match' => [
+                            'query' => $queryString,
+                            'fields' => $fields,
+                            'type' => 'best_fields',
+                            'fuzziness' => 'AUTO',
+                        ],
+                    ],
+                ],
+            ],
         ];
 
-        return [
-            'query' => $query,
-            'total_results' => collect($results)->sum(fn($items) => $items->count()),
-            'results' => $results,
+        return $this->search($type, $query, $tenantId, $from, $size);
+    }
+
+    /**
+     * Search students.
+     */
+    public function searchStudents(string $queryString, ?string $tenantId = null, int $from = 0, int $size = 20): array
+    {
+        $fields = [
+            'full_name^3',
+            'student_code^2',
+            'email^2',
+            'phone',
+            'father_name',
         ];
+
+        return $this->fullTextSearch('students', $queryString, $fields, $tenantId, $from, $size);
+    }
+
+    /**
+     * Search teachers.
+     */
+    public function searchTeachers(string $queryString, ?string $tenantId = null, int $from = 0, int $size = 20): array
+    {
+        $fields = [
+            'full_name^3',
+            'email^2',
+            'phone',
+            'specialization^2',
+            'qualification',
+        ];
+
+        return $this->fullTextSearch('teachers', $queryString, $fields, $tenantId, $from, $size);
+    }
+
+    /**
+     * Search classes.
+     */
+    public function searchClasses(string $queryString, ?string $tenantId = null, int $from = 0, int $size = 20): array
+    {
+        $fields = [
+            'name^3',
+            'code^2',
+            'description',
+            'teacher_name^2',
+        ];
+
+        return $this->fullTextSearch('classes', $queryString, $fields, $tenantId, $from, $size);
+    }
+
+    /**
+     * Index a student.
+     */
+    public function indexStudent($student, ?string $tenantId = null): bool
+    {
+        $data = [
+            'full_name' => $student->full_name,
+            'student_code' => $student->student_code,
+            'email' => $student->email,
+            'phone' => $student->phone,
+            'father_name' => $student->father_name,
+            'status' => $student->status,
+            'branch_id' => $student->branch_id,
+            'created_at' => $student->created_at?->toIso8601String(),
+        ];
+
+        return $this->index('students', $student->id, $data, $tenantId);
+    }
+
+    /**
+     * Index a teacher.
+     */
+    public function indexTeacher($teacher, ?string $tenantId = null): bool
+    {
+        $data = [
+            'full_name' => $teacher->full_name,
+            'email' => $teacher->email,
+            'phone' => $teacher->phone,
+            'specialization' => $teacher->specialization,
+            'qualification' => $teacher->qualification,
+            'status' => $teacher->status,
+            'branch_id' => $teacher->branch_id,
+            'created_at' => $teacher->created_at?->toIso8601String(),
+        ];
+
+        return $this->index('teachers', $teacher->id, $data, $tenantId);
+    }
+
+    /**
+     * Index a class.
+     */
+    public function indexClass($class, ?string $tenantId = null): bool
+    {
+        $data = [
+            'name' => $class->name,
+            'code' => $class->code,
+            'description' => $class->description,
+            'teacher_name' => $class->teacher->full_name ?? null,
+            'status' => $class->status,
+            'branch_id' => $class->branch_id,
+            'created_at' => $class->created_at?->toIso8601String(),
+        ];
+
+        return $this->index('classes', $class->id, $data, $tenantId);
+    }
+
+    /**
+     * Create index with mappings.
+     */
+    public function createIndex(string $type, ?string $tenantId = null): bool
+    {
+        try {
+            $index = $this->getIndexName($type, $tenantId);
+
+            $mappings = $this->getMappings($type);
+
+            $params = [
+                'index' => $index,
+                'body' => [
+                    'settings' => [
+                        'number_of_shards' => 1,
+                        'number_of_replicas' => 1,
+                        'analysis' => [
+                            'analyzer' => [
+                                'default' => [
+                                    'type' => 'standard',
+                                ],
+                            ],
+                        ],
+                    ],
+                    'mappings' => $mappings,
+                ],
+            ];
+
+            $response = $this->client->indices()->create($params);
+
+            Log::info("Index created", [
+                'index' => $index,
+                'type' => $type,
+            ]);
+
+            return $response['acknowledged'];
+        } catch (\Exception $e) {
+            Log::error("Failed to create index", [
+                'type' => $type,
+                'error' => $e->getMessage(),
+            ]);
+            return false;
+        }
+    }
+
+    /**
+     * Get index name.
+     */
+    protected function getIndexName(string $type, ?string $tenantId = null): string
+    {
+        $index = $this->indexPrefix . '_' . $type;
+        
+        if ($tenantId) {
+            $index .= '_' . $tenantId;
+        }
+
+        return strtolower($index);
+    }
+
+    /**
+     * Get mappings for a type.
+     */
+    protected function getMappings(string $type): array
+    {
+        $mappings = [
+            'students' => [
+                'properties' => [
+                    'full_name' => ['type' => 'text', 'analyzer' => 'standard'],
+                    'student_code' => ['type' => 'keyword'],
+                    'email' => ['type' => 'keyword'],
+                    'phone' => ['type' => 'keyword'],
+                    'father_name' => ['type' => 'text'],
+                    'status' => ['type' => 'keyword'],
+                    'branch_id' => ['type' => 'keyword'],
+                    'tenant_id' => ['type' => 'keyword'],
+                    'created_at' => ['type' => 'date'],
+                    'indexed_at' => ['type' => 'date'],
+                ],
+            ],
+            'teachers' => [
+                'properties' => [
+                    'full_name' => ['type' => 'text', 'analyzer' => 'standard'],
+                    'email' => ['type' => 'keyword'],
+                    'phone' => ['type' => 'keyword'],
+                    'specialization' => ['type' => 'text'],
+                    'qualification' => ['type' => 'text'],
+                    'status' => ['type' => 'keyword'],
+                    'branch_id' => ['type' => 'keyword'],
+                    'tenant_id' => ['type' => 'keyword'],
+                    'created_at' => ['type' => 'date'],
+                    'indexed_at' => ['type' => 'date'],
+                ],
+            ],
+            'classes' => [
+                'properties' => [
+                    'name' => ['type' => 'text', 'analyzer' => 'standard'],
+                    'code' => ['type' => 'keyword'],
+                    'description' => ['type' => 'text'],
+                    'teacher_name' => ['type' => 'text'],
+                    'status' => ['type' => 'keyword'],
+                    'branch_id' => ['type' => 'keyword'],
+                    'tenant_id' => ['type' => 'keyword'],
+                    'created_at' => ['type' => 'date'],
+                    'indexed_at' => ['type' => 'date'],
+                ],
+            ],
+        ];
+
+        return $mappings[$type] ?? [];
+    }
+
+    /**
+     * Bulk index documents.
+     */
+    public function bulkIndex(string $type, array $documents, ?string $tenantId = null): array
+    {
+        try {
+            $index = $this->getIndexName($type, $tenantId);
+            $params = ['body' => []];
+
+            foreach ($documents as $doc) {
+                $params['body'][] = [
+                    'index' => [
+                        '_index' => $index,
+                        '_id' => $doc['id'],
+                    ],
+                ];
+                $params['body'][] = array_merge($doc['data'], [
+                    'indexed_at' => now()->toIso8601String(),
+                    'tenant_id' => $tenantId,
+                ]);
+            }
+
+            $response = $this->client->bulk($params);
+
+            $success = collect($response['items'])->filter(function ($item) {
+                return !isset($item['index']['error']);
+            })->count();
+
+            $failed = count($documents) - $success;
+
+            Log::info("Bulk indexing completed", [
+                'type' => $type,
+                'total' => count($documents),
+                'success' => $success,
+                'failed' => $failed,
+            ]);
+
+            return [
+                'success' => $success,
+                'failed' => $failed,
+                'errors' => collect($response['items'])
+                    ->filter(function ($item) {
+                        return isset($item['index']['error']);
+                    })
+                    ->pluck('index.error')
+                    ->toArray(),
+            ];
+        } catch (\Exception $e) {
+            Log::error("Bulk indexing failed", [
+                'type' => $type,
+                'error' => $e->getMessage(),
+            ]);
+            return [
+                'success' => 0,
+                'failed' => count($documents),
+                'errors' => [$e->getMessage()],
+            ];
+        }
     }
 }
