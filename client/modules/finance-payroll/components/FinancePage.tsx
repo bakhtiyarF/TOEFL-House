@@ -21,7 +21,7 @@ import {
   DollarSign, Plus, TrendingUp, TrendingDown, Receipt, Search, Download,
 } from 'lucide-react';
 import { formatAmount } from '@shared/lib/utils';
-import { usePayments, useCreatePayment, useTeacherSalary, useBudgetLines, usePayTeacherSalary } from '../hooks/useFinance';
+import { usePayments, useCreatePayment, useTeacherSalary, useBudgetLines, usePayTeacherSalary, useCreateBudgetLine, useProcessPayroll, useBudgetOverview } from '../hooks/useFinance';
 import { useStudents } from '@modules/academic/hooks/useAcademic';
 import { useTeachers } from '@modules/people-hr/hooks/usePeopleHr';
 
@@ -38,14 +38,28 @@ type PaymentFormValues = z.infer<typeof PaymentSchema>;
 export function FinancePage() {
   const { data: livePayments = [] } = usePayments();
   const { data: budgetLines = [] } = useBudgetLines();
+  const { data: budgetOverview } = useBudgetOverview();
   const createPayment = useCreatePayment();
+  const createBudgetLine = useCreateBudgetLine();
+  const processPayroll = useProcessPayroll();
 
   const { data: students = [] } = useStudents({ status: 'active' });
   const { data: teachers = [] } = useTeachers();
 
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+  const [isBudgetDialogOpen, setIsBudgetDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [txFilter, setTxFilter] = useState<'all' | 'income' | 'expense'>('all');
+
+  const budgetForm = useForm<{ name: string; purpose: string; allocated_amount: string; cost_type: string; branch_id?: string }>({
+    resolver: zodResolver(z.object({
+      name: z.string().min(2),
+      purpose: z.string().min(2),
+      allocated_amount: z.string().min(1),
+      cost_type: z.string(),
+    })),
+    defaultValues: { cost_type: 'variable' },
+  });
 
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<PaymentFormValues>({
     resolver: zodResolver(PaymentSchema),
@@ -72,6 +86,21 @@ export function FinancePage() {
     );
   };
 
+  const onCreateBudget = (data: any) => {
+    createBudgetLine.mutate({
+      name: data.name,
+      purpose: data.purpose,
+      allocated_amount: parseFloat(data.allocated_amount),
+      cost_type: data.cost_type,
+      branch_id: 'branch-1',
+    } as any, {
+      onSuccess: () => {
+        setIsBudgetDialogOpen(false);
+        budgetForm.reset();
+      },
+    });
+  };
+
   // LIVE transactions ONLY (backend-driven, no hardcoded demo)
   const liveTx = livePayments.map((p: any) => ({
     id: p.id,
@@ -96,16 +125,8 @@ export function FinancePage() {
   const totalExpenses = 0; // expenses are tracked via other modules (inventory, funding, payroll)
   const netIncome = totalIncome - totalExpenses;
 
-  // Live teacher payroll preview
-  const payrollPreview = teachers.slice(0, 5).map((t: any) => {
-    // Will be replaced by live salary call in dialog
-    return {
-      id: t.id,
-      name: t.full_name,
-      model: t.salary_type,
-      classes: t.classes || 0,
-    };
-  });
+  // Live teacher payroll preview (now truly live per row via TeacherPayrollRow)
+  const payrollPreview = teachers.slice(0, 6);
 
   return (
     <div className="space-y-6">
@@ -198,6 +219,48 @@ export function FinancePage() {
             </form>
           </DialogContent>
         </Dialog>
+
+        {/* Budget Line Dialog (NEW live CRUD) */}
+        <Dialog open={isBudgetDialogOpen} onOpenChange={setIsBudgetDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add Budget Line</DialogTitle>
+              <DialogDescription>Create a new monthly budget allocation (live)</DialogDescription>
+            </DialogHeader>
+            <form onSubmit={budgetForm.handleSubmit(onCreateBudget)} className="space-y-4">
+              <div className="space-y-2">
+                <Label>Name *</Label>
+                <Input {...budgetForm.register('name')} placeholder="e.g. Teacher Salaries" />
+              </div>
+              <div className="space-y-2">
+                <Label>Purpose *</Label>
+                <Input {...budgetForm.register('purpose')} placeholder="teacher_salary / rent / utilities" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Allocated (AFN) *</Label>
+                  <Input type="number" {...budgetForm.register('allocated_amount')} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Cost Type</Label>
+                  <Select onValueChange={(v) => budgetForm.setValue('cost_type', v)} defaultValue="variable">
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="fixed">Fixed</SelectItem>
+                      <SelectItem value="variable">Variable</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsBudgetDialogOpen(false)}>Cancel</Button>
+                <Button type="submit" disabled={createBudgetLine.isPending}>
+                  {createBudgetLine.isPending ? 'Creating...' : 'Create Budget Line'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Summary Cards — LIVE */}
@@ -279,6 +342,9 @@ export function FinancePage() {
                 <Button variant="outline" size="sm" onClick={() => alert('Export would use live filtered data')}>
                   <Download className="h-4 w-4 me-2" /> Export
                 </Button>
+                <Button size="sm" variant="outline" onClick={() => setIsBudgetDialogOpen(true)}>
+                  <Plus className="h-4 w-4 me-1" /> Add Budget Line
+                </Button>
               </div>
             </CardHeader>
             <CardContent>
@@ -327,9 +393,20 @@ export function FinancePage() {
         {/* LIVE Payroll */}
         <TabsContent value="payroll">
           <Card>
-            <CardHeader>
-              <CardTitle>Teacher Payroll — Live Computation</CardTitle>
-              <CardDescription>Salary computed by backend PayrollService using model + current assignments</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Teacher Payroll — Live Computation</CardTitle>
+                <CardDescription>Salary computed by backend PayrollService using model + current assignments</CardDescription>
+              </div>
+              <Button 
+                size="sm" 
+                onClick={() => {
+                  processPayroll.mutate({ period: new Date().toISOString().slice(0, 7), branch_id: 'branch-1' });
+                }}
+                disabled={processPayroll.isPending}
+              >
+                {processPayroll.isPending ? 'Processing...' : 'Process Payroll (All)'}
+              </Button>
             </CardHeader>
             <CardContent>
               <Table>
@@ -355,52 +432,87 @@ export function FinancePage() {
                   )}
                 </TableBody>
               </Table>
+              <div className="mt-3 text-xs text-muted-foreground">
+                Bulk processing calls backend PayrollService (creates journal entries + updates teacher balances).
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* Budget — LIVE */}
+        {/* Budget — LIVE + Overview */}
         <TabsContent value="budget">
-          <Card>
-            <CardHeader>
-              <CardTitle>Budget Lines</CardTitle>
-              <CardDescription>Monthly budget allocation (live from backend budget-lines)</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {budgetLines.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No budget lines returned. (Backend supports /budget-lines — add via admin or seed.)</p>
-              ) : (
-                budgetLines.map((line: any, idx: number) => {
-                  const allocated = line.allocated || line.target || 0;
-                  const spent = line.spent || line.used || 0;
-                  const percent = allocated > 0 ? Math.round((spent / allocated) * 100) : 0;
-                  return (
-                    <div key={idx} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-sm">{line.name}</span>
-                          <Badge variant="outline" className="text-xs">{line.type || 'variable'}</Badge>
+          <div className="space-y-4">
+            {/* Budget Overview (from /budget/overview) */}
+            {budgetOverview && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Budget Overview</CardTitle>
+                  <CardDescription>Live summary from backend (reserve fund logic)</CardDescription>
+                </CardHeader>
+                <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                  <div>
+                    <div className="text-muted-foreground">Allocated</div>
+                    <div className="font-bold text-lg">{formatAmount(budgetOverview.total_allocated)} AFN</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground">Spent</div>
+                    <div className="font-bold text-lg text-red-600">{formatAmount(budgetOverview.total_spent)} AFN</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground">Utilization</div>
+                    <div className="font-bold text-lg">{budgetOverview.utilization_percent}%</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground">Reserve Fund Met?</div>
+                    <Badge variant={budgetOverview.reserve_fund_met ? 'default' : 'secondary'}>
+                      {budgetOverview.reserve_fund_met ? 'Yes' : 'No'} ({formatAmount(budgetOverview.reserve_fund_percent)}%)
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Budget Lines</CardTitle>
+                <CardDescription>Live monthly allocations. Use + button above to add new.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {budgetLines.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No budget lines. Add one using the button in header.</p>
+                ) : (
+                  budgetLines.map((line: any, idx: number) => {
+                    const allocated = line.allocated_amount || line.allocated || 0;
+                    const spent = line.current_amount || line.spent || 0;
+                    const percent = allocated > 0 ? Math.round((spent / allocated) * 100) : 0;
+                    return (
+                      <div key={idx} className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-sm">{line.name}</span>
+                            <Badge variant="outline" className="text-xs">{line.cost_type || 'variable'}</Badge>
+                          </div>
+                          <span className="text-sm text-muted-foreground">
+                            {formatAmount(spent)} / {formatAmount(allocated)} AFN
+                          </span>
                         </div>
-                        <span className="text-sm text-muted-foreground">
-                          {formatAmount(spent)} / {formatAmount(allocated)} AFN
-                        </span>
+                        <div className="w-full bg-muted rounded-full h-2">
+                          <div
+                            className={`h-2 rounded-full transition-all ${percent > 100 ? 'bg-red-500' : percent > 80 ? 'bg-yellow-500' : 'bg-green-500'}`}
+                            style={{ width: `${Math.min(100, percent)}%` }}
+                          />
+                        </div>
+                        <div className="flex justify-between text-xs text-muted-foreground">
+                          <span>{percent}% spent • Remaining: {formatAmount(allocated - spent)} AFN</span>
+                          {line.utilization_percent !== undefined && <span>{line.utilization_percent}%</span>}
+                        </div>
                       </div>
-                      <div className="w-full bg-muted rounded-full h-2">
-                        <div
-                          className={`h-2 rounded-full transition-all ${percent > 100 ? 'bg-red-500' : percent > 80 ? 'bg-yellow-500' : 'bg-green-500'}`}
-                          style={{ width: `${Math.min(100, percent)}%` }}
-                        />
-                      </div>
-                      <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>{percent}% spent</span>
-                        <span>{formatAmount(allocated - spent)} AFN remaining</span>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </CardContent>
-          </Card>
+                    );
+                  })
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

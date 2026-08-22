@@ -30,6 +30,7 @@ export const financeApi = {
     },
     create: (d: any) => request('/budget-lines', { method: 'POST', body: JSON.stringify(d) }),
   },
+  budgetOverview: () => request<any>('/budget/overview'),
   // Payroll processing entry
   processPayroll: (data: any) => request('/payroll/process', { method: 'POST', body: JSON.stringify(data) }),
 };

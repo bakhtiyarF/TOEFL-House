@@ -18,7 +18,7 @@ export function useCreateVisitor() {
 export function useConvertVisitor() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => crmApi.visitors.convert(id),
+    mutationFn: ({ id, data }: { id: string; data?: any }) => crmApi.visitors.convert(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['crm'] });
       qc.invalidateQueries({ queryKey: ['academic', 'students'] });

@@ -39,6 +39,14 @@ export function useBudgetLines() {
   });
 }
 
+export function useCreateBudgetLine() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: financeApi.budgetLines.create,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['finance', 'budget'] }),
+  });
+}
+
 export function usePayTeacherSalary() {
   const qc = useQueryClient();
   return useMutation({
@@ -48,5 +56,23 @@ export function usePayTeacherSalary() {
       qc.invalidateQueries({ queryKey: ['finance'] });
       qc.invalidateQueries({ queryKey: ['people-hr'] });
     },
+  });
+}
+
+export function useProcessPayroll() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: financeApi.processPayroll,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['finance'] });
+      qc.invalidateQueries({ queryKey: ['people-hr'] });
+    },
+  });
+}
+
+export function useBudgetOverview() {
+  return useQuery({
+    queryKey: ['finance', 'budget', 'overview'],
+    queryFn: () => financeApi.budgetOverview(),
   });
 }

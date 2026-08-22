@@ -20,7 +20,7 @@ import {
   Clock, MessageSquare, GraduationCap, AlertCircle, TrendingUp, Filter,
 } from 'lucide-react';
 import { useVisitors, useConvertVisitor, useCreateVisitor } from '../hooks/useCrm';
-import { useClasses } from '@modules/academic/hooks/useAcademic';
+import { useClasses, usePrograms, useProgramVersions } from '@modules/academic/hooks/useAcademic';
 
 const VisitorSchema = z.object({
   full_name: z.string().min(2, 'Name is required'),
@@ -79,6 +79,10 @@ export function VisitorsPage() {
   const createVisitor = useCreateVisitor();
   const convertVisitor = useConvertVisitor();
 
+  const { data: programs = [] } = usePrograms();
+  const [convertProgramId, setConvertProgramId] = useState('');
+  const { data: convertVersions = [] } = useProgramVersions(convertProgramId);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [stageFilter, setStageFilter] = useState('all');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -130,12 +134,16 @@ export function VisitorsPage() {
   const handleConvert = (visitor: Visitor) => {
     if (!canConvert(visitor)) return;
 
-    const program = (window as any).__selectedProgram || 'general-english';
-    // Backend ConversionService expects placement + fee snapshot readiness
-    convertVisitor.mutate(visitor.id, {
+    convertVisitor.mutate({
+      id: visitor.id,
+      data: {
+        program_version_id: convertVersions?.[0]?.id || undefined,
+      },
+    }, {
       onSuccess: (result: any) => {
         setIsConvertDialogOpen(false);
         setSelectedVisitor(null);
+        setConvertProgramId('');
         // TanStack auto-refreshes students + visitors
       },
     });
@@ -407,32 +415,34 @@ export function VisitorsPage() {
                 {/* Enrollment Details */}
                 {canConvert(selectedVisitor) && (
                   <div className="border-t pt-4 space-y-3">
-                    <h4 className="text-sm font-medium">Enrollment Details</h4>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1">
+                    <h4 className="text-sm font-medium">Enrollment Details (copy-on-write snapshot)</h4>
+                    <div className="space-y-2">
+                      <div>
                         <Label className="text-xs">Program</Label>
-                        <Select defaultValue="General English" onValueChange={(v) => {
-                          // store for conversion payload (simplified)
-                          (window as any).__selectedProgram = v;
-                        }}>
-                          <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
+                        <Select value={convertProgramId} onValueChange={(v) => setConvertProgramId(v)}>
+                          <SelectTrigger className="h-8"><SelectValue placeholder="Select program" /></SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="General English">General English</SelectItem>
-                            <SelectItem value="TOEFL Prep">TOEFL Preparation</SelectItem>
-                            <SelectItem value="IELTS">IELTS</SelectItem>
+                            {programs.length > 0 ? programs.map((p: any) => (
+                              <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                            )) : <SelectItem value="">No programs</SelectItem>}
                           </SelectContent>
                         </Select>
                       </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs">Recommended Level</Label>
-                        <Input className="h-8" defaultValue={
-                          selectedVisitor.placement_score! >= 90 ? 'Advanced' :
-                          selectedVisitor.placement_score! >= 70 ? 'Level 3' :
-                          selectedVisitor.placement_score! >= 50 ? 'Level 2' : 'Level 1'
-                        } readOnly />
-                      </div>
+                      {convertProgramId && (
+                        <div>
+                          <Label className="text-xs">Program Version</Label>
+                          <Select defaultValue="">
+                            <SelectTrigger className="h-8"><SelectValue placeholder="Latest" /></SelectTrigger>
+                            <SelectContent>
+                              {convertVersions.length > 0 ? convertVersions.map((v: any) => (
+                                <SelectItem key={v.id} value={v.id}>{v.version_label || 'v' + (v.version_number || 1)}</SelectItem>
+                              )) : <SelectItem value="">Use default</SelectItem>}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
                     </div>
-                    <div className="text-xs text-muted-foreground">Program version will be resolved server-side for copy-on-write snapshot.</div>
+                    <div className="text-xs text-muted-foreground">Program version + fee snapshot will be pinned by backend EnrollmentService.</div>
                   </div>
                 )}
 
