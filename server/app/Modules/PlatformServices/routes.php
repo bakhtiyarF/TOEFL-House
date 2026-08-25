@@ -4,6 +4,7 @@ use App\Modules\PlatformServices\Http\Controllers\RuleController;
 use App\Modules\PlatformServices\Http\Controllers\NotificationController;
 use App\Modules\PlatformServices\Http\Controllers\AuditLogController;
 use App\Modules\PlatformServices\Http\Controllers\SettingsController;
+use App\Modules\PlatformServices\Http\Controllers\SearchController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -12,7 +13,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [RuleController::class, 'index']);
         Route::post('/', [RuleController::class, 'store']);
         Route::get('/{id}', [RuleController::class, 'show']);
-        Route::get('/{id}/evaluate', [RuleController::class, 'evaluate']);
+        Route::post('/{id}/evaluate', [RuleController::class, 'evaluate']);
     });
 
     // Notifications
@@ -33,9 +34,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/batch', [SettingsController::class, 'batchUpdate']);
     });
 });
-
-use App\Modules\PlatformServices\Http\Controllers\SearchController;
-use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->prefix('search')->group(function () {
     Route::get('/', [SearchController::class, 'globalSearch']);

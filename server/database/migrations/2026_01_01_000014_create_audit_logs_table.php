@@ -13,20 +13,21 @@ return new class extends Migration
     {
         Schema::create('audit_logs', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('auditable_type');
-            $table->uuid('auditable_id');
+            $table->uuid('operator_id')->nullable();
+            $table->string('operator_name')->nullable();
             $table->string('action');
-            $table->json('old_values')->nullable();
-            $table->json('new_values')->nullable();
-            $table->uuid('user_id')->nullable();
-            $table->string('ip_address', 45)->nullable();
-            $table->text('user_agent')->nullable();
-            $table->timestamp('created_at')->nullable();
+            $table->date('date');
+            $table->time('time');
+            $table->json('old_value')->nullable();
+            $table->json('new_value')->nullable();
+            $table->string('ip', 45)->nullable();
+            $table->string('device')->nullable();
+            $table->uuid('branch_id');
+            $table->timestamps();
 
-            $table->index(['auditable_type', 'auditable_id']);
+            $table->foreign('branch_id')->references('id')->on('branches');
+            $table->index(['branch_id', 'date']);
             $table->index('action');
-            $table->index('user_id');
-            $table->index('created_at');
         });
     }
 

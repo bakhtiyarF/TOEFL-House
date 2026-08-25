@@ -10,8 +10,10 @@ class Certificate extends Model
 
     protected $fillable = [
         'student_id', 'program_id', 'level_id', 'issue_date',
-        'certificate_no', 'grade', 'branch_id',
+        'certificate_no', 'grade', 'branch_id', 'template',
     ];
 
-    protected $casts = ['issue_date' => 'date'];
+    protected $casts = [
+        'issue_date' => 'date',
+    ];
 }

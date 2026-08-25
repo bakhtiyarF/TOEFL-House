@@ -17,6 +17,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Donations
+    Route::get('/donations', [FundingController::class, 'indexDonations']);
     Route::post('/donations', [FundingController::class, 'storeDonation']);
 
     // Scholarships

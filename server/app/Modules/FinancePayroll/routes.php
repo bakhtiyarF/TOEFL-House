@@ -29,4 +29,25 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Budget overview for BOS dashboard (07 §8)
     Route::get('/budget/overview', [BudgetController::class, 'overview']);
+
+    // Bulk payroll processing (live from UI)
+    Route::post('/payroll/process', [PaymentController::class, 'processPayroll']);
+
+    // Payroll ledger history
+    Route::get('/payroll/ledger', [PaymentController::class, 'payrollLedger']);
+
+    // Expense requests (full 07 spec: create + approve/reject + budget impact)
+    Route::prefix('expense-requests')->group(function () {
+        Route::get('/', [\App\Modules\FinancePayroll\Http\Controllers\ExpenseController::class, 'index']);
+        Route::post('/', [\App\Modules\FinancePayroll\Http\Controllers\ExpenseController::class, 'store']);
+        Route::post('/{id}/approve', [\App\Modules\FinancePayroll\Http\Controllers\ExpenseController::class, 'approve']);
+        Route::post('/{id}/reject', [\App\Modules\FinancePayroll\Http\Controllers\ExpenseController::class, 'reject']);
+    });
+
+    // Invoices (07 spec: full lifecycle)
+    Route::prefix('invoices')->group(function () {
+        Route::get('/', [\App\Modules\FinancePayroll\Http\Controllers\InvoiceController::class, 'index']);
+        Route::post('/', [\App\Modules\FinancePayroll\Http\Controllers\InvoiceController::class, 'store']);
+        Route::post('/{id}/mark-paid', [\App\Modules\FinancePayroll\Http\Controllers\InvoiceController::class, 'markPaid']);
+    });
 });

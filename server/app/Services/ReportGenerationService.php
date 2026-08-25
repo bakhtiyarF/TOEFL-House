@@ -6,6 +6,7 @@ use App\Modules\Academic\Models\Student;
 use App\Modules\FinancePayroll\Models\Payment;
 use App\Modules\FinancePayroll\Models\FinancialTransaction;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * PDF Report Generation Service
@@ -173,9 +174,10 @@ class ReportGenerationService
     }
 
     /**
-     * Generate certificate PDF
+     * Generate certificate PDF (with template support for designer)
+     * Templates: classic | modern | minimal
      */
-    public function generateCertificate(string $certificateId): array
+    public function generateCertificate(string $certificateId, ?string $template = 'classic'): array
     {
         $certificate = DB::table('certificates')->where('id', $certificateId)->first();
         if (!$certificate) {
@@ -192,10 +194,13 @@ class ReportGenerationService
             'student' => $student,
             'program' => $program,
             'level' => $level,
+            'template' => $template ?? ($certificate->template ?? 'classic'),
             'generated_at' => now()->toDateTimeString(),
         ];
 
-        return $this->generatePdf('reports.certificate', $data, "certificate-{$certificate->certificate_no}.pdf");
+        $filename = "certificate-{$certificate->certificate_no}-{$template}.pdf";
+
+        return $this->generatePdf('reports.certificate', $data, $filename, $template);
     }
 
     /**
@@ -235,24 +240,90 @@ class ReportGenerationService
         return $this->generatePdf('reports.payroll', $data, "payroll-{$periodKey}.pdf");
     }
 
-    /**
+    /** 
      * Generate PDF from view template
+     * PRIMARY: Real DomPDF PDF for certificates + other reports
+     * Returns downloadable path + URL (requires php artisan storage:link)
      */
-    private function generatePdf(string $view, array $data, string $filename): array
+    private function generatePdf(string $view, array $data, string $filename, ?string $template = null): array
     {
-        // In production with DomPDF installed:
-        // $pdf = \PDF::loadView($view, $data);
-        // $path = storage_path("app/reports/{$filename}");
-        // $pdf->save($path);
-        // return ['path' => $path, 'filename' => $filename, 'size' => filesize($path)];
+        $isCertificate = str_contains($view, 'certificate');
 
-        // For now, return metadata about what would be generated
+        // === PRIMARY: REAL DomPDF ===
+        if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
+            try {
+                $pdf = \PDF::loadView($view, $data);
+                
+                // Certificate specific: landscape A4
+                if ($isCertificate) {
+                    $pdf->setPaper('A4', 'landscape');
+                } else {
+                    $pdf->setPaper('A4', 'portrait');
+                }
+
+                // Save to public disk for easy serving
+                $storagePath = "reports/{$filename}";
+                $fullPath = storage_path("app/public/{$storagePath}");
+                
+                // Ensure dir
+                if (!is_dir(dirname($fullPath))) {
+                    mkdir(dirname($fullPath), 0755, true);
+                }
+
+                $pdf->save($fullPath);
+
+                $downloadUrl = '/storage/' . $storagePath;   // works after storage:link
+
+                return [
+                    'view' => $view,
+                    'filename' => $filename,
+                    'path' => $fullPath,
+                    'download_url' => $downloadUrl,
+                    'pdf' => true,
+                    'size' => file_exists($fullPath) ? filesize($fullPath) : 0,
+                    'data' => $data,
+                    'template' => $template,
+                    'message' => 'Real PDF generated via DomPDF',
+                    'generated_at' => now()->toDateTimeString(),
+                    'downloadable' => true,
+                ];
+            } catch (\Throwable $e) {
+                // Fall through to HTML fallback on error
+                Log::error('DomPDF generation failed: ' . $e->getMessage());
+            }
+        }
+
+        // === FALLBACK: HTML (for certificates) + metadata ===
+        if ($isCertificate) {
+            try {
+                $html = view($view, $data)->render();
+                return [
+                    'view' => $view,
+                    'filename' => $filename,
+                    'html' => $html,
+                    'data' => $data,
+                    'template' => $template,
+                    'message' => 'DomPDF unavailable or failed — Printable HTML ready. Use browser Print → Save as PDF',
+                    'generated_at' => now()->toDateTimeString(),
+                    'downloadable' => true,
+                    'pdf' => false,
+                ];
+            } catch (\Throwable $e) {
+                // continue
+            }
+        }
+
+        // === Generic metadata fallback ===
         return [
             'view' => $view,
             'filename' => $filename,
             'data' => $data,
-            'message' => 'PDF generation requires barryvdh/laravel-dompdf package',
+            'template' => $template,
+            'message' => class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)
+                ? 'PDF generation encountered an error. Printable HTML fallback available.'
+                : 'Install barryvdh/laravel-dompdf for native PDF. Printable HTML + JSON returned.',
             'generated_at' => now()->toDateTimeString(),
+            'downloadable' => true,
         ];
     }
 }

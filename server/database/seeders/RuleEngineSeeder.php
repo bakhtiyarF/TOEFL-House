@@ -208,5 +208,82 @@ class RuleEngineSeeder extends Seeder
         }
 
         $this->command->info('Seeded ' . count($rules) . ' default rule definitions.');
+
+        // Seed essential system_settings (cross-module, used by Finance 07, Platform 08)
+        $settings = [
+            'daily_saving_percent' => '5',
+            'saving_balance' => '125000',
+            'main_account_balance' => '890000',
+            'reserve_fund_target_months' => '6',
+            'min_class_size' => '6',
+            'default_currency' => 'AFN',
+            'timezone' => 'Asia/Kabul',
+            'attendance_warning_threshold' => '85',
+            'attendance_critical_threshold' => '60',
+        ];
+
+        foreach ($settings as $key => $value) {
+            DB::table('system_settings')->updateOrInsert(
+                ['key' => $key],
+                [
+                    'value' => $value,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
+        }
+
+        $this->command->info('Seeded ' . count($settings) . ' system_settings keys (live for Finance + Platform).');
+
+        // Seed sample notifications for live UI testing (Platform 08)
+        $branchId = DB::table('branches')->value('id');
+        $sampleNotifications = [
+            ['title' => 'New Student Registered', 'message' => 'Ahmad Rahimi has been registered.', 'type' => 'success'],
+            ['title' => 'Payment Received', 'message' => '4,500 AFN payment recorded.', 'type' => 'info'],
+            ['title' => 'Attendance Warning', 'message' => 'General English - Level 1: attendance at 78% — below 85% threshold.', 'type' => 'warning'],
+            ['title' => 'Expense Approval Needed', 'message' => 'New expense request for textbooks (12,000 AFN) pending.', 'type' => 'info'],
+        ];
+        foreach ($sampleNotifications as $n) {
+            DB::table('notifications')->insertOrIgnore([
+                'id' => Str::uuid()->toString(),
+                'title' => $n['title'],
+                'message' => $n['message'],
+                'date' => now()->toDateString(),
+                'read' => false,
+                'type' => $n['type'],
+                'user_id' => null,
+                'branch_id' => $branchId,
+                'created_at' => now()->subMinutes(rand(5, 180)),
+                'updated_at' => now(),
+            ]);
+        }
+        $this->command->info('Seeded sample live notifications.');
+
+        // Seed a few audit logs (live /audit-logs)
+        $adminUser = DB::table('users')->where('role', 'owner')->first();
+        $auditLogs = [
+            ['action' => 'Payment recorded', 'operator_name' => $adminUser?->full_name ?? 'System', 'old_value' => null, 'new_value' => ['amount' => 4500]],
+            ['action' => 'Expense approved', 'operator_name' => 'Finance Manager', 'old_value' => ['status' => 'pending'], 'new_value' => ['status' => 'approved']],
+            ['action' => 'Rule updated', 'operator_name' => $adminUser?->full_name ?? 'System', 'old_value' => null, 'new_value' => ['priority' => 200]],
+            ['action' => 'Certificate issued', 'operator_name' => 'Designer', 'old_value' => null, 'new_value' => ['certificate_no' => 'CERT-2026-0124']],
+        ];
+        foreach ($auditLogs as $log) {
+            DB::table('audit_logs')->insert([
+                'id' => Str::uuid()->toString(),
+                'operator_id' => $adminUser?->id ?? null,
+                'operator_name' => $log['operator_name'],
+                'action' => $log['action'],
+                'date' => now()->toDateString(),
+                'time' => now()->format('H:i:s'),
+                'old_value' => $log['old_value'] ? json_encode($log['old_value']) : null,
+                'new_value' => $log['new_value'] ? json_encode($log['new_value']) : null,
+                'ip' => '127.0.0.1',
+                'device' => 'Desktop',
+                'branch_id' => $branchId,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+        $this->command->info('Seeded sample live audit logs.');
     }
 }

@@ -55,7 +55,7 @@ class SendEmployeeOnboardedNotification implements ShouldQueue
                     'user_id' => $admin->id,
                     'type' => 'success',
                     'title' => 'New Employee Onboarded',
-                    'message' => "{$employee->full_name} has been onboarded as {$employee->position ?? 'Staff'}.",
+                    'message' => $employee->full_name . ' has been onboarded as ' . ($employee->position ?? 'Staff') . '.',
                     'data' => [
                         'employee_id' => $employee->id,
                         'employee_name' => $employee->full_name,

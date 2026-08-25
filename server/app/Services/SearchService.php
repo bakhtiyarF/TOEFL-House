@@ -18,15 +18,24 @@ class SearchService
 
     public function __construct()
     {
-        $this->client = ClientBuilder::create()
-            ->setHosts([config('services.elasticsearch.host')])
-            ->setBasicAuthentication(
-                config('services.elasticsearch.username'),
-                config('services.elasticsearch.password')
-            )
-            ->build();
-
         $this->indexPrefix = config('services.elasticsearch.index_prefix', 'toeflhouse');
+
+        // Graceful fallback if Elasticsearch client or config missing (dev / docker optional)
+        try {
+            if (class_exists(ClientBuilder::class) && config('services.elasticsearch.host')) {
+                $this->client = ClientBuilder::create()
+                    ->setHosts([config('services.elasticsearch.host')])
+                    ->setBasicAuthentication(
+                        config('services.elasticsearch.username') ?: '',
+                        config('services.elasticsearch.password') ?: ''
+                    )
+                    ->build();
+            } else {
+                $this->client = null; // will return empty results
+            }
+        } catch (\Throwable $e) {
+            $this->client = null;
+        }
     }
 
     /**

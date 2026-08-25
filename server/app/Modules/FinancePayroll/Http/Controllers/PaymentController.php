@@ -209,4 +209,90 @@ class PaymentController extends Controller
             return response()->json(['message' => $e->getMessage()], 409);
         }
     }
+
+    /**
+     * Bulk payroll processing (called from FinancePage "Process Payroll" button)
+     * Iterates active teachers in branch, computes due via PayrollService, pays full.
+     */
+    public function processPayroll(Request $request): JsonResponse
+    {
+        $period = $request->input('period', now()->format('Y-m'));
+        $branchId = $request->user()->branch_id ?? $request->input('branch_id');
+
+        $teachers = DB::table('teachers')
+            ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
+            ->where('status', 'active')
+            ->get();
+
+        $results = [];
+        $totalPaid = 0;
+
+        foreach ($teachers as $teacher) {
+            try {
+                $due = $this->payrollService->computeTeacherDueAmount($teacher->id, $period, $branchId);
+                $amount = (float)($due['dueAmount'] ?? $teacher->base_salary ?? 0);
+
+                if ($amount <= 0) continue;
+
+                $payResult = $this->payrollService->paySalary(
+                    teacherId: $teacher->id,
+                    periodKey: $period,
+                    periodLabel: $period,
+                    amount: $amount,
+                    paymentType: 'full',
+                    branchId: $branchId,
+                    operatorName: $request->user()->full_name ?? 'system',
+                );
+
+                $results[] = [
+                    'teacher_id' => $teacher->id,
+                    'amount' => $amount,
+                    'ledger_id' => $payResult['ledger_id'] ?? null,
+                ];
+                $totalPaid += $amount;
+            } catch (\Throwable $e) {
+                $results[] = [
+                    'teacher_id' => $teacher->id,
+                    'error' => $e->getMessage(),
+                ];
+            }
+        }
+
+        return response()->json([
+            'processed' => count($results),
+            'total_paid' => $totalPaid,
+            'period' => $period,
+            'results' => $results,
+        ], 200);
+    }
+
+    /**
+     * Payroll ledger (live history for Finance dashboard)
+     */
+    public function payrollLedger(Request $request): JsonResponse
+    {
+        $branchId = $request->user()->branch_id ?? $request->query('branch_id');
+        $teacherId = $request->query('teacher_id');
+
+        $query = DB::table('teacher_salary_ledger as l')
+            ->join('teachers as t', 'l.teacher_id', '=', 't.id')
+            ->select(
+                'l.*',
+                't.full_name as teacher_name',
+                't.salary_type'
+            )
+            ->orderByDesc('l.paid_at')
+            ->limit(50);
+
+        if ($branchId) {
+            $query->where('l.branch_id', $branchId);
+        }
+        if ($teacherId) {
+            $query->where('l.teacher_id', $teacherId);
+        }
+
+        $ledger = $query->get();
+
+        return response()->json($ledger);
+    }
 }

@@ -5,26 +5,21 @@ namespace App\Modules\Academic\Http\Controllers;
 use App\Modules\Academic\Models\Student;
 use App\Modules\Academic\Models\StudentJourneyEvent;
 use App\Modules\Academic\Services\EnrollmentService;
+use App\Modules\Academic\Services\AssessmentService;
 use App\Modules\Iam\Services\BranchScopeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class StudentController extends Controller
 {
     public function __construct(
         private BranchScopeService $branchScopeService,
-        private EnrollmentService $enrollmentService
+        private EnrollmentService $enrollmentService,
+        private AssessmentService $assessmentService
     ) {}
-
-    // Use Catalog for program info if needed
-    public function programs(Request $request): JsonResponse
-    {
-        // Simple fallback if needed
-        $programs = DB::table('programs')->where('is_active', true)->get();
-        return response()->json($programs);
-    }
 
     public function index(Request $request): JsonResponse
     {
@@ -203,5 +198,47 @@ class StudentController extends Controller
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         }
+    }
+
+    /**
+     * Student homework list (live assessments)
+     */
+    public function homework(Request $request, string $id): JsonResponse
+    {
+        $student = Student::findOrFail($id);
+        if (!$this->branchScopeService->canAccessBranch($request->user(), $student->branch_id)) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        $homework = DB::table('homework as h')
+            ->join('sessions as s', 'h.session_id', '=', 's.id')
+            ->join('student_semesters as ss', 's.class_id', '=', 'ss.class_id')
+            ->where('ss.student_id', $id)
+            ->where('ss.status', 'active')
+            ->select('h.*', 's.date as session_date', 's.topic')
+            ->orderByDesc('h.due_date')
+            ->get();
+
+        return response()->json($homework);
+    }
+
+    /**
+     * Student exam results (live)
+     */
+    public function exams(Request $request, string $id): JsonResponse
+    {
+        $student = Student::findOrFail($id);
+        if (!$this->branchScopeService->canAccessBranch($request->user(), $student->branch_id)) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        $results = DB::table('exam_results as er')
+            ->join('exams as e', 'er.exam_id', '=', 'e.id')
+            ->where('er.student_id', $id)
+            ->select('er.*', 'e.title', 'e.date', 'e.type', 'e.fee')
+            ->orderByDesc('e.date')
+            ->get();
+
+        return response()->json($results);
     }
 }

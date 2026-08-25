@@ -99,4 +99,57 @@ class TeacherController extends Controller
 
         return response()->json(['success' => $success]);
     }
+
+    /**
+     * List evaluations for a teacher (live)
+     */
+    public function evaluations(string $id): JsonResponse
+    {
+        $teacher = Teacher::findOrFail($id);
+
+        if (!$this->branchScopeService->canAccessBranch(request()->user(), $teacher->branch_id)) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        $evals = \App\Modules\PeopleHr\Models\TeacherEvaluation::where('teacher_id', $id)
+            ->orderByDesc('date')
+            ->get();
+
+        return response()->json($evals);
+    }
+
+    /**
+     * Store a new evaluation (live)
+     */
+    public function storeEvaluation(Request $request, string $id): JsonResponse
+    {
+        $teacher = Teacher::findOrFail($id);
+
+        if (!$this->branchScopeService->canAccessBranch($request->user(), $teacher->branch_id)) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        $validated = $request->validate([
+            'date' => 'required|date',
+            'score' => 'required|numeric|min:0|max:5',
+            'criteria' => 'nullable|array',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        $eval = \App\Modules\PeopleHr\Models\TeacherEvaluation::create([
+            'id' => \Illuminate\Support\Str::uuid()->toString(),
+            'teacher_id' => $id,
+            'evaluator_id' => $request->user()->id,
+            'date' => $validated['date'],
+            'score' => $validated['score'],
+            'criteria' => $validated['criteria'] ?? [],
+            'notes' => $validated['notes'] ?? null,
+        ]);
+
+        // Update teacher performance average
+        $avg = \App\Modules\PeopleHr\Models\TeacherEvaluation::where('teacher_id', $id)->avg('score');
+        $teacher->update(['performance_score' => round($avg, 2)]);
+
+        return response()->json($eval, 201);
+    }
 }

@@ -93,6 +93,27 @@ class FundingController extends Controller
 
     // ── Donations ──
 
+    public function indexDonations(Request $request): JsonResponse
+    {
+        $scope = $this->branchScopeService->resolve($request->user(), $request->query('branch_id', 'all'));
+
+        $query = DB::table('donations')
+            ->leftJoin('donors', 'donations.donor_id', '=', 'donors.id')
+            ->leftJoin('funding_campaigns', 'donations.campaign_id', '=', 'funding_campaigns.id')
+            ->select(
+                'donations.*',
+                'donors.full_name as donor_name',
+                'funding_campaigns.name as campaign_name'
+            )
+            ->orderByDesc('donations.date');
+
+        if (!$scope['isAll']) {
+            $query->where('donations.branch_id', $scope['branchId']);
+        }
+
+        return response()->json($query->get());
+    }
+
     public function storeDonation(Request $request): JsonResponse
     {
         $validated = $request->validate([

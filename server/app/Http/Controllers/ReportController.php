@@ -86,17 +86,19 @@ class ReportController extends Controller
     }
 
     /**
-     * Generate certificate
+     * Generate certificate (supports template for designer flow)
      */
-    public function certificate(string $certificateId): JsonResponse
+    public function certificate(Request $request, string $certificateId): JsonResponse
     {
         try {
-            $report = $this->reportService->generateCertificate($certificateId);
+            $template = $request->query('template', 'classic');
+            $report = $this->reportService->generateCertificate($certificateId, $template);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Certificate generated successfully',
                 'data' => $report,
+                'template' => $template,
             ]);
         } catch (\Exception $e) {
             return response()->json([
