@@ -477,6 +477,44 @@ TOTAL    16 file   146 تست    103 pass    17 fail    26 error
 
 **تفسیر صادقانهٔ ۴۳ شکست:** این‌ها باک محصول **نیستند**. ۱۳ شکست Unit همه باگِ خودِ تست‌اند (۱۲ × مقایسهٔ `toBe()` بین float و int، ۱ × `preg_match` خودتأیید که `2026-13` را هم ماهِ معتبر می‌پذیرد). ۳۰ شکست Feature ناشی از این است که تست‌ها نسبت به schema واقعی **کهنه** نوشته شده‌اند (ستون‌های ناموجود، `User::roles()` تعریف‌نشده، ستون‌های NOT NULL بدون مقدار). عمداً بازنویسی نشدند — بازنویسیِ تست تا با کد جور شود، خودِ آزمودن را بی‌معنا می‌کند؛ این یک یافتهٔ ممیزی است نه کاری که باید پنهان شود.
 
+### فرانت‌اند — **build پروداک션 کلاً شکسته بود** (یافتهٔ جدید، CRITICAL)
+
+`client/node_modules` نصب شد و ابزار واقعی اجرا شد. نتیجهٔ اولیه روی کدِ دست‌نخورده:
+
+```
+npx tsc -b --force  →  20 خطا در ۵ فایل        (exit 1)
+npm run build       →  exit 1  ← build شکست
+```
+
+چون `build` در `package.json` برابر `tsc -b && vite build` است، **۲۰ خطای تایپ یعنی هیچ bundle پروداکشنی ساخته نمی‌شود.** این با ادعای «build ✓» در نوبت‌های پیشین در تضاد است؛ آن عدد دیگر قابل اتکا نیست و آنچه الان اندازه‌گیری شد ملاک است.
+
+| فایل | خطا | ماهیت |
+|---|---|---|
+| `VisitorsPage.tsx` | ۹ | هوک‌های API بدون تایپ → `campaigns` از نوع `unknown` و `liveReadiness` از نوع `{}` |
+| `TeachersPage.tsx` | ۶ | **باگ scope واقعی**: کد بین دو کامپوننت جابه‌جا شده بدون وابستگی‌هایش — `computed` در `TeacherSalaryPanel` تعریف شده ولی در `TeachersPage` صدا زده می‌شد، و برعکس `selectedTeacher`/`salaryHistory`/`payTeacherSalary` داخل پنل استفاده می‌شدند |
+| `SettingsPage.tsx` | ۳ | همان هوک بدون تایپ |
+| `InventoryPage.tsx` | ۱ | `toast` استفاده شده ولی import نشده → رفاند فروش در runtime می‌شکند |
+| `FinancePage.tsx` | ۱ | **temporal dead zone**: `totalExpenses = totalExpensesLive` در خط ۲۱۷، در حالی که `totalExpensesLive` در خط ۲۷۲ تعریف می‌شود → `ReferenceError` در runtime |
+
+**۱۰ خطای `react-hooks(rules-of-hooks)`** هم بود (oxlint) که باگ درستیِ React‌اند نه فقط lint:
+
+- `RoleWorkspaceValidator.tsx` — `if (import.meta.env.PROD) return null;` **قبل از** هوک‌ها → ترتیب هوک‌ها بین رندر prod و dev فرق می‌کند.
+- `GenerativeQuickActions.tsx` — `useDonors ? useDonors() : {data:[]}` روی چهار هوک؛ گارد هرگز فعال نمی‌شود (ایمپورت استاتیک‌اند) ولی صدا را conditional می‌کند.
+- `ClassesPage.tsx` — `useCreateExamResult()` **داخل `onClick`** (با `@ts-ignore` پنهان شده)، در حالی که همان mutation قبلاً در بدنهٔ کامپوننت hoist شده بود.
+
+**بعد از ۱۲ اصلاح (`tools/apply-audit-fixes-client.py`):**
+
+```
+tsc -b --force   →  0 خطا
+npm run build    →  exit 0، ✓ built in 821ms
+oxlint           →  0 error / 110 warning  (قبلاً 10 error)
+vitest run       →  23/23 pass
+```
+
+**راستی‌آزماییِ خودِ patch:** `client/` از HEAD برگردانده شد (۲۰ خطا تأیید شد)، `git apply --check` → **OK**، بعد از اعمال → **۰ خطا**. فایل: `AUDIT-client-fixes.patch` (۱۰٬۹۴۴ بایت، ۸ فایل).
+
+**توضیح صادقانه دربارهٔ تعداد تست فرانت:** در این checkout فقط `tests/unit.test.ts` وجود دارد (۲۳ تست). دو فایل تستی که در نوبت‌های پیشین شمرده شده بودند (`login-flow.test.tsx`، `route-coverage.test.tsx`) **در این استخراج وجود ندارند**، پس عدد ۴۰ تست قابل تأیید نیست؛ عدد واقعیِ الان **۲۳ تست، ۲۳ pass** است.
+
 ### آنچه در **این** نوبت راستی‌آزمایی **نشد**
 
 

@@ -1,0 +1,183 @@
+diff --git a/client/modules/academic/components/ClassesPage.tsx b/client/modules/academic/components/ClassesPage.tsx
+index 9c32725..1a0daf0 100644
+--- a/client/modules/academic/components/ClassesPage.tsx
++++ b/client/modules/academic/components/ClassesPage.tsx
+@@ -592,9 +592,10 @@ export function ClassesPage() {
+                               const scoreEl = document.getElementById(`score-${e.id}`) as HTMLInputElement;
+                               if (!sidEl?.value || !scoreEl?.value) return;
+ 
+-                              // Use the hook mutation directly
+-                              // @ts-ignore - runtime
+-                              useCreateExamResult().mutate({
++                              // Use the mutation already hoisted to the component
++                              // body. Calling a hook inside a callback breaks the
++                              // rules of hooks (and the @ts-ignore hid it).
++                              createExamResult.mutate({
+                                 examId: e.id,
+                                 data: { student_id: sidEl.value, score: parseFloat(scoreEl.value) }
+                               });
+diff --git a/client/modules/crm-enrollment/components/VisitorsPage.tsx b/client/modules/crm-enrollment/components/VisitorsPage.tsx
+index f42b07e..77627c5 100644
+--- a/client/modules/crm-enrollment/components/VisitorsPage.tsx
++++ b/client/modules/crm-enrollment/components/VisitorsPage.tsx
+@@ -71,7 +71,10 @@ export function VisitorsPage() {
+   const createVisitor = useCreateVisitor();
+   const convertVisitor = useConvertVisitor();
+   const createFollowup = useCreateFollowup();
+-  const { data: campaigns = [] } = useCampaigns();
++  // A destructuring default does not widen useQuery's inferred type
++  // (unknown | any[] collapses to unknown), so cast after destructuring.
++  const { data: campaignsData } = useCampaigns();
++  const campaigns = (campaignsData as any[]) || [];
+ 
+   const [isFollowupOpen, setIsFollowupOpen] = useState(false);
+   const [followupVisitor, setFollowupVisitor] = useState<Visitor | null>(null);
+@@ -93,7 +96,13 @@ export function VisitorsPage() {
+   const [selectedVisitor, setSelectedVisitor] = useState<Visitor | null>(null);
+ 
+   // Live readiness for selected visitor (per 09 spec — real backend ConversionService)
+-  const { data: liveReadiness, isLoading: readinessLoading } = useConversionReadiness(selectedVisitor?.id || null);
++  const { data: readinessData, isLoading: readinessLoading } = useConversionReadiness(selectedVisitor?.id || null);
++  const liveReadiness = readinessData as {
++    canConvert?: boolean;
++    placementCompleted?: boolean;
++    placementFeePaid?: boolean;
++    reasons?: string[];
++  } | null | undefined;
+ 
+   // Prefer live data exclusively (mocks only as last resort for empty first boot)
+   const liveVisitors = (Array.isArray(visitorsData) ? visitorsData : []) as Visitor[];
+diff --git a/client/modules/finance-payroll/components/FinancePage.tsx b/client/modules/finance-payroll/components/FinancePage.tsx
+index ba9dcef..31560dc 100644
+--- a/client/modules/finance-payroll/components/FinancePage.tsx
++++ b/client/modules/finance-payroll/components/FinancePage.tsx
+@@ -214,8 +214,8 @@ export function FinancePage() {
+   };
+ 
+   const totalIncome = liveTx.reduce((sum, t) => sum + t.amount, 0);
+-  const totalExpenses = totalExpensesLive; // now live from expenses + payroll ledger
+-  const netIncome = totalIncome - totalExpenses;
++  // totalExpenses/netIncome are derived below, next to totalExpensesLive:
++  // reading it here is a temporal-dead-zone error.
+ 
+   // Live teacher payroll preview (now truly live per row via TeacherPayrollRow)
+   const payrollPreview = (teachers as any[]).slice(0, 6);
+@@ -270,6 +270,8 @@ export function FinancePage() {
+   const expenseTotal = (liveExpenses as any[]).filter((e: any) => e.status === 'approved').reduce((s: number, e: any) => s + (e.amount || 0), 0);
+   const payrollExpenseTotal = (payrollLedger as any[]).reduce((s: number, l: any) => s + (l.paid_amount || 0), 0);
+   const totalExpensesLive = expenseTotal + payrollExpenseTotal;
++  const totalExpenses = totalExpensesLive; // live from expenses + payroll ledger
++  const netIncome = totalIncome - totalExpenses;
+ 
+   return (
+     <div className="space-y-6">
+diff --git a/client/modules/inventory/components/InventoryPage.tsx b/client/modules/inventory/components/InventoryPage.tsx
+index e434f8e..d045e86 100644
+--- a/client/modules/inventory/components/InventoryPage.tsx
++++ b/client/modules/inventory/components/InventoryPage.tsx
+@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
+ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@shared/components/ui/select';
+ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@shared/components/ui/tabs';
+ import { Package, Plus, Search, BookOpen, ShoppingCart, AlertTriangle, TrendingUp } from 'lucide-react';
++import { toast } from 'sonner';
+ import { formatAmount } from '@shared/lib/utils';
+ import {
+   useBooks,
+diff --git a/client/modules/people-hr/components/TeachersPage.tsx b/client/modules/people-hr/components/TeachersPage.tsx
+index 8d624c6..a7e1263 100644
+--- a/client/modules/people-hr/components/TeachersPage.tsx
++++ b/client/modules/people-hr/components/TeachersPage.tsx
+@@ -343,7 +343,9 @@ export function TeachersPage() {
+                   onClick={() => {
+                     if (!selectedTeacher) return;
+                     const period = new Date().toISOString().slice(0,7);
+-                    const due = (computed.total_due || selectedTeacher.base_salary || 0);
++                    // `computed` belongs to TeacherSalaryPanel's scope, not this
++                    // one; base_salary is the figure available here.
++                    const due = (selectedTeacher.base_salary || 0);
+                     payTeacherSalary.mutate({
+                       teacherId: selectedTeacher.id,
+                       data: { period_key: period, period_label: 'Current Month', amount: due, payment_type: 'full' }
+@@ -446,6 +448,11 @@ export function TeachersPage() {
+ // Small live component for computed salary
+ function TeacherSalaryPanel({ teacherId, teacher }: { teacherId: string; teacher: any }) {
+   const { data: salaryData } = useTeacherSalary(teacherId);
++  // This panel used to read `salaryHistory` and `payTeacherSalary` from the
++  // parent component's scope, which does not exist here. Own them instead,
++  // keyed on the teacherId prop.
++  const { data: salaryHistory = [] } = useTeacherSalaryHistory(teacherId);
++  const payTeacherSalary = usePayTeacherSalary();
+ 
+   const computed = (salaryData as any) || {
+     total_due: teacher.base_salary || 0,
+@@ -498,10 +505,10 @@ function TeacherSalaryPanel({ teacherId, teacher }: { teacherId: string; teacher
+         <div className="text-sm font-medium mb-1 flex justify-between">
+           <span>Salary History (live ledger)</span>
+           <Button size="sm" variant="outline" onClick={() => {
+-            if (!selectedTeacher) return;
++            if (!teacher) return;
+             const period = new Date().toISOString().slice(0,7);
+             payTeacherSalary.mutate({
+-              teacherId: selectedTeacher.id,
++              teacherId: teacher.id,
+               data: { period_key: period, period_label: 'Current', amount: Math.round((computed.total_due||teacher.base_salary||0)/2), payment_type: 'partial' }
+             }, { onSuccess: () => toast.success('Partial salary paid live!') });
+           }}>
+diff --git a/client/modules/platform-services/components/SettingsPage.tsx b/client/modules/platform-services/components/SettingsPage.tsx
+index 6b8d2f0..f911ed2 100644
+--- a/client/modules/platform-services/components/SettingsPage.tsx
++++ b/client/modules/platform-services/components/SettingsPage.tsx
+@@ -62,7 +62,10 @@ export function SettingsPage() {
+   const { data: notificationsData } = useNotifications();
+   const markRead = useMarkNotificationRead();
+   const markAllRead = useMarkAllNotificationsRead();
+-  const { data: settings = {} } = useSettings();
++  // Cast after destructuring: a default value does not widen the
++  // `unknown`/`{}` type that useQuery infers from the untyped API client.
++  const { data: settingsData } = useSettings();
++  const settings = (settingsData as Record<string, any>) || {};
+   const updateSetting = useUpdateSetting();
+   const batchUpdateSettings = useBatchUpdateSettings();
+   const { data: auditLogs = [] } = useAuditLogs();
+diff --git a/client/shared/components/GenerativeQuickActions.tsx b/client/shared/components/GenerativeQuickActions.tsx
+index 35afe59..fddd7b4 100644
+--- a/client/shared/components/GenerativeQuickActions.tsx
++++ b/client/shared/components/GenerativeQuickActions.tsx
+@@ -72,10 +72,13 @@ export function GenerativeQuickActions() {
+   const { data: students = [] } = useStudents({ status: 'active' });
+   const { data: existingCerts = [] } = useCertificates();
+   const { data: impactMetrics = [] } = useImpactMetrics();
+-  const { data: liveDonors = [] } = useDonors ? useDonors() : { data: [] } as any;
+-  const { data: liveDonations = [] } = useDonations ? useDonations() : { data: [] } as any;
+-  const { data: liveCampaigns = [] } = useCampaigns ? useCampaigns() : { data: [] } as any;
+-  const { data: liveCerts = [] } = useCertificates ? useCertificates() : { data: [] } as any;
++  // These four hooks are statically imported above, so the `x ? x() : ...`
++  // guard can never take the fallback branch -- and the ternary makes the call
++  // conditional, which breaks the rules of hooks.
++  const { data: liveDonors = [] } = useDonors();
++  const { data: liveDonations = [] } = useDonations();
++  const { data: liveCampaigns = [] } = useCampaigns();
++  const { data: liveCerts = [] } = useCertificates();
+ 
+   // Lightweight dialog state for generative quick actions (production dialogs — no prompts)
+   const [showVisitorDialog, setShowVisitorDialog] = useState(false);
+diff --git a/client/shared/components/RoleWorkspaceValidator.tsx b/client/shared/components/RoleWorkspaceValidator.tsx
+index 4af8973..fef5a6a 100644
+--- a/client/shared/components/RoleWorkspaceValidator.tsx
++++ b/client/shared/components/RoleWorkspaceValidator.tsx
+@@ -111,8 +111,15 @@ const EXPECTED: Record<string, { navCountMin: number; keyWidgets: string[]; keyQ
+ };
+ 
+ export function RoleWorkspaceValidator() {
++  // Hooks must run unconditionally. Short-circuiting before them changes the
++  // hook order between prod and dev renders, so the check lives in a wrapper
++  // and the hooks live in the inner component.
+   if (import.meta.env.PROD) return null;
+ 
++  return <RoleWorkspaceValidatorInner />;
++}
++
++function RoleWorkspaceValidatorInner() {
+   const { user, hasPermission } = useAuth();
+   const { dashboardWidgets, dashboardQuickActions, isOwner, navItems: currentNav } = usePermissions();
+ 
