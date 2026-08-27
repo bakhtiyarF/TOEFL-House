@@ -455,11 +455,33 @@ permissions/auth/me/dashboard/rules/search همه 200 · unauth /api/students �
 
 در runtime پی‌اس‌پی‌ wasm، زنجیرهٔ SPL که `tools/bootstrap.php` به جا می‌گذارد کلاس‌هایی را که boot فریم‌ورک هرگز لمس نکرده (مثل `Schema`/`DB`) resolve نمی‌کند. اسکریپت‌های `tools/*.php` به همین دلیل bootstrap مستقلِ خودشان را دارند. **این فقط محدودیت ابزار تست ماست** و زیر `composer` + `php artisan` واقعی وجود ندارد.
 
+### تست‌های Pest — زیرساخت ساخته شد و **در این نوبت واقعاً اجرا شد**
+
+پروژه `tests/` را با ۱۶ فایل spec shipped کرده بود ولی **هیچ** `phpunit.xml`، `tests/Pest.php` یا `tests/TestCase.php` نداشت؛ یعنی `vendor/bin/pest` اصلاً bootstrap نمی‌شد. هر سه ساخته شدند.
+
+دو مانع واقعی در مسیر پیدا شد (نه حدس — از روی سورس فریم‌ورک):
+
+- **`Application::inferBasePath()`** ریشهٔ پروژه را از vendor dir ثبت‌شده در autoloader حدس می‌زند. با `vendor/autoload.php` تولیدشدهٔ این مخزن، آن استنتاج به `server/vendor` می‌رسد و `TestCase` پایه سراغ `server/vendor/bootstrap/app.php` می‌رود. چون `inferBasePath()` اول `APP_BASE_PATH` را می‌خواند، در `tests/TestCase.php` به `dirname(__DIR__)` پین شد (بدون hardcode کردن مسیر ماشین).
+- **`RefreshDatabase`** در build asyncify wasm استک را سرریز می‌کند. `refreshTestDatabase()` تنها وقتی `RefreshDatabaseState::$migrated` از قبل true باشد مهاجرت را رد می‌کند و بعد `beginDatabaseTransaction()` را صدا می‌زند؛ پس همان پرچم در `setUp()` ست می‌شود: مهاجرت skip، ولی هر تست همچنان داخل تراکنشِ rollback‌شونده اجرا می‌شود.
+
+**نتیجهٔ واقعی اجرا (نه عدد تاریخی):**
+
+```
+Unit     11 file   111 تست     98 pass    13 fail     0 error
+Feature   5 file    35 تست      5 pass     4 fail    26 error
+----------------------------------------------------------------
+TOTAL    16 file   146 تست    103 pass    17 fail    26 error
+```
+
+اجرا با `bash tools/run-backend-tests.sh Unit|Feature` (هر فایل جدا، `--log-junit`، چون رندرر کنسول Pest در php-wasm کرش می‌کند).
+
+**تفسیر صادقانهٔ ۴۳ شکست:** این‌ها باک محصول **نیستند**. ۱۳ شکست Unit همه باگِ خودِ تست‌اند (۱۲ × مقایسهٔ `toBe()` بین float و int، ۱ × `preg_match` خودتأیید که `2026-13` را هم ماهِ معتبر می‌پذیرد). ۳۰ شکست Feature ناشی از این است که تست‌ها نسبت به schema واقعی **کهنه** نوشته شده‌اند (ستون‌های ناموجود، `User::roles()` تعریف‌نشده، ستون‌های NOT NULL بدون مقدار). عمداً بازنویسی نشدند — بازنویسیِ تست تا با کد جور شود، خودِ آزمودن را بی‌معنا می‌کند؛ این یک یافتهٔ ممیزی است نه کاری که باید پنهان شود.
+
 ### آنچه در **این** نوبت راستی‌آزمایی **نشد**
+
 
 صادقانه: چون ریست‌ها محیط را پاک کردند، این موارد در این نوبت دوباره اجرا **نشده‌اند** و نباید «تأییدشدهٔ فعلی» خوانده شوند. عددهایشان از نوبت‌های پیشین است:
 
-- **۱۴۶ تست Pest** (Unit ۱۱۱ / Feature ۳۵) — زیرساخت تست (`phpunit.xml`، `tests/TestCase.php`، `tests/Pest.php`، ۱۶ factory، `HasFactory` روی ۱۶ مدل) در این نوبت بازسازی نشد.
 - **ماتریس ۵۷۶ درخواستی ۱۴۵ روت** — دوباره اجرا نشد.
 - **۴۰ تست فرانت‌اند + `tsc` + `build` + `oxlint`** — `client/node_modules` نصب نشد.
 - **۱۴ اصلاح فرانت‌اند** — در `apply-audit-fixes.py` **نیستند**؛ فقط اصلاحات بک‌اند اسکریپت شده‌اند. این یک شکاف واقعی است و پنهان نمی‌شود.
