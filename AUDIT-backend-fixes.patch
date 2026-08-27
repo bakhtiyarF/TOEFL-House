@@ -1,3 +1,12 @@
+diff --git a/.gitignore b/.gitignore
+index f81fabb..f5b28dc 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -35,3 +35,4 @@ server/bootstrap/cache/*.php
+ # Testing
+ coverage/
+ .phpunit.result.cache
++server/database/*.sqlite
 diff --git a/server/app/Http/Controllers/HealthController.php b/server/app/Http/Controllers/HealthController.php
 index 5bc806c..52562e5 100644
 --- a/server/app/Http/Controllers/HealthController.php
@@ -89,6 +98,160 @@ index dde3416..89df4eb 100644
              ->orderBy('student_code', 'desc')
              ->first();
  
+diff --git a/server/app/Modules/Academic/Models/AcademicClass.php b/server/app/Modules/Academic/Models/AcademicClass.php
+index 68bed32..c42d7f4 100644
+--- a/server/app/Modules/Academic/Models/AcademicClass.php
++++ b/server/app/Modules/Academic/Models/AcademicClass.php
+@@ -3,6 +3,7 @@
+ namespace App\Modules\Academic\Models;
+ 
+ use Illuminate\Database\Eloquent\Concerns\HasUuids;
++use Illuminate\Database\Eloquent\Factories\HasFactory;
+ use Illuminate\Database\Eloquent\Model;
+ use Illuminate\Database\Eloquent\Relations\BelongsTo;
+ use Illuminate\Database\Eloquent\Relations\HasMany;
+@@ -15,6 +16,8 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+  */
+ class AcademicClass extends Model
+ {
++    use HasFactory;
++
+     use HasUuids;
+ 
+     protected $table = 'classes';
+diff --git a/server/app/Modules/Academic/Models/Exam.php b/server/app/Modules/Academic/Models/Exam.php
+index f89a081..5bcea16 100644
+--- a/server/app/Modules/Academic/Models/Exam.php
++++ b/server/app/Modules/Academic/Models/Exam.php
+@@ -2,10 +2,13 @@
+ namespace App\Modules\Academic\Models;
+ 
+ use Illuminate\Database\Eloquent\Concerns\HasUuids;
++use Illuminate\Database\Eloquent\Factories\HasFactory;
+ use Illuminate\Database\Eloquent\Model;
+ 
+ class Exam extends Model
+ {
++    use HasFactory;
++
+     use HasUuids;
+ 
+     protected $fillable = ['title', 'date', 'fee', 'class_id', 'type', 'branch_id'];
+diff --git a/server/app/Modules/Academic/Models/Homework.php b/server/app/Modules/Academic/Models/Homework.php
+index d7d055f..36ae293 100644
+--- a/server/app/Modules/Academic/Models/Homework.php
++++ b/server/app/Modules/Academic/Models/Homework.php
+@@ -2,10 +2,13 @@
+ namespace App\Modules\Academic\Models;
+ 
+ use Illuminate\Database\Eloquent\Concerns\HasUuids;
++use Illuminate\Database\Eloquent\Factories\HasFactory;
+ use Illuminate\Database\Eloquent\Model;
+ 
+ class Homework extends Model
+ {
++    use HasFactory;
++
+     use HasUuids;
+ 
+     protected $table = 'homework';
+diff --git a/server/app/Modules/Academic/Models/Level.php b/server/app/Modules/Academic/Models/Level.php
+index 63b753a..2ba186c 100644
+--- a/server/app/Modules/Academic/Models/Level.php
++++ b/server/app/Modules/Academic/Models/Level.php
+@@ -3,10 +3,13 @@
+ namespace App\Modules\Academic\Models;
+ 
+ use Illuminate\Database\Eloquent\Concerns\HasUuids;
++use Illuminate\Database\Eloquent\Factories\HasFactory;
+ use Illuminate\Database\Eloquent\Model;
+ 
+ class Level extends Model
+ {
++    use HasFactory;
++
+     use HasUuids;
+ 
+     protected $fillable = [
+diff --git a/server/app/Modules/Academic/Models/Program.php b/server/app/Modules/Academic/Models/Program.php
+index d164cfc..2f6cdef 100644
+--- a/server/app/Modules/Academic/Models/Program.php
++++ b/server/app/Modules/Academic/Models/Program.php
+@@ -3,10 +3,13 @@
+ namespace App\Modules\Academic\Models;
+ 
+ use Illuminate\Database\Eloquent\Concerns\HasUuids;
++use Illuminate\Database\Eloquent\Factories\HasFactory;
+ use Illuminate\Database\Eloquent\Model;
+ 
+ class Program extends Model
+ {
++    use HasFactory;
++
+     use HasUuids;
+ 
+     protected $fillable = ['name', 'description', 'duration_months', 'code', 'is_active', 'branch_id'];
+diff --git a/server/app/Modules/Academic/Models/ProgramVersion.php b/server/app/Modules/Academic/Models/ProgramVersion.php
+index 3d6aa64..777ce8e 100644
+--- a/server/app/Modules/Academic/Models/ProgramVersion.php
++++ b/server/app/Modules/Academic/Models/ProgramVersion.php
+@@ -3,12 +3,15 @@
+ namespace App\Modules\Academic\Models;
+ 
+ use Illuminate\Database\Eloquent\Concerns\HasUuids;
++use Illuminate\Database\Eloquent\Factories\HasFactory;
+ use Illuminate\Database\Eloquent\Model;
+ use Illuminate\Database\Eloquent\Relations\BelongsTo;
+ use Illuminate\Database\Eloquent\Relations\HasMany;
+ 
+ class ProgramVersion extends Model
+ {
++    use HasFactory;
++
+     use HasUuids;
+ 
+     protected $fillable = [
+diff --git a/server/app/Modules/Academic/Models/Session.php b/server/app/Modules/Academic/Models/Session.php
+index b0e7080..59795f5 100644
+--- a/server/app/Modules/Academic/Models/Session.php
++++ b/server/app/Modules/Academic/Models/Session.php
+@@ -3,12 +3,15 @@
+ namespace App\Modules\Academic\Models;
+ 
+ use Illuminate\Database\Eloquent\Concerns\HasUuids;
++use Illuminate\Database\Eloquent\Factories\HasFactory;
+ use Illuminate\Database\Eloquent\Model;
+ use Illuminate\Database\Eloquent\Relations\BelongsTo;
+ use Illuminate\Database\Eloquent\Relations\HasMany;
+ 
+ class Session extends Model
+ {
++    use HasFactory;
++
+     use HasUuids;
+ 
+     protected $fillable = [
+diff --git a/server/app/Modules/Academic/Models/Student.php b/server/app/Modules/Academic/Models/Student.php
+index 4f821c9..64e701e 100644
+--- a/server/app/Modules/Academic/Models/Student.php
++++ b/server/app/Modules/Academic/Models/Student.php
+@@ -3,6 +3,7 @@
+ namespace App\Modules\Academic\Models;
+ 
+ use Illuminate\Database\Eloquent\Concerns\HasUuids;
++use Illuminate\Database\Eloquent\Factories\HasFactory;
+ use Illuminate\Database\Eloquent\Model;
+ use Illuminate\Database\Eloquent\Relations\BelongsTo;
+ use Illuminate\Database\Eloquent\Relations\HasMany;
+@@ -17,6 +18,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
+  */
+ class Student extends Model
+ {
++    use HasFactory;
++
+     use HasUuids, SoftDeletes;
+ 
+     protected $fillable = [
 diff --git a/server/app/Modules/Academic/Services/ClassService.php b/server/app/Modules/Academic/Services/ClassService.php
 index 334eb49..93af580 100644
 --- a/server/app/Modules/Academic/Services/ClassService.php
@@ -185,6 +348,48 @@ index caba549..8070de3 100644
              throw new \Exception('Forbidden');
          }
  
+diff --git a/server/app/Modules/CrmEnrollment/Models/Campaign.php b/server/app/Modules/CrmEnrollment/Models/Campaign.php
+index 8f3cdf7..cd5d8bf 100644
+--- a/server/app/Modules/CrmEnrollment/Models/Campaign.php
++++ b/server/app/Modules/CrmEnrollment/Models/Campaign.php
+@@ -3,6 +3,7 @@
+ namespace App\Modules\CrmEnrollment\Models;
+ 
+ use Illuminate\Database\Eloquent\Concerns\HasUuids;
++use Illuminate\Database\Eloquent\Factories\HasFactory;
+ use Illuminate\Database\Eloquent\Model;
+ use Illuminate\Database\Eloquent\Relations\BelongsTo;
+ use Illuminate\Database\Eloquent\Relations\HasMany;
+@@ -15,6 +16,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
+  */
+ class Campaign extends Model
+ {
++    use HasFactory;
++
+     use HasUuids;
+ 
+     protected $fillable = [
+diff --git a/server/app/Modules/FinancePayroll/Models/Invoice.php b/server/app/Modules/FinancePayroll/Models/Invoice.php
+index 6df2fa1..04b2608 100644
+--- a/server/app/Modules/FinancePayroll/Models/Invoice.php
++++ b/server/app/Modules/FinancePayroll/Models/Invoice.php
+@@ -3,6 +3,7 @@
+ namespace App\Modules\FinancePayroll\Models;
+ 
+ use Illuminate\Database\Eloquent\Concerns\HasUuids;
++use Illuminate\Database\Eloquent\Factories\HasFactory;
+ use Illuminate\Database\Eloquent\Model;
+ use Illuminate\Database\Eloquent\Relations\BelongsTo;
+ use Illuminate\Database\Eloquent\Relations\HasMany;
+@@ -15,6 +16,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
+  */
+ class Invoice extends Model
+ {
++    use HasFactory;
++
+     use HasUuids;
+ 
+     protected $fillable = [
 diff --git a/server/app/Modules/FinancePayroll/Services/TuitionCalculationService.php b/server/app/Modules/FinancePayroll/Services/TuitionCalculationService.php
 index d8f2ee6..9301911 100644
 --- a/server/app/Modules/FinancePayroll/Services/TuitionCalculationService.php
@@ -288,6 +493,81 @@ index d8f2ee6..9301911 100644
 +        ];
 +    }
  }
+diff --git a/server/app/Modules/FundingImpact/Models/Donor.php b/server/app/Modules/FundingImpact/Models/Donor.php
+index 363ba3e..bf5eff1 100644
+--- a/server/app/Modules/FundingImpact/Models/Donor.php
++++ b/server/app/Modules/FundingImpact/Models/Donor.php
+@@ -2,11 +2,14 @@
+ namespace App\Modules\FundingImpact\Models;
+ 
+ use Illuminate\Database\Eloquent\Concerns\HasUuids;
++use Illuminate\Database\Eloquent\Factories\HasFactory;
+ use Illuminate\Database\Eloquent\Model;
+ use Illuminate\Database\Eloquent\Relations\HasMany;
+ 
+ class Donor extends Model
+ {
++    use HasFactory;
++
+     use HasUuids;
+ 
+     protected $fillable = ['full_name', 'type', 'phone', 'email', 'country', 'notes'];
+diff --git a/server/app/Modules/Iam/Models/Branch.php b/server/app/Modules/Iam/Models/Branch.php
+index 3ca2e4f..7ce1686 100644
+--- a/server/app/Modules/Iam/Models/Branch.php
++++ b/server/app/Modules/Iam/Models/Branch.php
+@@ -3,12 +3,15 @@
+ namespace App\Modules\Iam\Models;
+ 
+ use Illuminate\Database\Eloquent\Concerns\HasUuids;
++use Illuminate\Database\Eloquent\Factories\HasFactory;
+ use Illuminate\Database\Eloquent\Model;
+ use Illuminate\Database\Eloquent\Relations\BelongsTo;
+ use Illuminate\Database\Eloquent\Relations\HasMany;
+ 
+ class Branch extends Model
+ {
++    use HasFactory;
++
+     use HasUuids;
+ 
+     protected $fillable = [
+diff --git a/server/app/Modules/Iam/Models/Permission.php b/server/app/Modules/Iam/Models/Permission.php
+index ff3f0a8..1e271e7 100644
+--- a/server/app/Modules/Iam/Models/Permission.php
++++ b/server/app/Modules/Iam/Models/Permission.php
+@@ -3,10 +3,13 @@
+ namespace App\Modules\Iam\Models;
+ 
+ use Illuminate\Database\Eloquent\Concerns\HasUuids;
++use Illuminate\Database\Eloquent\Factories\HasFactory;
+ use Illuminate\Database\Eloquent\Model;
+ 
+ class Permission extends Model
+ {
++    use HasFactory;
++
+     use HasUuids;
+ 
+     public $timestamps = false;
+diff --git a/server/app/Modules/Iam/Models/Role.php b/server/app/Modules/Iam/Models/Role.php
+index 271e6dc..bc72fdc 100644
+--- a/server/app/Modules/Iam/Models/Role.php
++++ b/server/app/Modules/Iam/Models/Role.php
+@@ -3,10 +3,13 @@
+ namespace App\Modules\Iam\Models;
+ 
+ use Illuminate\Database\Eloquent\Concerns\HasUuids;
++use Illuminate\Database\Eloquent\Factories\HasFactory;
+ use Illuminate\Database\Eloquent\Model;
+ 
+ class Role extends Model
+ {
++    use HasFactory;
++
+     use HasUuids;
+ 
+     protected $fillable = [
 diff --git a/server/app/Modules/Iam/Models/User.php b/server/app/Modules/Iam/Models/User.php
 index 63b083f..d48e0ba 100644
 --- a/server/app/Modules/Iam/Models/User.php
@@ -426,6 +706,27 @@ index bebf10a..82c9e7f 100644
  
  // Protected auth routes
  Route::prefix('auth')->middleware('auth:sanctum')->group(function () {
+diff --git a/server/app/Modules/PeopleHr/Models/Teacher.php b/server/app/Modules/PeopleHr/Models/Teacher.php
+index 5108e85..29f61f7 100644
+--- a/server/app/Modules/PeopleHr/Models/Teacher.php
++++ b/server/app/Modules/PeopleHr/Models/Teacher.php
+@@ -3,6 +3,7 @@
+ namespace App\Modules\PeopleHr\Models;
+ 
+ use Illuminate\Database\Eloquent\Concerns\HasUuids;
++use Illuminate\Database\Eloquent\Factories\HasFactory;
+ use Illuminate\Database\Eloquent\Model;
+ use Illuminate\Database\Eloquent\Relations\BelongsTo;
+ use Illuminate\Database\Eloquent\Relations\HasMany;
+@@ -16,6 +17,8 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+  */
+ class Teacher extends Model
+ {
++    use HasFactory;
++
+     use HasUuids;
+ 
+     protected $fillable = [
 diff --git a/server/app/Modules/PeopleHr/Services/TeacherService.php b/server/app/Modules/PeopleHr/Services/TeacherService.php
 index c7335a1..6cff985 100644
 --- a/server/app/Modules/PeopleHr/Services/TeacherService.php
@@ -682,6 +983,539 @@ index 15a67e8..4345c95 100644
 +            return null;
 +        });
      })->create();
+diff --git a/server/database/factories/Modules/Academic/Models/AcademicClassFactory.php b/server/database/factories/Modules/Academic/Models/AcademicClassFactory.php
+new file mode 100644
+index 0000000..1c8c5d5
+--- /dev/null
++++ b/server/database/factories/Modules/Academic/Models/AcademicClassFactory.php
+@@ -0,0 +1,29 @@
++<?php
++
++namespace Database\Factories\Modules\Academic\Models;
++
++use App\Modules\Academic\Models\AcademicClass;
++use Illuminate\Database\Eloquent\Factories\Factory;
++
++/**
++ * Generated by tools/generate-factories.php from the live schema.
++ *
++ * @extends Factory<AcademicClass>
++ */
++class AcademicClassFactory extends Factory
++{
++    protected $model = AcademicClass::class;
++
++    public function definition(): array
++    {
++        return [
++            'name' => fake()->words(2, true),
++            'capacity' => 0,
++            'min_viable_size' => 0,
++            'status' => fake()->word(),
++            'fee' => 0,
++            'gender_policy' => fake()->word(),
++            'branch_id' => \App\Modules\Iam\Models\Branch::factory(),
++        ];
++    }
++}
+diff --git a/server/database/factories/Modules/Academic/Models/ExamFactory.php b/server/database/factories/Modules/Academic/Models/ExamFactory.php
+new file mode 100644
+index 0000000..e9f880b
+--- /dev/null
++++ b/server/database/factories/Modules/Academic/Models/ExamFactory.php
+@@ -0,0 +1,28 @@
++<?php
++
++namespace Database\Factories\Modules\Academic\Models;
++
++use App\Modules\Academic\Models\Exam;
++use Illuminate\Database\Eloquent\Factories\Factory;
++
++/**
++ * Generated by tools/generate-factories.php from the live schema.
++ *
++ * @extends Factory<Exam>
++ */
++class ExamFactory extends Factory
++{
++    protected $model = Exam::class;
++
++    public function definition(): array
++    {
++        return [
++            'title' => fake()->words(2, true),
++            'date' => now(),
++            'fee' => 0,
++            'type' => 'placement',
++            'branch_id' => \App\Modules\Iam\Models\Branch::factory(),
++            'total_marks' => 0,
++        ];
++    }
++}
+diff --git a/server/database/factories/Modules/Academic/Models/HomeworkFactory.php b/server/database/factories/Modules/Academic/Models/HomeworkFactory.php
+new file mode 100644
+index 0000000..0d9f941
+--- /dev/null
++++ b/server/database/factories/Modules/Academic/Models/HomeworkFactory.php
+@@ -0,0 +1,25 @@
++<?php
++
++namespace Database\Factories\Modules\Academic\Models;
++
++use App\Modules\Academic\Models\Homework;
++use Illuminate\Database\Eloquent\Factories\Factory;
++
++/**
++ * Generated by tools/generate-factories.php from the live schema.
++ *
++ * @extends Factory<Homework>
++ */
++class HomeworkFactory extends Factory
++{
++    protected $model = Homework::class;
++
++    public function definition(): array
++    {
++        return [
++            'session_id' => \App\Modules\Academic\Models\Session::factory(),
++            'title' => fake()->words(2, true),
++            'assigned_by' => fake()->word(),
++        ];
++    }
++}
+diff --git a/server/database/factories/Modules/Academic/Models/LevelFactory.php b/server/database/factories/Modules/Academic/Models/LevelFactory.php
+new file mode 100644
+index 0000000..162ec66
+--- /dev/null
++++ b/server/database/factories/Modules/Academic/Models/LevelFactory.php
+@@ -0,0 +1,29 @@
++<?php
++
++namespace Database\Factories\Modules\Academic\Models;
++
++use App\Modules\Academic\Models\Level;
++use Illuminate\Database\Eloquent\Factories\Factory;
++
++/**
++ * Generated by tools/generate-factories.php from the live schema.
++ *
++ * @extends Factory<Level>
++ */
++class LevelFactory extends Factory
++{
++    protected $model = Level::class;
++
++    public function definition(): array
++    {
++        return [
++            'program_id' => \App\Modules\Academic\Models\Program::factory(),
++            'program_version_id' => \App\Modules\Academic\Models\ProgramVersion::factory(),
++            'name' => fake()->words(2, true),
++            'order' => 0,
++            'default_fee' => 0,
++            'pass_mark' => 0,
++            'min_viable_size' => 0,
++        ];
++    }
++}
+diff --git a/server/database/factories/Modules/Academic/Models/ProgramFactory.php b/server/database/factories/Modules/Academic/Models/ProgramFactory.php
+new file mode 100644
+index 0000000..f267b6f
+--- /dev/null
++++ b/server/database/factories/Modules/Academic/Models/ProgramFactory.php
+@@ -0,0 +1,26 @@
++<?php
++
++namespace Database\Factories\Modules\Academic\Models;
++
++use App\Modules\Academic\Models\Program;
++use Illuminate\Database\Eloquent\Factories\Factory;
++
++/**
++ * Generated by tools/generate-factories.php from the live schema.
++ *
++ * @extends Factory<Program>
++ */
++class ProgramFactory extends Factory
++{
++    protected $model = Program::class;
++
++    public function definition(): array
++    {
++        return [
++            'name' => fake()->words(2, true),
++            'code' => strtoupper(fake()->unique()->bothify('??#####')),
++            'is_active' => false,
++            'branch_id' => \App\Modules\Iam\Models\Branch::factory(),
++        ];
++    }
++}
+diff --git a/server/database/factories/Modules/Academic/Models/ProgramVersionFactory.php b/server/database/factories/Modules/Academic/Models/ProgramVersionFactory.php
+new file mode 100644
+index 0000000..7c5afdb
+--- /dev/null
++++ b/server/database/factories/Modules/Academic/Models/ProgramVersionFactory.php
+@@ -0,0 +1,27 @@
++<?php
++
++namespace Database\Factories\Modules\Academic\Models;
++
++use App\Modules\Academic\Models\ProgramVersion;
++use Illuminate\Database\Eloquent\Factories\Factory;
++
++/**
++ * Generated by tools/generate-factories.php from the live schema.
++ *
++ * @extends Factory<ProgramVersion>
++ */
++class ProgramVersionFactory extends Factory
++{
++    protected $model = ProgramVersion::class;
++
++    public function definition(): array
++    {
++        return [
++            'program_id' => \App\Modules\Academic\Models\Program::factory(),
++            'version_label' => fake()->word(),
++            'version_number' => 0,
++            'status' => 'draft',
++            'is_default' => false,
++        ];
++    }
++}
+diff --git a/server/database/factories/Modules/Academic/Models/SessionFactory.php b/server/database/factories/Modules/Academic/Models/SessionFactory.php
+new file mode 100644
+index 0000000..6498f18
+--- /dev/null
++++ b/server/database/factories/Modules/Academic/Models/SessionFactory.php
+@@ -0,0 +1,27 @@
++<?php
++
++namespace Database\Factories\Modules\Academic\Models;
++
++use App\Modules\Academic\Models\Session;
++use Illuminate\Database\Eloquent\Factories\Factory;
++
++/**
++ * Generated by tools/generate-factories.php from the live schema.
++ *
++ * @extends Factory<Session>
++ */
++class SessionFactory extends Factory
++{
++    protected $model = Session::class;
++
++    public function definition(): array
++    {
++        return [
++            'class_id' => \App\Modules\Academic\Models\AcademicClass::factory(),
++            'date' => now(),
++            'start_time' => now(),
++            'end_time' => now(),
++            'status' => 'scheduled',
++        ];
++    }
++}
+diff --git a/server/database/factories/Modules/Academic/Models/StudentFactory.php b/server/database/factories/Modules/Academic/Models/StudentFactory.php
+new file mode 100644
+index 0000000..5ef0fee
+--- /dev/null
++++ b/server/database/factories/Modules/Academic/Models/StudentFactory.php
+@@ -0,0 +1,28 @@
++<?php
++
++namespace Database\Factories\Modules\Academic\Models;
++
++use App\Modules\Academic\Models\Student;
++use Illuminate\Database\Eloquent\Factories\Factory;
++
++/**
++ * Generated by tools/generate-factories.php from the live schema.
++ *
++ * @extends Factory<Student>
++ */
++class StudentFactory extends Factory
++{
++    protected $model = Student::class;
++
++    public function definition(): array
++    {
++        return [
++            'student_code' => fake()->word(),
++            'full_name' => fake()->word(),
++            'status' => 'active',
++            'registration_date' => now(),
++            'discount_percent' => 0,
++            'branch_id' => \App\Modules\Iam\Models\Branch::factory(),
++        ];
++    }
++}
+diff --git a/server/database/factories/Modules/CrmEnrollment/Models/CampaignFactory.php b/server/database/factories/Modules/CrmEnrollment/Models/CampaignFactory.php
+new file mode 100644
+index 0000000..d8611e7
+--- /dev/null
++++ b/server/database/factories/Modules/CrmEnrollment/Models/CampaignFactory.php
+@@ -0,0 +1,28 @@
++<?php
++
++namespace Database\Factories\Modules\CrmEnrollment\Models;
++
++use App\Modules\CrmEnrollment\Models\Campaign;
++use Illuminate\Database\Eloquent\Factories\Factory;
++
++/**
++ * Generated by tools/generate-factories.php from the live schema.
++ *
++ * @extends Factory<Campaign>
++ */
++class CampaignFactory extends Factory
++{
++    protected $model = Campaign::class;
++
++    public function definition(): array
++    {
++        return [
++            'name' => fake()->words(2, true),
++            'source' => 'ads',
++            'start_date' => now(),
++            'budget' => 0,
++            'status' => 'active',
++            'branch_id' => \App\Modules\Iam\Models\Branch::factory(),
++        ];
++    }
++}
+diff --git a/server/database/factories/Modules/FinancePayroll/Models/InvoiceFactory.php b/server/database/factories/Modules/FinancePayroll/Models/InvoiceFactory.php
+new file mode 100644
+index 0000000..c95e169
+--- /dev/null
++++ b/server/database/factories/Modules/FinancePayroll/Models/InvoiceFactory.php
+@@ -0,0 +1,28 @@
++<?php
++
++namespace Database\Factories\Modules\FinancePayroll\Models;
++
++use App\Modules\FinancePayroll\Models\Invoice;
++use Illuminate\Database\Eloquent\Factories\Factory;
++
++/**
++ * Generated by tools/generate-factories.php from the live schema.
++ *
++ * @extends Factory<Invoice>
++ */
++class InvoiceFactory extends Factory
++{
++    protected $model = Invoice::class;
++
++    public function definition(): array
++    {
++        return [
++            'student_id' => \App\Modules\Academic\Models\Student::factory(),
++            'total_amount' => 0,
++            'discount_amount' => 0,
++            'net_amount' => 0,
++            'status' => 'draft',
++            'branch_id' => \App\Modules\Iam\Models\Branch::factory(),
++        ];
++    }
++}
+diff --git a/server/database/factories/Modules/FundingImpact/Models/DonorFactory.php b/server/database/factories/Modules/FundingImpact/Models/DonorFactory.php
+new file mode 100644
+index 0000000..75049f6
+--- /dev/null
++++ b/server/database/factories/Modules/FundingImpact/Models/DonorFactory.php
+@@ -0,0 +1,24 @@
++<?php
++
++namespace Database\Factories\Modules\FundingImpact\Models;
++
++use App\Modules\FundingImpact\Models\Donor;
++use Illuminate\Database\Eloquent\Factories\Factory;
++
++/**
++ * Generated by tools/generate-factories.php from the live schema.
++ *
++ * @extends Factory<Donor>
++ */
++class DonorFactory extends Factory
++{
++    protected $model = Donor::class;
++
++    public function definition(): array
++    {
++        return [
++            'full_name' => fake()->word(),
++            'type' => 'individual',
++        ];
++    }
++}
+diff --git a/server/database/factories/Modules/Iam/Models/BranchFactory.php b/server/database/factories/Modules/Iam/Models/BranchFactory.php
+new file mode 100644
+index 0000000..d544cd0
+--- /dev/null
++++ b/server/database/factories/Modules/Iam/Models/BranchFactory.php
+@@ -0,0 +1,25 @@
++<?php
++
++namespace Database\Factories\Modules\Iam\Models;
++
++use App\Modules\Iam\Models\Branch;
++use Illuminate\Database\Eloquent\Factories\Factory;
++
++/**
++ * Generated by tools/generate-factories.php from the live schema.
++ *
++ * @extends Factory<Branch>
++ */
++class BranchFactory extends Factory
++{
++    protected $model = Branch::class;
++
++    public function definition(): array
++    {
++        return [
++            'name' => fake()->words(2, true),
++            'location' => fake()->word(),
++            'is_active' => false,
++        ];
++    }
++}
+diff --git a/server/database/factories/Modules/Iam/Models/PermissionFactory.php b/server/database/factories/Modules/Iam/Models/PermissionFactory.php
+new file mode 100644
+index 0000000..6e17584
+--- /dev/null
++++ b/server/database/factories/Modules/Iam/Models/PermissionFactory.php
+@@ -0,0 +1,27 @@
++<?php
++
++namespace Database\Factories\Modules\Iam\Models;
++
++use App\Modules\Iam\Models\Permission;
++use Illuminate\Database\Eloquent\Factories\Factory;
++
++/**
++ * Generated by tools/generate-factories.php from the live schema.
++ *
++ * @extends Factory<Permission>
++ */
++class PermissionFactory extends Factory
++{
++    protected $model = Permission::class;
++
++    public function definition(): array
++    {
++        return [
++            'code' => strtoupper(fake()->unique()->bothify('??#####')),
++            'resource' => fake()->word(),
++            'action' => fake()->word(),
++            'category' => fake()->word(),
++            'is_system' => false,
++        ];
++    }
++}
+diff --git a/server/database/factories/Modules/Iam/Models/RoleFactory.php b/server/database/factories/Modules/Iam/Models/RoleFactory.php
+new file mode 100644
+index 0000000..0d53797
+--- /dev/null
++++ b/server/database/factories/Modules/Iam/Models/RoleFactory.php
+@@ -0,0 +1,27 @@
++<?php
++
++namespace Database\Factories\Modules\Iam\Models;
++
++use App\Modules\Iam\Models\Role;
++use Illuminate\Database\Eloquent\Factories\Factory;
++
++/**
++ * Generated by tools/generate-factories.php from the live schema.
++ *
++ * @extends Factory<Role>
++ */
++class RoleFactory extends Factory
++{
++    protected $model = Role::class;
++
++    public function definition(): array
++    {
++        return [
++            'code' => strtoupper(fake()->unique()->bothify('??#####')),
++            'name' => fake()->words(2, true),
++            'is_system' => false,
++            'is_active' => false,
++            'sort_order' => 0,
++        ];
++    }
++}
+diff --git a/server/database/factories/Modules/Iam/Models/UserFactory.php b/server/database/factories/Modules/Iam/Models/UserFactory.php
+new file mode 100644
+index 0000000..37c0005
+--- /dev/null
++++ b/server/database/factories/Modules/Iam/Models/UserFactory.php
+@@ -0,0 +1,30 @@
++<?php
++
++namespace Database\Factories\Modules\Iam\Models;
++
++use App\Modules\Iam\Models\User;
++use Illuminate\Database\Eloquent\Factories\Factory;
++
++/**
++ * Generated by tools/generate-factories.php from the live schema.
++ *
++ * @extends Factory<User>
++ */
++class UserFactory extends Factory
++{
++    protected $model = User::class;
++
++    public function definition(): array
++    {
++        return [
++            'username' => fake()->word(),
++            'password' => \Illuminate\Support\Facades\Hash::make('password'),
++            'full_name' => fake()->word(),
++            'role' => 'owner',
++            'branch_id' => \App\Modules\Iam\Models\Branch::factory(),
++            'two_factor_enabled' => 0,
++            'must_change_password' => 0,
++            'is_active' => false,
++        ];
++    }
++}
+diff --git a/server/database/factories/Modules/PeopleHr/Models/TeacherFactory.php b/server/database/factories/Modules/PeopleHr/Models/TeacherFactory.php
+new file mode 100644
+index 0000000..e78740b
+--- /dev/null
++++ b/server/database/factories/Modules/PeopleHr/Models/TeacherFactory.php
+@@ -0,0 +1,29 @@
++<?php
++
++namespace Database\Factories\Modules\PeopleHr\Models;
++
++use App\Modules\PeopleHr\Models\Teacher;
++use Illuminate\Database\Eloquent\Factories\Factory;
++
++/**
++ * Generated by tools/generate-factories.php from the live schema.
++ *
++ * @extends Factory<Teacher>
++ */
++class TeacherFactory extends Factory
++{
++    protected $model = Teacher::class;
++
++    public function definition(): array
++    {
++        return [
++            'full_name' => fake()->word(),
++            'base_salary' => 0,
++            'salary_type' => 'fixed',
++            'performance_score' => 0,
++            'status' => 'active',
++            'branch_id' => \App\Modules\Iam\Models\Branch::factory(),
++            'joined_date' => now(),
++        ];
++    }
++}
 diff --git a/server/database/migrations/2026_01_01_000004_create_users_table.php b/server/database/migrations/2026_01_01_000004_create_users_table.php
 index ee71c3e..c3e3eef 100644
 --- a/server/database/migrations/2026_01_01_000004_create_users_table.php
@@ -727,10 +1561,10 @@ index 3164edf..3076b4a 100644
          Schema::create('automations', function (Blueprint $table) {
 diff --git a/server/database/migrations/2026_08_26_000001_fix_schema_gaps.php b/server/database/migrations/2026_08_26_000001_fix_schema_gaps.php
 new file mode 100644
-index 0000000..37f8905
+index 0000000..49293fa
 --- /dev/null
 +++ b/server/database/migrations/2026_08_26_000001_fix_schema_gaps.php
-@@ -0,0 +1,67 @@
+@@ -0,0 +1,91 @@
 +<?php
 +
 +use Illuminate\Database\Migrations\Migration;
@@ -777,12 +1611,36 @@ index 0000000..37f8905
 +                $table->string('status')->default('issued');
 +            });
 +        }
++
++        /*
++         * Invoice::$attributes declares 'tax_amount' => 0 and
++         * Campaign::$attributes declares 'spent' => 0, so Eloquent writes both on
++         * every insert -- but no migration creates either column. The result is
++         * that creating an Invoice or a Campaign fails outright:
++         *   "table invoices has no column named tax_amount"
++         *   "table campaigns has no column named spent"
++         * Both are read back by the models (Invoice::getTotalWithTax,
++         * Campaign::getRemainingBudget/getBurnRate), so the columns are real
++         * requirements, not leftovers.
++         */
++        if (!Schema::hasColumn('invoices', 'tax_amount')) {
++            Schema::table('invoices', function (Blueprint $table) {
++                $table->decimal('tax_amount', 15, 2)->default(0);
++            });
++        }
++
++        if (!Schema::hasColumn('campaigns', 'spent')) {
++            Schema::table('campaigns', function (Blueprint $table) {
++                $table->decimal('spent', 15, 2)->default(0);
++            });
++        }
 +    }
 +
 +    public function down(): void
 +    {
 +        foreach (['exams.total_marks', 'exam_results.max_score',
-+                  'impact_metrics.progress_percent', 'certificates.status'] as $tc) {
++                  'impact_metrics.progress_percent', 'certificates.status',
++                  'invoices.tax_amount', 'campaigns.spent'] as $tc) {
 +            [$t, $c] = explode('.', $tc);
 +            if (Schema::hasColumn($t, $c)) {
 +                Schema::table($t, function (Blueprint $table) use ($c) {

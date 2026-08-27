@@ -137,12 +137,36 @@ return new class extends Migration
                 $table->string('status')->default('issued');
             });
         }
+
+        /*
+         * Invoice::$attributes declares 'tax_amount' => 0 and
+         * Campaign::$attributes declares 'spent' => 0, so Eloquent writes both on
+         * every insert -- but no migration creates either column. The result is
+         * that creating an Invoice or a Campaign fails outright:
+         *   "table invoices has no column named tax_amount"
+         *   "table campaigns has no column named spent"
+         * Both are read back by the models (Invoice::getTotalWithTax,
+         * Campaign::getRemainingBudget/getBurnRate), so the columns are real
+         * requirements, not leftovers.
+         */
+        if (!Schema::hasColumn('invoices', 'tax_amount')) {
+            Schema::table('invoices', function (Blueprint $table) {
+                $table->decimal('tax_amount', 15, 2)->default(0);
+            });
+        }
+
+        if (!Schema::hasColumn('campaigns', 'spent')) {
+            Schema::table('campaigns', function (Blueprint $table) {
+                $table->decimal('spent', 15, 2)->default(0);
+            });
+        }
     }
 
     public function down(): void
     {
         foreach (['exams.total_marks', 'exam_results.max_score',
-                  'impact_metrics.progress_percent', 'certificates.status'] as $tc) {
+                  'impact_metrics.progress_percent', 'certificates.status',
+                  'invoices.tax_amount', 'campaigns.spent'] as $tc) {
             [$t, $c] = explode('.', $tc);
             if (Schema::hasColumn($t, $c)) {
                 Schema::table($t, function (Blueprint $table) use ($c) {

@@ -418,6 +418,43 @@ GET  /api/search?q=ali      → 200 {"available":false,...}
 GET  /api/auth/me           → admin permissions = 66
 ```
 
+### یافته‌های جدید این نوبت (باک ۲۲ و ۲۳)
+
+| # | باگ | محل | شدت | ریشه |
+|---|---|---|---|---|
+| ۲۲ | **ساخت Invoice کاملاً غیرممکن** | `Invoice::$attributes` → `'tax_amount' => 0` | **HIGH** | مدل `tax_amount` را در `$attributes` اعلام کرده و Eloquent آن را در **هر** insert می‌نویسد، اما **هیچ migration ای این ستون را نمی‌سازد** → `table invoices has no column named tax_amount`. مدل همان ستون را در `getTotalWithTax()` هم می‌خواند، پس ستون نیاز واقعی است نه باقی‌مانده. |
+| ۲۳ | **ساخت Campaign کاملاً غیرممکن** | `Campaign::$attributes` → `'spent' => 0` | **HIGH** | دقیقاً همان الگو: `getRemainingBudget()`، `getBurnRate()` و `recordSpend()` همه `spent` را می‌خوانند/می‌نویسند ولی ستون وجود ندارد. |
+
+**اثبات:** `grep -rn "tax_amount\|'spent'" database/migrations/` → **۰ نتیجه**. و `Invoice::factory()->create()` خطای `no column named tax_amount` داد.
+**رفع:** هر دو ستون به `2026_08_26_000001_fix_schema_gaps` اضافه شد (`decimal(15,2) default 0`) + در `down()` هم drop می‌شوند. بعد از رفع، ساخت هر دو رکورد موفق شد.
+
+### پروژه **هیچ model factory ای** shipped نکرده بود
+
+`database/factories/` در مخزن **خالی** است (`find` → ۰ فایل `*Factory.php` در کل پروژه)، در حالی که تست‌های Pest روی **۱۶ مدل** `::factory()` صدا می‌زنند (Branch ۲۷ بار، Student ۲۲، User ۱۵، Role ۱۳، AcademicClass ۱۱، …). یعنی هر تستی که factory می‌خواست با `does not have the HasFactory trait` می‌مرد.
+
+`tools/generate-factories.php` این ۱۶ factory را **از schema زنده** می‌سازد (نه حدسی)، پس NOT NULLها و enum CHECKها رعایت می‌شوند. سه نکته که در مسیر پیدا شد و اصلاح شد:
+
+- Laravel برای مدلِ ماژولار، factory را در زیر-namespace همان مدل جست‌وجو می‌کند: `App\Modules\Iam\Models\User` → `Database\Factories\Modules\Iam\Models\UserFactory` (نه flat).
+- کلید خارجیِ NOT NULL نمی‌تواند `null` باشد → به factoryِ مدلِ والد اشاره می‌کند.
+- ستون‌های تاریخ‌مانندِ بدون پیشوند (`date`, `start_time`) باید `now()` بگیرند وگرنه Cast تاریخ روی `fake()->word()` می‌شکند.
+
+**راستی‌آزمایی (اجرا شد، نه ادعا):** هر ۱۶ factory داخل یک transaction ساخته و rollback شد:
+
+```
+MARK RESULT ok=16 fail=0 total=16
+```
+
+و **رگرسیون API بعد از دست‌زدن به ۱۶ مدل** — همه سالم:
+
+```
+/api/health 200 · login → توکن ۵۰ کاراکتری · students/branches/teachers/roles/
+permissions/auth/me/dashboard/rules/search همه 200 · unauth /api/students → 401
+```
+
+### نکتهٔ ابزار (نه باگ محصول)
+
+در runtime پی‌اس‌پی‌ wasm، زنجیرهٔ SPL که `tools/bootstrap.php` به جا می‌گذارد کلاس‌هایی را که boot فریم‌ورک هرگز لمس نکرده (مثل `Schema`/`DB`) resolve نمی‌کند. اسکریپت‌های `tools/*.php` به همین دلیل bootstrap مستقلِ خودشان را دارند. **این فقط محدودیت ابزار تست ماست** و زیر `composer` + `php artisan` واقعی وجود ندارد.
+
 ### آنچه در **این** نوبت راستی‌آزمایی **نشد**
 
 صادقانه: چون ریست‌ها محیط را پاک کردند، این موارد در این نوبت دوباره اجرا **نشده‌اند** و نباید «تأییدشدهٔ فعلی» خوانده شوند. عددهایشان از نوبت‌های پیشین است:
