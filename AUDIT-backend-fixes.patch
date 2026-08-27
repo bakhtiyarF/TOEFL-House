@@ -1,0 +1,1049 @@
+diff --git a/server/app/Http/Controllers/HealthController.php b/server/app/Http/Controllers/HealthController.php
+index 5bc806c..52562e5 100644
+--- a/server/app/Http/Controllers/HealthController.php
++++ b/server/app/Http/Controllers/HealthController.php
+@@ -39,7 +39,11 @@ class HealthController extends Controller
+             'redis' => $this->checkRedis(),
+         ];
+ 
+-        $allHealthy = collect($checks)->every(fn($check) => $check['status'] === 'healthy');
++        // A component that is not configured (e.g. no Redis in this deployment)
++        // reports 'skipped' and must not degrade the whole service.
++        $allHealthy = collect($checks)->every(
++            fn($check) => in_array($check['status'], ['healthy', 'skipped'], true)
++        );
+ 
+         $response = [
+             'status' => $allHealthy ? 'healthy' : 'degraded',
+@@ -69,7 +73,7 @@ class HealthController extends Controller
+                 'status' => 'ready',
+                 'timestamp' => now()->toIso8601String(),
+             ]);
+-        } catch (\Exception $e) {
++        } catch (\Throwable $e) {
+             return response()->json([
+                 'status' => 'not_ready',
+                 'timestamp' => now()->toIso8601String(),
+@@ -105,7 +109,7 @@ class HealthController extends Controller
+                 'duration_ms' => $duration,
+                 'message' => 'Database connection successful',
+             ];
+-        } catch (\Exception $e) {
++        } catch (\Throwable $e) {
+             return [
+                 'status' => 'unhealthy',
+                 'duration_ms' => null,
+@@ -140,7 +144,7 @@ class HealthController extends Controller
+                 'duration_ms' => $duration,
+                 'message' => 'Cache read/write failed',
+             ];
+-        } catch (\Exception $e) {
++        } catch (\Throwable $e) {
+             return [
+                 'status' => 'unhealthy',
+                 'duration_ms' => null,
+@@ -154,6 +158,20 @@ class HealthController extends Controller
+      */
+     private function checkRedis(): array
+     {
++        // Redis is optional in this deployment (cache=database, session=file,
++        // queue=sync). config('database.redis.default.host') always has a
++        // default, so the real test is whether any Redis driver is loadable at
++        // all; without one there is nothing to ping and reporting 'unhealthy'
++        // would permanently degrade /api/health.
++        $driverAvailable = extension_loaded('redis') || class_exists(\Predis\Client::class);
++        if (!$driverAvailable) {
++            return [
++                'status' => 'skipped',
++                'duration_ms' => null,
++                'message' => 'Redis is not configured for this environment',
++            ];
++        }
++
+         try {
+             $start = microtime(true);
+             $pong = Redis::ping();
+@@ -172,7 +190,7 @@ class HealthController extends Controller
+                 'duration_ms' => $duration,
+                 'message' => 'Redis ping failed',
+             ];
+-        } catch (\Exception $e) {
++        } catch (\Throwable $e) {
+             return [
+                 'status' => 'unhealthy',
+                 'duration_ms' => null,
+diff --git a/server/app/Modules/Academic/Http/Controllers/StudentController.php b/server/app/Modules/Academic/Http/Controllers/StudentController.php
+index dde3416..89df4eb 100644
+--- a/server/app/Modules/Academic/Http/Controllers/StudentController.php
++++ b/server/app/Modules/Academic/Http/Controllers/StudentController.php
+@@ -161,7 +161,11 @@ class StudentController extends Controller
+     private function generateStudentCode(): string
+     {
+         $year = now()->format('Y');
+-        $lastStudent = Student::where('student_code', 'like', "STU-{$year}-%")
++        // withTrashed(): a soft-deleted student still occupies its UNIQUE
++        // student_code, so ignoring the trash hands out a duplicate and the
++        // next insert fails on the unique index.
++        $lastStudent = Student::withTrashed()
++            ->where('student_code', 'like', "STU-{$year}-%")
+             ->orderBy('student_code', 'desc')
+             ->first();
+ 
+diff --git a/server/app/Modules/Academic/Services/ClassService.php b/server/app/Modules/Academic/Services/ClassService.php
+index 334eb49..93af580 100644
+--- a/server/app/Modules/Academic/Services/ClassService.php
++++ b/server/app/Modules/Academic/Services/ClassService.php
+@@ -4,6 +4,7 @@ namespace App\Modules\Academic\Services;
+ 
+ use App\Modules\Academic\Models\AcademicClass;
+ use App\Modules\Academic\Models\Session;
++use App\Modules\Iam\Models\User;
+ use App\Modules\Iam\Services\BranchScopeService;
+ use Illuminate\Support\Collection;
+ use Illuminate\Support\Facades\DB;
+@@ -44,7 +45,7 @@ class ClassService
+ 
+     public function createClass(array $data, string $actorUserId): AcademicClass
+     {
+-        if (!$this->branchScope->canAccessBranch($actorUserId, $data['branch_id'])) {
++        if (!$this->branchScope->canAccessBranch(User::findOrFail($actorUserId), $data['branch_id'])) {
+             throw new \Exception('Forbidden');
+         }
+ 
+@@ -64,7 +65,7 @@ class ClassService
+     {
+         $class = AcademicClass::findOrFail($id);
+ 
+-        if (!$this->branchScope->canAccessBranch($actorUserId, $class->branch_id)) {
++        if (!$this->branchScope->canAccessBranch(User::findOrFail($actorUserId), $class->branch_id)) {
+             throw new \Exception('Forbidden');
+         }
+ 
+diff --git a/server/app/Modules/Academic/Services/EnrollmentService.php b/server/app/Modules/Academic/Services/EnrollmentService.php
+index caba549..8070de3 100644
+--- a/server/app/Modules/Academic/Services/EnrollmentService.php
++++ b/server/app/Modules/Academic/Services/EnrollmentService.php
+@@ -7,6 +7,7 @@ use App\Modules\Academic\Models\Enrollment;
+ use App\Modules\Academic\Models\ProgramVersion;
+ use App\Modules\Academic\Models\FeeRule;
+ use App\Modules\FinancePayroll\Services\TuitionCalculationService;
++use App\Modules\Iam\Models\User;
+ use App\Modules\Iam\Services\BranchScopeService;
+ use Illuminate\Support\Facades\DB;
+ use Illuminate\Support\Str;
+@@ -31,7 +32,7 @@ class EnrollmentService
+     {
+         $student = Student::findOrFail($studentId);
+ 
+-        if (!$this->branchScope->canAccessBranch($actorUserId, $student->branch_id)) {
++        if (!$this->branchScope->canAccessBranch(User::findOrFail($actorUserId), $student->branch_id)) {
+             throw new \Exception('Forbidden: branch scope violation');
+         }
+ 
+@@ -64,19 +65,26 @@ class EnrollmentService
+                 'status' => 'active',
+                 'program_version_id' => $programVersion->id,
+                 'fee_snapshot_json' => $feeSnapshot,
++                // enrollments.branch_id is NOT NULL and was never set, so every
++                // enrollment insert failed the constraint.
++                'branch_id' => $student->branch_id,
+                 'started_at' => now(),
+                 'skills_focus' => $data['skills_focus'] ?? null,
+             ]);
+ 
+-            // Create student semester record
+-            $student->semesters()->create([
+-                'id' => Str::uuid()->toString(),
+-                'semester_name' => $enrollment->semester_name,
+-                'class_id' => $enrollment->class_id,
+-                'enroll_date' => now()->toDateString(),
+-                'fee_amount' => $feeSnapshot['net_tuition'] ?? 0,
+-                'status' => 'active',
+-            ]);
++            // Create student semester record.
++            // student_semesters.class_id is NOT NULL, so this only applies when
++            // the enrollment is actually attached to a class.
++            if ($enrollment->class_id) {
++                $student->semesters()->create([
++                    'id' => Str::uuid()->toString(),
++                    'semester_name' => $enrollment->semester_name,
++                    'class_id' => $enrollment->class_id,
++                    'enroll_date' => now()->toDateString(),
++                    'fee_amount' => $feeSnapshot['net_tuition'] ?? 0,
++                    'status' => 'active',
++                ]);
++            }
+ 
+             // Journey event
+             $student->addJourneyEvent('enrolled', [
+@@ -104,7 +112,7 @@ class EnrollmentService
+     {
+         $enrollment = Enrollment::findOrFail($enrollmentId);
+ 
+-        if (!$this->branchScope->canAccessBranch($actorUserId, $enrollment->student->branch_id)) {
++        if (!$this->branchScope->canAccessBranch(User::findOrFail($actorUserId), $enrollment->student->branch_id)) {
+             throw new \Exception('Forbidden');
+         }
+ 
+diff --git a/server/app/Modules/FinancePayroll/Services/TuitionCalculationService.php b/server/app/Modules/FinancePayroll/Services/TuitionCalculationService.php
+index d8f2ee6..9301911 100644
+--- a/server/app/Modules/FinancePayroll/Services/TuitionCalculationService.php
++++ b/server/app/Modules/FinancePayroll/Services/TuitionCalculationService.php
+@@ -2,6 +2,7 @@
+ 
+ namespace App\Modules\FinancePayroll\Services;
+ 
++use App\Modules\Academic\Models\FeeRule;
+ use App\Modules\PlatformServices\Services\RuleEngineService;
+ 
+ /**
+@@ -168,4 +169,90 @@ class TuitionCalculationService
+             'hasScholarship' => $result['scholarshipPercent'] > 0,
+         ];
+     }
++    /**
++     * Snapshot the fees that apply to a new enrollment.
++     *
++     * EnrollmentService calls this at enrollment time and stores the result in
++     * enrollments.fee_snapshot_json (copy-on-write: later fee changes must not
++     * retro-actively alter an existing enrollment). The method did not exist, so
++     * every enrollment attempt died with "Call to undefined method".
++     *
++     * @return array<string, mixed>
++     */
++    public function calculateEnrollmentFees(
++        string $programVersionId,
++        ?string $levelId,
++        ?string $branchId,
++        string $enrollmentType = 'new'
++    ): array {
++        $today = now()->toDateString();
++
++        $rules = FeeRule::query()
++            ->where('program_version_id', $programVersionId)
++            ->where(function ($q) use ($levelId) {
++                $q->whereNull('level_id');
++                if ($levelId !== null) {
++                    $q->orWhere('level_id', $levelId);
++                }
++            })
++            ->where(function ($q) use ($branchId) {
++                $q->whereNull('branch_id');
++                if ($branchId !== null) {
++                    $q->orWhere('branch_id', $branchId);
++                }
++            })
++            ->where(function ($q) use ($today) {
++                $q->whereNull('effective_from')->orWhere('effective_from', '<=', $today);
++            })
++            ->where(function ($q) use ($today) {
++                $q->whereNull('effective_to')->orWhere('effective_to', '>=', $today);
++            })
++            ->orderBy('version', 'desc')
++            ->get();
++
++        $lines = [];
++        $gross = 0.0;
++        $optional = 0.0;
++
++        foreach ($rules as $rule) {
++            $lines[] = [
++                'fee_type' => $rule->fee_type,
++                'amount' => (float) $rule->amount,
++                'currency' => $rule->currency,
++                'is_optional' => (bool) $rule->is_optional,
++            ];
++
++            if ($rule->is_optional) {
++                $optional += (float) $rule->amount;
++            } else {
++                $gross += (float) $rule->amount;
++            }
++        }
++
++        $resolved = $this->resolveStudentFinanceAmounts(
++            grossTuition: $gross,
++            requestedDiscountPercent: 0,
++            requestedScholarshipPercent: 0,
++            amountPaid: 0,
++            branchId: $branchId,
++        );
++
++        return [
++            'enrollment_type' => $enrollmentType,
++            'program_version_id' => $programVersionId,
++            'level_id' => $levelId,
++            'branch_id' => $branchId,
++            'currency' => $rules->first()->currency ?? 'AFN',
++            'lines' => $lines,
++            'gross_tuition' => (float) $resolved['grossTuition'],
++            'optional_total' => round($optional, 2),
++            'discount_percent' => (float) $resolved['discountPercent'],
++            'scholarship_percent' => (float) $resolved['scholarshipPercent'],
++            'discount_amount' => (float) $resolved['discountAmount'],
++            'scholarship_amount' => (float) $resolved['scholarshipAmount'],
++            'net_tuition' => (float) $resolved['netTuition'],
++            'final_payable' => (float) $resolved['finalPayable'],
++            'snapshot_at' => now()->toIso8601String(),
++        ];
++    }
+ }
+diff --git a/server/app/Modules/Iam/Models/User.php b/server/app/Modules/Iam/Models/User.php
+index 63b083f..d48e0ba 100644
+--- a/server/app/Modules/Iam/Models/User.php
++++ b/server/app/Modules/Iam/Models/User.php
+@@ -2,13 +2,18 @@
+ 
+ namespace App\Modules\Iam\Models;
+ 
++use App\Modules\Iam\Services\PermissionResolutionService;
+ use Illuminate\Database\Eloquent\Concerns\HasUuids;
++use Illuminate\Database\Eloquent\Factories\HasFactory;
+ use Illuminate\Foundation\Auth\User as Authenticatable;
+ use Illuminate\Notifications\Notifiable;
++use Illuminate\Support\Collection;
+ use Laravel\Sanctum\HasApiTokens;
+ 
+ class User extends Authenticatable
+ {
++    use HasFactory;
++
+     use HasUuids, HasApiTokens, Notifiable;
+ 
+     protected $fillable = [
+@@ -71,4 +76,79 @@ class User extends Authenticatable
+     {
+         return $this->hasMany(PermissionOverride::class);
+     }
++    /*
++     * Authorization API.
++     *
++     * Every policy in app/Policies calls $user->hasPermission(), but the model
++     * never defined it, so each policy threw BadMethodCallException and the
++     * framework turned it into a 500 instead of a 403.
++     *
++     * Effective permissions come from PermissionResolutionService::resolve()
++     * (user_roles + role_permissions -> delegations -> overrides -> legacy
++     * fallback) and are memoised per request.
++     */
++
++    protected ?Collection $resolvedPermissions = null;
++
++    public function resolvedPermissions(): Collection
++    {
++        if ($this->resolvedPermissions === null) {
++            $resolved = app(PermissionResolutionService::class)->resolve($this);
++            $this->resolvedPermissions = collect(array_keys($resolved));
++        }
++
++        return $this->resolvedPermissions;
++    }
++
++    public function hasPermission(string $permission): bool
++    {
++        if ($this->isSuperUser()) {
++            return true;
++        }
++
++        return $this->resolvedPermissions()->contains($permission);
++    }
++
++    public function hasAllPermissions(array $permissions): bool
++    {
++        foreach ($permissions as $permission) {
++            if (!$this->hasPermission($permission)) {
++                return false;
++            }
++        }
++
++        return true;
++    }
++
++    public function hasAnyPermission(array $permissions): bool
++    {
++        foreach ($permissions as $permission) {
++            if ($this->hasPermission($permission)) {
++                return true;
++            }
++        }
++
++        return false;
++    }
++
++    public function hasRole(string ...$roles): bool
++    {
++        return in_array($this->role, $roles, true);
++    }
++
++    /**
++     * The owner bypasses permission checks.
++     */
++    public function isSuperUser(): bool
++    {
++        return $this->role === 'owner';
++    }
++
++    /**
++     * Branch ids this user may act on.
++     */
++    public function getBranchesAttribute(): array
++    {
++        return $this->branch_id ? [$this->branch_id] : [];
++    }
+ }
+diff --git a/server/app/Modules/Iam/Services/AuthService.php b/server/app/Modules/Iam/Services/AuthService.php
+index 1c5dc4d..f1043a0 100644
+--- a/server/app/Modules/Iam/Services/AuthService.php
++++ b/server/app/Modules/Iam/Services/AuthService.php
+@@ -35,7 +35,13 @@ class AuthService
+ 
+         $permissions = $this->permissionService->resolve($user);
+ 
++        // The SPA authenticates with a Sanctum Bearer token, but login never
++        // created one, so there was nothing to send back on later requests.
++        $token = $user->createToken('spa', ['*']);
++
+         return [
++            'token' => $token->plainTextToken,
++            'token_type' => 'Bearer',
+             'user' => $user,
+             'permissions' => array_values($permissions),
+         ];
+diff --git a/server/app/Modules/Iam/routes.php b/server/app/Modules/Iam/routes.php
+index bebf10a..82c9e7f 100644
+--- a/server/app/Modules/Iam/routes.php
++++ b/server/app/Modules/Iam/routes.php
+@@ -14,10 +14,8 @@ use App\Modules\Iam\Http\Controllers\UserController;
+ use App\Modules\Iam\Http\Controllers\DashboardController;
+ use Illuminate\Support\Facades\Route;
+ 
+-// Public auth routes
+-Route::prefix('auth')->group(function () {
+-    Route::post('/login', [AuthController::class, 'login']);
+-});
++// POST /auth/login is registered in routes/api.php, outside the auth:sanctum
++// group. Declaring it here would put it behind the guard it is meant to bypass.
+ 
+ // Protected auth routes
+ Route::prefix('auth')->middleware('auth:sanctum')->group(function () {
+diff --git a/server/app/Modules/PeopleHr/Services/TeacherService.php b/server/app/Modules/PeopleHr/Services/TeacherService.php
+index c7335a1..6cff985 100644
+--- a/server/app/Modules/PeopleHr/Services/TeacherService.php
++++ b/server/app/Modules/PeopleHr/Services/TeacherService.php
+@@ -43,7 +43,7 @@ class TeacherService
+ 
+     public function createTeacher(array $data): Teacher
+     {
+-        if (!$this->branchScope->canAccessBranch(auth()->id(), $data['branch_id'])) {
++        if (!$this->branchScope->canAccessBranch(auth()->user(), $data['branch_id'])) {
+             throw new \Exception('Forbidden');
+         }
+ 
+@@ -62,7 +62,7 @@ class TeacherService
+     {
+         $teacher = Teacher::findOrFail($id);
+ 
+-        if (!$this->branchScope->canAccessBranch(auth()->id(), $teacher->branch_id)) {
++        if (!$this->branchScope->canAccessBranch(auth()->user(), $teacher->branch_id)) {
+             throw new \Exception('Forbidden');
+         }
+ 
+@@ -74,7 +74,7 @@ class TeacherService
+     {
+         $teacher = Teacher::findOrFail($id);
+ 
+-        if (!$this->branchScope->canAccessBranch(auth()->id(), $teacher->branch_id)) {
++        if (!$this->branchScope->canAccessBranch(auth()->user(), $teacher->branch_id)) {
+             throw new \Exception('Forbidden');
+         }
+ 
+diff --git a/server/app/Modules/PlatformServices/Http/Controllers/RuleController.php b/server/app/Modules/PlatformServices/Http/Controllers/RuleController.php
+index 56cc0f4..c12fd1f 100644
+--- a/server/app/Modules/PlatformServices/Http/Controllers/RuleController.php
++++ b/server/app/Modules/PlatformServices/Http/Controllers/RuleController.php
+@@ -21,7 +21,7 @@ class RuleController extends Controller
+             ->when($request->query('category'), fn($q, $c) => $q->where('category', $c))
+             ->when($request->query('active_only'), fn($q) => $q->where('is_active', true))
+             ->orderByDesc('priority')
+-            ->orderByAsc('name');
++            ->orderBy('name', 'asc');
+ 
+         return response()->json($query->get());
+     }
+diff --git a/server/app/Modules/PlatformServices/Http/Controllers/SearchController.php b/server/app/Modules/PlatformServices/Http/Controllers/SearchController.php
+index cdc666e..b3d7517 100644
+--- a/server/app/Modules/PlatformServices/Http/Controllers/SearchController.php
++++ b/server/app/Modules/PlatformServices/Http/Controllers/SearchController.php
+@@ -25,12 +25,21 @@ class SearchController extends Controller
+             return response()->json(['results' => [], 'total' => 0]);
+         }
+ 
+-        $results = $this->searchService->search($query, $type, $branchId);
++        // search() takes (type, query[], tenantId) - the previous call passed
++        // (query, type, branchId), which is a TypeError on every request.
++        $response = $this->searchService->search(
++            $type,
++            ['query_string' => ['query' => $query]],
++            $branchId,
++        );
+ 
+         return response()->json([
+             'query' => $query,
+-            'results' => $results,
+-            'total' => count($results),
++            'type' => $type,
++            'available' => $this->searchService->isAvailable(),
++            'results' => $response['hits'],
++            'total' => $response['total'],
++            'took' => $response['took'],
+         ]);
+     }
+ }
+diff --git a/server/app/Modules/PlatformServices/Services/RuleEngineService.php b/server/app/Modules/PlatformServices/Services/RuleEngineService.php
+index 206370a..56deb3b 100644
+--- a/server/app/Modules/PlatformServices/Services/RuleEngineService.php
++++ b/server/app/Modules/PlatformServices/Services/RuleEngineService.php
+@@ -73,7 +73,7 @@ class RuleEngineService
+                 // Merge outputs into running data (chain-aware) and final outputs
+                 if ($result['outputs']) {
+                     foreach ($result['outputs'] as $key => $value) {
+-                        if (!str_starts_with($key, '__')) {
++                        if (!str_starts_with((string) $key, '__')) {
+                             $finalOutputs[$key] = $value;
+                             $runningData[$key] = $value;
+                         }
+@@ -111,7 +111,7 @@ class RuleEngineService
+                 }
+             })
+             ->orderByDesc('priority')
+-            ->orderByAsc('created_at')
++            ->orderBy('created_at', 'asc')
+             ->get()
+             ->map(function ($rule) {
+                 return [
+diff --git a/server/app/Services/ReportGenerationService.php b/server/app/Services/ReportGenerationService.php
+index 4128782..910a3cd 100644
+--- a/server/app/Services/ReportGenerationService.php
++++ b/server/app/Services/ReportGenerationService.php
+@@ -78,11 +78,11 @@ class ReportGenerationService
+      */
+     public function generateStudentTranscript(string $studentId): array
+     {
+-        $student = Student::with(['enrollments.class', 'enrollments.programVersion', 'journeyEvents'])
++        $student = Student::with(['enrollments.academicClass', 'enrollments.programVersion', 'journeyEvents'])
+             ->findOrFail($studentId);
+ 
+         $enrollments = $student->enrollments->map(function ($enrollment) {
+-            $sessions = $enrollment->class->sessions ?? collect();
++            $sessions = $enrollment->academicClass->sessions ?? collect();
+             $attendance = $sessions->flatMap(function ($session) {
+                 return $session->rosters()->where('student_id', request()->route('studentId'))->get();
+             });
+@@ -94,8 +94,8 @@ class ReportGenerationService
+             return [
+                 'program' => $enrollment->programVersion->program->name ?? 'N/A',
+                 'level' => $enrollment->level,
+-                'class' => $enrollment->class->name ?? 'N/A',
+-                'teacher' => $enrollment->class->teacher->full_name ?? 'N/A',
++                'class' => $enrollment->academicClass->name ?? 'N/A',
++                'teacher' => $enrollment->academicClass->teacher->full_name ?? 'N/A',
+                 'start_date' => $enrollment->started_at,
+                 'status' => $enrollment->status,
+                 'attendance_rate' => $attendanceRate,
+diff --git a/server/app/Services/SearchService.php b/server/app/Services/SearchService.php
+index 549f268..f62391c 100644
+--- a/server/app/Services/SearchService.php
++++ b/server/app/Services/SearchService.php
+@@ -13,7 +13,11 @@ use Illuminate\Support\Facades\Log;
+  */
+ class SearchService
+ {
+-    protected Client $client;
++    // Nullable: the constructor deliberately falls back to null when
++    // Elasticsearch is not configured, and every method already guards
++    // on it. The non-nullable type made that fallback a TypeError,
++    // which is what turned /api/search into a 500.
++    protected ?Client $client = null;
+     protected string $indexPrefix;
+ 
+     public function __construct()
+@@ -64,7 +68,7 @@ class SearchService
+             ]);
+ 
+             return $response['result'] === 'created' || $response['result'] === 'updated';
+-        } catch (\Exception $e) {
++        } catch (\Throwable $e) {
+             Log::error("Failed to index document", [
+                 'type' => $type,
+                 'id' => $id,
+@@ -96,7 +100,7 @@ class SearchService
+             ]);
+ 
+             return $response['result'] === 'deleted';
+-        } catch (\Exception $e) {
++        } catch (\Throwable $e) {
+             Log::error("Failed to delete document", [
+                 'type' => $type,
+                 'id' => $id,
+@@ -106,11 +110,23 @@ class SearchService
+         }
+     }
+ 
++    /**
++     * Whether Elasticsearch is actually wired up.
++     */
++    public function isAvailable(): bool
++    {
++        return $this->client !== null;
++    }
++
+     /**
+      * Search documents.
+      */
+     public function search(string $type, array $query, ?string $tenantId = null, int $from = 0, int $size = 20): array
+     {
++        if ($this->client === null) {
++            return ['hits' => [], 'total' => 0, 'took' => 0];
++        }
++
+         try {
+             $index = $this->getIndexName($type, $tenantId);
+ 
+@@ -149,7 +165,7 @@ class SearchService
+                 'total' => $response['hits']['total']['value'],
+                 'took' => $response['took'],
+             ];
+-        } catch (\Exception $e) {
++        } catch (\Throwable $e) {
+             Log::error("Search failed", [
+                 'type' => $type,
+                 'error' => $e->getMessage(),
+@@ -324,7 +340,7 @@ class SearchService
+             ]);
+ 
+             return $response['acknowledged'];
+-        } catch (\Exception $e) {
++        } catch (\Throwable $e) {
+             Log::error("Failed to create index", [
+                 'type' => $type,
+                 'error' => $e->getMessage(),
+@@ -446,7 +462,7 @@ class SearchService
+                     ->pluck('index.error')
+                     ->toArray(),
+             ];
+-        } catch (\Exception $e) {
++        } catch (\Throwable $e) {
+             Log::error("Bulk indexing failed", [
+                 'type' => $type,
+                 'error' => $e->getMessage(),
+diff --git a/server/bootstrap/app.php b/server/bootstrap/app.php
+index 15a67e8..4345c95 100644
+--- a/server/bootstrap/app.php
++++ b/server/bootstrap/app.php
+@@ -1,8 +1,10 @@
+ <?php
+ 
++use Illuminate\Auth\AuthenticationException;
+ use Illuminate\Foundation\Application;
+ use Illuminate\Foundation\Configuration\Exceptions;
+ use Illuminate\Foundation\Configuration\Middleware;
++use Illuminate\Http\Request;
+ 
+ return Application::configure(basePath: dirname(__DIR__))
+     ->withRouting(
+@@ -15,10 +17,27 @@ return Application::configure(basePath: dirname(__DIR__))
+     ->withMiddleware(function (Middleware $middleware) {
+         // Sanctum + API middleware already handled in routes
+         $middleware->alias([
+-            'api.version' => \App\Http\Middleware\ApiVersion::class,
+-            'api.ratelimit' => \App\Http\Middleware\RateLimit::class,
++            'api.version' => \App\Http\Middleware\ApiVersioning::class,
++            'api.ratelimit' => \App\Http\Middleware\ApiRateLimiter::class,
+         ]);
+     })
+     ->withExceptions(function (Exceptions $exceptions) {
+-        //
++        /*
++         * app/Exceptions/Handler.php already implements this, but Laravel 12
++         * configures exceptions through bootstrap/app.php and never binds that
++         * class, so it is dead code. Without this, an unauthenticated API call
++         * falls through to redirect()->guest(route('login')) and, because no
++         * route is named 'login', returns a 500 instead of a 401.
++         */
++        $exceptions->render(function (AuthenticationException $e, Request $request) {
++            if ($request->expectsJson() || $request->is('api/*')) {
++                return response()->json([
++                    'success' => false,
++                    'message' => 'Unauthenticated. Please log in to access this resource.',
++                    'error_code' => 'AUTH_REQUIRED',
++                ], 401);
++            }
++
++            return null;
++        });
+     })->create();
+diff --git a/server/database/migrations/2026_01_01_000004_create_users_table.php b/server/database/migrations/2026_01_01_000004_create_users_table.php
+index ee71c3e..c3e3eef 100644
+--- a/server/database/migrations/2026_01_01_000004_create_users_table.php
++++ b/server/database/migrations/2026_01_01_000004_create_users_table.php
+@@ -28,9 +28,15 @@ return new class extends Migration
+             $table->date('joining_date')->nullable();
+             $table->enum('gender', ['male', 'female', 'other'])->nullable();
+             $table->uuid('manager_user_id')->nullable();
++            // Legacy per-column role constraint. It predates the RBAC `roles`
++            // table and listed only 8 of the 10 seeded role codes, so seeding
++            // general_manager / finance_manager / receptionist / data_entry /
++            // designer failed the CHECK. Kept in sync with IamSeeder here.
+             $table->enum('role', [
+                 'owner', 'manager', 'finance', 'registrar',
+-                'teacher', 'head_of_department', 'counselor', 'donor_manager'
++                'teacher', 'head_of_department', 'counselor', 'donor_manager',
++                'general_manager', 'finance_manager', 'receptionist',
++                'data_entry', 'designer'
+             ]);
+             $table->uuid('branch_id');
+             $table->uuid('linked_teacher_id')->nullable();
+diff --git a/server/database/migrations/2026_01_04_000001_create_platform_services_tables.php b/server/database/migrations/2026_01_04_000001_create_platform_services_tables.php
+index 3164edf..3076b4a 100644
+--- a/server/database/migrations/2026_01_04_000001_create_platform_services_tables.php
++++ b/server/database/migrations/2026_01_04_000001_create_platform_services_tables.php
+@@ -173,6 +173,9 @@ return new class extends Migration
+         });
+ 
+         // Audit Logs
++        // 2026_01_01_000014_create_audit_logs_table already creates this table;
++        // without this guard `migrate` aborts with "table audit_logs already exists".
++        if (!Schema::hasTable('audit_logs')) {
+         Schema::create('audit_logs', function (Blueprint $table) {
+             $table->uuid('id')->primary();
+             $table->uuid('operator_id')->nullable();
+@@ -190,6 +193,7 @@ return new class extends Migration
+             $table->foreign('branch_id')->references('id')->on('branches');
+             $table->index(['branch_id', 'date']);
+         });
++        }
+ 
+         // Automations
+         Schema::create('automations', function (Blueprint $table) {
+diff --git a/server/database/migrations/2026_08_26_000001_fix_schema_gaps.php b/server/database/migrations/2026_08_26_000001_fix_schema_gaps.php
+new file mode 100644
+index 0000000..37f8905
+--- /dev/null
++++ b/server/database/migrations/2026_08_26_000001_fix_schema_gaps.php
+@@ -0,0 +1,67 @@
++<?php
++
++use Illuminate\Database\Migrations\Migration;
++use Illuminate\Database\Schema\Blueprint;
++use Illuminate\Support\Facades\Schema;
++
++/**
++ * Schema gaps between the models/seeders and the migrations that shipped.
++ */
++return new class extends Migration
++{
++    public function up(): void
++    {
++        // Student uses SoftDeletes but no migration adds the column, so every
++        // query through the model fails with "no such column: deleted_at".
++        if (!Schema::hasColumn('students', 'deleted_at')) {
++            Schema::table('students', function (Blueprint $table) {
++                $table->softDeletes();
++            });
++        }
++
++        // EnhancedSampleDataSeeder writes these; none of the columns exist.
++        if (!Schema::hasColumn('exams', 'total_marks')) {
++            Schema::table('exams', function (Blueprint $table) {
++                $table->unsignedInteger('total_marks')->default(100);
++            });
++        }
++
++        if (!Schema::hasColumn('exam_results', 'max_score')) {
++            Schema::table('exam_results', function (Blueprint $table) {
++                $table->unsignedInteger('max_score')->default(100);
++            });
++        }
++
++        if (!Schema::hasColumn('impact_metrics', 'progress_percent')) {
++            Schema::table('impact_metrics', function (Blueprint $table) {
++                $table->decimal('progress_percent', 5, 2)->default(0);
++            });
++        }
++
++        // EnhancedSampleDataSeeder inserts certificates.status = 'issued'.
++        if (!Schema::hasColumn('certificates', 'status')) {
++            Schema::table('certificates', function (Blueprint $table) {
++                $table->string('status')->default('issued');
++            });
++        }
++    }
++
++    public function down(): void
++    {
++        foreach (['exams.total_marks', 'exam_results.max_score',
++                  'impact_metrics.progress_percent', 'certificates.status'] as $tc) {
++            [$t, $c] = explode('.', $tc);
++            if (Schema::hasColumn($t, $c)) {
++                Schema::table($t, function (Blueprint $table) use ($c) {
++                    $table->dropColumn($c);
++                });
++            }
++        }
++
++        if (Schema::hasColumn('students', 'deleted_at')) {
++            Schema::table('students', function (Blueprint $table) {
++                $table->dropSoftDeletes();
++            });
++        }
++    }
++};
+diff --git a/server/database/migrations/2026_08_26_000005_create_framework_session_and_cache_tables.php b/server/database/migrations/2026_08_26_000005_create_framework_session_and_cache_tables.php
+new file mode 100644
+index 0000000..ed7db4e
+--- /dev/null
++++ b/server/database/migrations/2026_08_26_000005_create_framework_session_and_cache_tables.php
+@@ -0,0 +1,50 @@
++<?php
++
++use Illuminate\Database\Migrations\Migration;
++use Illuminate\Database\Schema\Blueprint;
++use Illuminate\Support\Facades\Schema;
++
++/**
++ * Storage for the database session / cache drivers. No migration in this
++ * project creates them, so SESSION_DRIVER=database or CACHE_STORE=database
++ * fail at runtime.
++ */
++return new class extends Migration
++{
++    public function up(): void
++    {
++        if (!Schema::hasTable('sessions')) {
++            Schema::create('sessions', function (Blueprint $table) {
++                $table->string('id')->primary();
++                $table->foreignId('user_id')->nullable()->index();
++                $table->string('ip_address', 45)->nullable();
++                $table->text('user_agent')->nullable();
++                $table->longText('payload');
++                $table->integer('last_activity')->index();
++            });
++        }
++
++        if (!Schema::hasTable('cache')) {
++            Schema::create('cache', function (Blueprint $table) {
++                $table->string('key')->primary();
++                $table->mediumText('value');
++                $table->integer('expiration');
++            });
++        }
++
++        if (!Schema::hasTable('cache_locks')) {
++            Schema::create('cache_locks', function (Blueprint $table) {
++                $table->string('key')->primary();
++                $table->string('owner');
++                $table->integer('expiration');
++            });
++        }
++    }
++
++    public function down(): void
++    {
++        Schema::dropIfExists('cache_locks');
++        Schema::dropIfExists('cache');
++        Schema::dropIfExists('sessions');
++    }
++};
+diff --git a/server/database/migrations/2026_08_26_000006_create_personal_access_tokens_table.php b/server/database/migrations/2026_08_26_000006_create_personal_access_tokens_table.php
+new file mode 100644
+index 0000000..9ec8379
+--- /dev/null
++++ b/server/database/migrations/2026_08_26_000006_create_personal_access_tokens_table.php
+@@ -0,0 +1,37 @@
++<?php
++
++use Illuminate\Database\Migrations\Migration;
++use Illuminate\Database\Schema\Blueprint;
++use Illuminate\Support\Facades\Schema;
++
++/**
++ * Sanctum's token table. The app authenticates the SPA with Bearer tokens
++ * (HasApiTokens on User) but the table was never created: Sanctum's own
++ * migration is only published by `vendor:publish` and this project ships no
++ * published copy. Without it login fails on insert.
++ */
++return new class extends Migration
++{
++    public function up(): void
++    {
++        if (Schema::hasTable('personal_access_tokens')) {
++            return;
++        }
++
++        Schema::create('personal_access_tokens', function (Blueprint $table) {
++            $table->id();
++            $table->morphs('tokenable');
++            $table->string('name');
++            $table->string('token', 64)->unique();
++            $table->text('abilities')->nullable();
++            $table->timestamp('last_used_at')->nullable();
++            $table->timestamp('expires_at')->nullable();
++            $table->timestamps();
++        });
++    }
++
++    public function down(): void
++    {
++        Schema::dropIfExists('personal_access_tokens');
++    }
++};
+diff --git a/server/database/migrations/2026_08_26_000007_backfill_user_roles_from_legacy_role_column.php b/server/database/migrations/2026_08_26_000007_backfill_user_roles_from_legacy_role_column.php
+new file mode 100644
+index 0000000..91d8d56
+--- /dev/null
++++ b/server/database/migrations/2026_08_26_000007_backfill_user_roles_from_legacy_role_column.php
+@@ -0,0 +1,59 @@
++<?php
++
++use Illuminate\Database\Migrations\Migration;
++use Illuminate\Support\Facades\DB;
++use Illuminate\Support\Str;
++
++/**
++ * Backfill user_roles from the legacy users.role column.
++ *
++ * PermissionResolutionService::resolve() grants permissions from
++ * user_roles + role_permissions and only falls back to a small hardcoded legacy
++ * map when a user has no role assignment at all. The seeders never populate
++ * user_roles, so every account resolved through that fallback: the owner ended
++ * up with 12 of the 92 catalogue permissions and the signed-in owner was refused
++ * five pages by the SPA ("Access Denied").
++ *
++ * Idempotent: only inserts assignments that do not already exist, and skips
++ * legacy role names that have no row in roles (e.g. 'manager', 'finance').
++ */
++return new class extends Migration
++{
++    public function up(): void
++    {
++        $roles = DB::table('roles')->pluck('id', 'code');
++
++        foreach (DB::table('users')->get(['id', 'role']) as $user) {
++            $roleId = $roles[$user->role] ?? null;
++            if ($roleId === null) {
++                continue;
++            }
++
++            $exists = DB::table('user_roles')
++                ->where('user_id', $user->id)
++                ->where('role_id', $roleId)
++                ->exists();
++            if ($exists) {
++                continue;
++            }
++
++            DB::table('user_roles')->insert([
++                'id' => (string) Str::uuid(),
++                'user_id' => $user->id,
++                'role_id' => $roleId,
++                'scope_type' => 'organization',
++                'scope_id' => null,
++                'is_primary' => true,
++                'assigned_by' => null,
++                'assigned_at' => now(),
++                'created_at' => now(),
++                'updated_at' => now(),
++            ]);
++        }
++    }
++
++    public function down(): void
++    {
++        DB::table('user_roles')->where('scope_type', 'organization')->delete();
++    }
++};
+diff --git a/server/database/seeders/EnhancedSampleDataSeeder.php b/server/database/seeders/EnhancedSampleDataSeeder.php
+index bbdcf0a..31843c7 100644
+--- a/server/database/seeders/EnhancedSampleDataSeeder.php
++++ b/server/database/seeders/EnhancedSampleDataSeeder.php
+@@ -375,7 +375,7 @@ class EnhancedSampleDataSeeder extends Seeder
+         DB::table('impact_metrics')->insert([
+             'id' => Str::uuid()->toString(),
+             'name' => 'Students Supported by Scholarships',
+-            'category' => 'education',
++            'category' => 'academic',
+             'current_value' => 52,
+             'target_value' => 75,
+             'progress_percent' => 69,
+@@ -386,7 +386,7 @@ class EnhancedSampleDataSeeder extends Seeder
+         DB::table('impact_metrics')->insert([
+             'id' => Str::uuid()->toString(),
+             'name' => 'Total Funds Raised (Q3)',
+-            'category' => 'funding',
++            'category' => 'economic',
+             'current_value' => 438000,
+             'target_value' => 650000,
+             'progress_percent' => 67,
+@@ -402,20 +402,26 @@ class EnhancedSampleDataSeeder extends Seeder
+         $visitors = DB::table('visitors')->where('branch_id', $branch->id)->take(5)->get();
+ 
+         foreach ($visitors as $visitor) {
+-            DB::table('followups')->insert([
++            DB::table('visitor_followups')->insert([
+                 'id' => Str::uuid()->toString(),
+                 'visitor_id' => $visitor->id,
+-                'note' => 'Initial inquiry — interested in General English course.',
+-                'next_date' => now()->addDays(rand(1, 6))->toDateString(),
++                // visitor_followups.outcome is NOT NULL with a CHECK constraint
++                'outcome' => 'callback',
++                'operator' => 'Counselor',
++                'notes' => 'Initial inquiry — interested in General English course.',
++                'date' => now()->addDays(rand(1, 6))->toDateString(),
+                 'created_at' => now()->subDays(4),
+                 'updated_at' => now(),
+             ]);
+ 
+-            DB::table('followups')->insert([
++            DB::table('visitor_followups')->insert([
+                 'id' => Str::uuid()->toString(),
+                 'visitor_id' => $visitor->id,
+-                'note' => 'Placement test reminder sent.',
+-                'next_date' => now()->addDays(rand(2, 5))->toDateString(),
++                // visitor_followups.outcome is NOT NULL with a CHECK constraint
++                'outcome' => 'callback',
++                'operator' => 'Counselor',
++                'notes' => 'Placement test reminder sent.',
++                'date' => now()->addDays(rand(2, 5))->toDateString(),
+                 'created_at' => now()->subDays(1),
+                 'updated_at' => now(),
+             ]);
+@@ -434,6 +440,8 @@ class EnhancedSampleDataSeeder extends Seeder
+             DB::table('exams')->insert([
+                 'id' => $examId,
+                 'class_id' => $class->id,
++                // exams.branch_id is NOT NULL; the seeder never set it
++                'branch_id' => $class->branch_id,
+                 'title' => 'Mid-term Assessment',
+                 'type' => 'midterm',
+                 'date' => now()->subDays(9)->toDateString(),
+diff --git a/server/routes/api.php b/server/routes/api.php
+index d9002af..7203de0 100644
+--- a/server/routes/api.php
++++ b/server/routes/api.php
+@@ -11,6 +11,16 @@ use Illuminate\Support\Facades\Route;
+ // Health check routes (public, no auth)
+ require base_path('routes/health.php');
+ 
++/*
++ * Public: obtaining a token cannot itself require a token.
++ *
++ * app/Modules/Iam/routes.php declares POST /auth/login in its own "public"
++ * group, but this file requires every module *inside* an auth:sanctum group, so
++ * the login endpoint inherited the guard and the API was unreachable.
++ */
++Route::post('/auth/login', [\App\Modules\Iam\Http\Controllers\AuthController::class, 'login'])
++    ->middleware(['api.version', 'api.ratelimit:auth']);
++
+ // Protected API routes
+ Route::middleware(['auth:sanctum', 'api.version', 'api.ratelimit:default'])->group(function () {
+     require base_path('app/Modules/Iam/routes.php');

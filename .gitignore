@@ -1,0 +1,19 @@
+# dependencies / build output (rebuilt by tools/)
+**/vendor/
+**/node_modules/
+**/dist/
+**/.vite/
+
+# runtime state
+*.sqlite
+*.sqlite-journal
+toefl-house-v3/server/.env
+toefl-house-v3/server/bootstrap/cache/*.php
+toefl-house-v3/server/storage/logs/*.log
+
+# sandbox tooling artifacts
+tools/.packages/
+tools/composer-runtime/
+
+# source archive
+*.zip

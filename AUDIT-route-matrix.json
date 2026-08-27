@@ -1,0 +1,4478 @@
+[
+ {
+  "route": "/",
+  "method": "GET",
+  "path_tested": "/",
+  "action": "Closure",
+  "middleware": "web",
+  "public": true,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET / -> 200 {\"app\":\"TOEFL House ERP v3\",\"version\":\"3.0\",\"status\":\"ok\",\"message\":\"API-only backend. Use \\/api\\/* "
+   },
+   "badauth": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET / -> 200 {\"app\":\"TOEFL House ERP v3\",\"version\":\"3.0\",\"status\":\"ok\",\"message\":\"API-only backend. Use \\/api\\/* "
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET / -> 200 {\"app\":\"TOEFL House ERP v3\",\"version\":\"3.0\",\"status\":\"ok\",\"message\":\"API-only backend. Use \\/api\\/* "
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET / -> 200 {\"app\":\"TOEFL House ERP v3\",\"version\":\"3.0\",\"status\":\"ok\",\"message\":\"API-only backend. Use \\/api\\/* "
+   }
+  }
+ },
+ {
+  "route": "api/audit-logs",
+  "method": "GET",
+  "path_tested": "/api/audit-logs",
+  "action": "App\\Modules\\PlatformServices\\Http\\Controllers\\AuditLogController@index",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/audit-logs -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/audit-logs -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/audit-logs -> 200 [{\"id\":\"afde18cf-53ba-498b-ab83-bbe53651a3bc\",\"operator_id\":\"5efbde29-2fbe-4943-9888-b53442742004\",\""
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/audit-logs -> 200 []"
+   }
+  }
+ },
+ {
+  "route": "api/auth/login",
+  "method": "POST",
+  "path_tested": "/api/auth/login",
+  "action": "App\\Modules\\Iam\\Http\\Controllers\\AuthController@login",
+  "middleware": "api,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default,App\\Http\\Middleware\\ApiRateLimiter:auth",
+  "public": true,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/auth/login -> 422 {\"message\":\"The username field is required. (and 1 more error)\",\"errors\":{\"username\":[\"The username "
+   },
+   "badauth": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/auth/login -> 422 {\"message\":\"The username field is required. (and 1 more error)\",\"errors\":{\"username\":[\"The username "
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/auth/login -> 422 {\"message\":\"The username field is required. (and 1 more error)\",\"errors\":{\"username\":[\"The username "
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/auth/login -> 422 {\"message\":\"The username field is required. (and 1 more error)\",\"errors\":{\"username\":[\"The username "
+   }
+  }
+ },
+ {
+  "route": "api/auth/me",
+  "method": "GET",
+  "path_tested": "/api/auth/me",
+  "action": "App\\Modules\\Iam\\Http\\Controllers\\AuthController@me",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/auth/me -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/auth/me -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/auth/me -> 200 {\"user\":{\"id\":\"5efbde29-2fbe-4943-9888-b53442742004\",\"username\":\"admin\",\"full_name\":\"Ahmad Rahimi\",\""
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/auth/me -> 200 {\"user\":{\"id\":\"4089bc60-4038-4e7f-a6b3-09a4bdb8cbd0\",\"username\":\"teacher1\",\"full_name\":\"Mr. Ali Reza"
+   }
+  }
+ },
+ {
+  "route": "api/book-sales",
+  "method": "GET",
+  "path_tested": "/api/book-sales",
+  "action": "App\\Modules\\Inventory\\Http\\Controllers\\BookController@sales",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/book-sales -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/book-sales -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/book-sales -> 200 [{\"id\":\"46261c40-49b4-4e4b-a34b-7a3be53bc149\",\"book_id\":\"2835bfc1-0f5e-413d-b642-13d762faf76c\",\"quan"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/book-sales -> 200 [{\"id\":\"46261c40-49b4-4e4b-a34b-7a3be53bc149\",\"book_id\":\"2835bfc1-0f5e-413d-b642-13d762faf76c\",\"quan"
+   }
+  }
+ },
+ {
+  "route": "api/book-sales/{saleId}/refund",
+  "method": "POST",
+  "path_tested": "/api/book-sales/46261c40-49b4-4e4b-a34b-7a3be53bc149/refund",
+  "action": "App\\Modules\\Inventory\\Http\\Controllers\\BookController@refund",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/book-sales/46261c40-49b4-4e4b-a34b-7a3be53bc149/refund -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/book-sales/46261c40-49b4-4e4b-a34b-7a3be53bc149/refund -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 409,
+    "result": "PASS",
+    "evidence": "POST /api/book-sales/46261c40-49b4-4e4b-a34b-7a3be53bc149/refund -> 409 {\"message\":\"Sale already refunded\"}"
+   },
+   "limited": {
+    "status": 409,
+    "result": "PASS",
+    "evidence": "POST /api/book-sales/46261c40-49b4-4e4b-a34b-7a3be53bc149/refund -> 409 {\"message\":\"Sale already refunded\"}"
+   }
+  }
+ },
+ {
+  "route": "api/books",
+  "method": "GET",
+  "path_tested": "/api/books",
+  "action": "App\\Modules\\Inventory\\Http\\Controllers\\BookController@index",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/books -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/books -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/books -> 200 [{\"id\":\"aee7d162-88a4-4db1-bc69-4ada82787bac\",\"title\":\"Barron's TOEFL iBT\",\"price\":1200,\"purchase_pr"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/books -> 200 [{\"id\":\"aee7d162-88a4-4db1-bc69-4ada82787bac\",\"title\":\"Barron's TOEFL iBT\",\"price\":1200,\"purchase_pr"
+   }
+  }
+ },
+ {
+  "route": "api/books",
+  "method": "POST",
+  "path_tested": "/api/books",
+  "action": "App\\Modules\\Inventory\\Http\\Controllers\\BookController@store",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/books -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/books -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/books -> 422 {\"message\":\"The title field is required. (and 2 more errors)\",\"errors\":{\"title\":[\"The title field is"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/books -> 422 {\"message\":\"The title field is required. (and 2 more errors)\",\"errors\":{\"title\":[\"The title field is"
+   }
+  }
+ },
+ {
+  "route": "api/books/{id}/restock",
+  "method": "POST",
+  "path_tested": "/api/books/2835bfc1-0f5e-413d-b642-13d762faf76c/restock",
+  "action": "App\\Modules\\Inventory\\Http\\Controllers\\BookController@restock",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/books/2835bfc1-0f5e-413d-b642-13d762faf76c/restock -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/books/2835bfc1-0f5e-413d-b642-13d762faf76c/restock -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/books/2835bfc1-0f5e-413d-b642-13d762faf76c/restock -> 422 {\"message\":\"The quantity field is required.\",\"errors\":{\"quantity\":[\"The quantity field is required.\""
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/books/2835bfc1-0f5e-413d-b642-13d762faf76c/restock -> 422 {\"message\":\"The quantity field is required.\",\"errors\":{\"quantity\":[\"The quantity field is required.\""
+   }
+  }
+ },
+ {
+  "route": "api/books/{id}/sell",
+  "method": "POST",
+  "path_tested": "/api/books/2835bfc1-0f5e-413d-b642-13d762faf76c/sell",
+  "action": "App\\Modules\\Inventory\\Http\\Controllers\\BookController@sell",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/books/2835bfc1-0f5e-413d-b642-13d762faf76c/sell -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/books/2835bfc1-0f5e-413d-b642-13d762faf76c/sell -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/books/2835bfc1-0f5e-413d-b642-13d762faf76c/sell -> 422 {\"message\":\"The quantity field is required. (and 1 more error)\",\"errors\":{\"quantity\":[\"The quantity "
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/books/2835bfc1-0f5e-413d-b642-13d762faf76c/sell -> 422 {\"message\":\"The quantity field is required. (and 1 more error)\",\"errors\":{\"quantity\":[\"The quantity "
+   }
+  }
+ },
+ {
+  "route": "api/branches",
+  "method": "GET",
+  "path_tested": "/api/branches",
+  "action": "App\\Modules\\Iam\\Http\\Controllers\\BranchController@index",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/branches -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/branches -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/branches -> 200 [{\"id\":\"5313e265-a15d-4355-a7e5-b825b1102241\",\"campus_id\":\"1d37d95e-2f5c-49cc-835e-5f64a9ddcc7f\",\"na"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/branches -> 200 [{\"id\":\"5313e265-a15d-4355-a7e5-b825b1102241\",\"campus_id\":\"1d37d95e-2f5c-49cc-835e-5f64a9ddcc7f\",\"na"
+   }
+  }
+ },
+ {
+  "route": "api/branches",
+  "method": "POST",
+  "path_tested": "/api/branches",
+  "action": "App\\Modules\\Iam\\Http\\Controllers\\BranchController@store",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/branches -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/branches -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/branches -> 422 {\"message\":\"The name field is required. (and 1 more error)\",\"errors\":{\"name\":[\"The name field is req"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/branches -> 422 {\"message\":\"The name field is required. (and 1 more error)\",\"errors\":{\"name\":[\"The name field is req"
+   }
+  }
+ },
+ {
+  "route": "api/branches/{id}",
+  "method": "GET",
+  "path_tested": "/api/branches/1fe42de5-cf76-48bc-be48-e9f79e7ba882",
+  "action": "App\\Modules\\Iam\\Http\\Controllers\\BranchController@show",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/branches/1fe42de5-cf76-48bc-be48-e9f79e7ba882 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/branches/1fe42de5-cf76-48bc-be48-e9f79e7ba882 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/branches/1fe42de5-cf76-48bc-be48-e9f79e7ba882 -> 200 {\"id\":\"1fe42de5-cf76-48bc-be48-e9f79e7ba882\",\"campus_id\":\"1d37d95e-2f5c-49cc-835e-5f64a9ddcc7f\",\"nam"
+   },
+   "limited": {
+    "status": 403,
+    "result": "WARN",
+    "evidence": "GET /api/branches/1fe42de5-cf76-48bc-be48-e9f79e7ba882 -> 403 {\"message\":\"Forbidden\"}"
+   }
+  }
+ },
+ {
+  "route": "api/branches/{id}",
+  "method": "PATCH",
+  "path_tested": "/api/branches/1fe42de5-cf76-48bc-be48-e9f79e7ba882",
+  "action": "App\\Modules\\Iam\\Http\\Controllers\\BranchController@update",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "PATCH /api/branches/1fe42de5-cf76-48bc-be48-e9f79e7ba882 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "PATCH /api/branches/1fe42de5-cf76-48bc-be48-e9f79e7ba882 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "PATCH /api/branches/1fe42de5-cf76-48bc-be48-e9f79e7ba882 -> 200 {\"id\":\"1fe42de5-cf76-48bc-be48-e9f79e7ba882\",\"campus_id\":\"1d37d95e-2f5c-49cc-835e-5f64a9ddcc7f\",\"nam"
+   },
+   "limited": {
+    "status": 403,
+    "result": "PASS",
+    "evidence": "PATCH /api/branches/1fe42de5-cf76-48bc-be48-e9f79e7ba882 -> 403 {\"message\":\"Forbidden\"}"
+   }
+  }
+ },
+ {
+  "route": "api/branches/{id}",
+  "method": "DELETE",
+  "path_tested": "/api/branches/1fe42de5-cf76-48bc-be48-e9f79e7ba882",
+  "action": "App\\Modules\\Iam\\Http\\Controllers\\BranchController@destroy",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "DELETE /api/branches/d63a981e-8d6a-4b9d-b187-f342f563e25e -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "DELETE /api/branches/3c6e91cb-fba5-4277-a908-7abf084eb36c -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 404,
+    "result": "PASS",
+    "evidence": "DELETE /api/branches/b363e1c1-0408-48c1-a818-217cbcacd3ee -> 404 {\n    \"message\": \"No query results for model [App\\\\Modules\\\\Iam\\\\Models\\\\Branch] b363e1c1-0408-48c1-"
+   },
+   "limited": {
+    "status": 403,
+    "result": "PASS",
+    "evidence": "DELETE /api/branches/4e61458f-24da-4c7c-ae32-393f077e54f1 -> 403 {\"message\":\"Forbidden\"}"
+   }
+  }
+ },
+ {
+  "route": "api/budget-lines",
+  "method": "GET",
+  "path_tested": "/api/budget-lines",
+  "action": "App\\Modules\\FinancePayroll\\Http\\Controllers\\BudgetController@index",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/budget-lines -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/budget-lines -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/budget-lines -> 200 [{\"id\":\"8455fe12-9648-4f94-9241-35459c251608\",\"name\":\"Marketing\",\"current_amount\":8500,\"allocated_am"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/budget-lines -> 200 [{\"id\":\"8455fe12-9648-4f94-9241-35459c251608\",\"name\":\"Marketing\",\"current_amount\":8500,\"allocated_am"
+   }
+  }
+ },
+ {
+  "route": "api/budget-lines",
+  "method": "POST",
+  "path_tested": "/api/budget-lines",
+  "action": "App\\Modules\\FinancePayroll\\Http\\Controllers\\BudgetController@store",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/budget-lines -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/budget-lines -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/budget-lines -> 422 {\"message\":\"The name field is required. (and 3 more errors)\",\"errors\":{\"name\":[\"The name field is re"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/budget-lines -> 422 {\"message\":\"The name field is required. (and 3 more errors)\",\"errors\":{\"name\":[\"The name field is re"
+   }
+  }
+ },
+ {
+  "route": "api/budget-lines/{id}",
+  "method": "PATCH",
+  "path_tested": "/api/budget-lines/0d7c9903-efbc-4b0b-8200-b3776f757ae1",
+  "action": "App\\Modules\\FinancePayroll\\Http\\Controllers\\BudgetController@update",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "PATCH /api/budget-lines/0d7c9903-efbc-4b0b-8200-b3776f757ae1 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "PATCH /api/budget-lines/0d7c9903-efbc-4b0b-8200-b3776f757ae1 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "PATCH /api/budget-lines/0d7c9903-efbc-4b0b-8200-b3776f757ae1 -> 200 {\"id\":\"0d7c9903-efbc-4b0b-8200-b3776f757ae1\",\"name\":\"Office Rent\",\"current_amount\":50000,\"allocated_"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "PATCH /api/budget-lines/0d7c9903-efbc-4b0b-8200-b3776f757ae1 -> 200 {\"id\":\"0d7c9903-efbc-4b0b-8200-b3776f757ae1\",\"name\":\"Office Rent\",\"current_amount\":50000,\"allocated_"
+   }
+  }
+ },
+ {
+  "route": "api/budget/overview",
+  "method": "GET",
+  "path_tested": "/api/budget/overview",
+  "action": "App\\Modules\\FinancePayroll\\Http\\Controllers\\BudgetController@overview",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/budget/overview -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/budget/overview -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/budget/overview -> 200 {\"total_allocated\":295000,\"total_spent\":222700,\"remaining\":72300,\"utilization_percent\":75.5,\"reserve"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/budget/overview -> 200 {\"total_allocated\":295000,\"total_spent\":222700,\"remaining\":72300,\"utilization_percent\":75.5,\"reserve"
+   }
+  }
+ },
+ {
+  "route": "api/campaigns",
+  "method": "GET",
+  "path_tested": "/api/campaigns",
+  "action": "App\\Modules\\CrmEnrollment\\Http\\Controllers\\CampaignController@index",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/campaigns -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/campaigns -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/campaigns -> 200 []"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/campaigns -> 200 []"
+   }
+  }
+ },
+ {
+  "route": "api/campaigns",
+  "method": "POST",
+  "path_tested": "/api/campaigns",
+  "action": "App\\Modules\\CrmEnrollment\\Http\\Controllers\\CampaignController@store",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/campaigns -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/campaigns -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/campaigns -> 422 {\"message\":\"The name field is required. (and 3 more errors)\",\"errors\":{\"name\":[\"The name field is re"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/campaigns -> 422 {\"message\":\"The name field is required. (and 3 more errors)\",\"errors\":{\"name\":[\"The name field is re"
+   }
+  }
+ },
+ {
+  "route": "api/campaigns/{id}",
+  "method": "PATCH",
+  "path_tested": "/api/campaigns/1a8fa77c-cc57-432c-98c7-aba36d61070c",
+  "action": "App\\Modules\\CrmEnrollment\\Http\\Controllers\\CampaignController@update",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [
+   "id"
+  ],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "PATCH /api/campaigns/1a8fa77c-cc57-432c-98c7-aba36d61070c -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "PATCH /api/campaigns/1a8fa77c-cc57-432c-98c7-aba36d61070c -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "PATCH /api/campaigns/1a8fa77c-cc57-432c-98c7-aba36d61070c -> 200 {}"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "PATCH /api/campaigns/1a8fa77c-cc57-432c-98c7-aba36d61070c -> 200 {}"
+   }
+  }
+ },
+ {
+  "route": "api/campuses",
+  "method": "GET",
+  "path_tested": "/api/campuses",
+  "action": "App\\Modules\\Iam\\Http\\Controllers\\CampusController@index",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/campuses -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/campuses -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/campuses -> 200 [{\"id\":\"1d37d95e-2f5c-49cc-835e-5f64a9ddcc7f\",\"organization_id\":\"01863589-8f94-4527-9fbe-4feb82d6aca"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/campuses -> 200 [{\"id\":\"1d37d95e-2f5c-49cc-835e-5f64a9ddcc7f\",\"organization_id\":\"01863589-8f94-4527-9fbe-4feb82d6aca"
+   }
+  }
+ },
+ {
+  "route": "api/campuses",
+  "method": "POST",
+  "path_tested": "/api/campuses",
+  "action": "App\\Modules\\Iam\\Http\\Controllers\\CampusController@store",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/campuses -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/campuses -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/campuses -> 422 {\"message\":\"The organization id field is required. (and 2 more errors)\",\"errors\":{\"organization_id\":"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/campuses -> 422 {\"message\":\"The organization id field is required. (and 2 more errors)\",\"errors\":{\"organization_id\":"
+   }
+  }
+ },
+ {
+  "route": "api/campuses/{id}",
+  "method": "GET",
+  "path_tested": "/api/campuses/1d37d95e-2f5c-49cc-835e-5f64a9ddcc7f",
+  "action": "App\\Modules\\Iam\\Http\\Controllers\\CampusController@show",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/campuses/1d37d95e-2f5c-49cc-835e-5f64a9ddcc7f -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/campuses/1d37d95e-2f5c-49cc-835e-5f64a9ddcc7f -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/campuses/1d37d95e-2f5c-49cc-835e-5f64a9ddcc7f -> 200 {\"id\":\"1d37d95e-2f5c-49cc-835e-5f64a9ddcc7f\",\"organization_id\":\"01863589-8f94-4527-9fbe-4feb82d6aca3"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/campuses/1d37d95e-2f5c-49cc-835e-5f64a9ddcc7f -> 200 {\"id\":\"1d37d95e-2f5c-49cc-835e-5f64a9ddcc7f\",\"organization_id\":\"01863589-8f94-4527-9fbe-4feb82d6aca3"
+   }
+  }
+ },
+ {
+  "route": "api/campuses/{id}",
+  "method": "PATCH",
+  "path_tested": "/api/campuses/1d37d95e-2f5c-49cc-835e-5f64a9ddcc7f",
+  "action": "App\\Modules\\Iam\\Http\\Controllers\\CampusController@update",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "PATCH /api/campuses/1d37d95e-2f5c-49cc-835e-5f64a9ddcc7f -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "PATCH /api/campuses/1d37d95e-2f5c-49cc-835e-5f64a9ddcc7f -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "PATCH /api/campuses/1d37d95e-2f5c-49cc-835e-5f64a9ddcc7f -> 200 {\"id\":\"1d37d95e-2f5c-49cc-835e-5f64a9ddcc7f\",\"organization_id\":\"01863589-8f94-4527-9fbe-4feb82d6aca3"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "PATCH /api/campuses/1d37d95e-2f5c-49cc-835e-5f64a9ddcc7f -> 200 {\"id\":\"1d37d95e-2f5c-49cc-835e-5f64a9ddcc7f\",\"organization_id\":\"01863589-8f94-4527-9fbe-4feb82d6aca3"
+   }
+  }
+ },
+ {
+  "route": "api/campuses/{id}",
+  "method": "DELETE",
+  "path_tested": "/api/campuses/1d37d95e-2f5c-49cc-835e-5f64a9ddcc7f",
+  "action": "App\\Modules\\Iam\\Http\\Controllers\\CampusController@destroy",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "DELETE /api/campuses/f73ddfad-1e51-474e-8372-2c791225bb89 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "DELETE /api/campuses/06d6fcbf-2e3b-4dd9-b84a-741eca8654b1 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 404,
+    "result": "PASS",
+    "evidence": "DELETE /api/campuses/4985737c-7b49-4990-8d61-524dac7ff82e -> 404 {\n    \"message\": \"No query results for model [App\\\\Modules\\\\Iam\\\\Models\\\\Campus] 4985737c-7b49-4990-"
+   },
+   "limited": {
+    "status": 404,
+    "result": "PASS",
+    "evidence": "DELETE /api/campuses/f0c10789-e024-4fdd-9567-f96f5a908cfe -> 404 {\n    \"message\": \"No query results for model [App\\\\Modules\\\\Iam\\\\Models\\\\Campus] f0c10789-e024-4fdd-"
+   }
+  }
+ },
+ {
+  "route": "api/certificates",
+  "method": "GET",
+  "path_tested": "/api/certificates",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\CertificateController@index",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/certificates -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/certificates -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/certificates -> 200 {\"current_page\":1,\"data\":[{\"id\":\"01a03cc1-aa31-7019-8962-bb5437f45aec\",\"student_id\":\"01a03ca9-83c7-7"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/certificates -> 200 {\"current_page\":1,\"data\":[{\"id\":\"01a03cc1-aa31-7019-8962-bb5437f45aec\",\"student_id\":\"01a03ca9-83c7-7"
+   }
+  }
+ },
+ {
+  "route": "api/certificates/students/{studentId}/issue",
+  "method": "POST",
+  "path_tested": "/api/certificates/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/issue",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\CertificateController@issue",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/certificates/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/issue -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/certificates/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/issue -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 201,
+    "result": "PASS",
+    "evidence": "POST /api/certificates/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/issue -> 201 {\"student_id\":\"01a03ca9-83c7-71f3-82bb-86700427f2f6\",\"program_id\":null,\"level_id\":null,\"certificate_"
+   },
+   "limited": {
+    "status": 201,
+    "result": "PASS",
+    "evidence": "POST /api/certificates/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/issue -> 201 {\"student_id\":\"01a03ca9-83c7-71f3-82bb-86700427f2f6\",\"program_id\":null,\"level_id\":null,\"certificate_"
+   }
+  }
+ },
+ {
+  "route": "api/certificates/{id}",
+  "method": "GET",
+  "path_tested": "/api/certificates/2ad94b1c-917f-42e1-aba0-d45681a19b8f",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\CertificateController@show",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/certificates/2ad94b1c-917f-42e1-aba0-d45681a19b8f -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/certificates/2ad94b1c-917f-42e1-aba0-d45681a19b8f -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/certificates/2ad94b1c-917f-42e1-aba0-d45681a19b8f -> 200 {\"id\":\"2ad94b1c-917f-42e1-aba0-d45681a19b8f\",\"student_id\":\"01a03ca9-83c7-71f3-82bb-86700427f2f6\",\"pr"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/certificates/2ad94b1c-917f-42e1-aba0-d45681a19b8f -> 200 {\"id\":\"2ad94b1c-917f-42e1-aba0-d45681a19b8f\",\"student_id\":\"01a03ca9-83c7-71f3-82bb-86700427f2f6\",\"pr"
+   }
+  }
+ },
+ {
+  "route": "api/certificates/{id}/revoke",
+  "method": "POST",
+  "path_tested": "/api/certificates/2ad94b1c-917f-42e1-aba0-d45681a19b8f/revoke",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\CertificateController@revoke",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/certificates/2ad94b1c-917f-42e1-aba0-d45681a19b8f/revoke -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/certificates/2ad94b1c-917f-42e1-aba0-d45681a19b8f/revoke -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "POST /api/certificates/2ad94b1c-917f-42e1-aba0-d45681a19b8f/revoke -> 200 {\"message\":\"Certificate revoked\"}"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "POST /api/certificates/2ad94b1c-917f-42e1-aba0-d45681a19b8f/revoke -> 200 {\"message\":\"Certificate revoked\"}"
+   }
+  }
+ },
+ {
+  "route": "api/classes",
+  "method": "GET",
+  "path_tested": "/api/classes",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\ClassController@index",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/classes -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/classes -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/classes -> 200 [{\"id\":\"42857073-96d5-4963-bd13-2563ff396dc3\",\"name\":\"General English - Level 1\",\"teacher_id\":null,\""
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/classes -> 200 [{\"id\":\"42857073-96d5-4963-bd13-2563ff396dc3\",\"name\":\"General English - Level 1\",\"teacher_id\":null,\""
+   }
+  }
+ },
+ {
+  "route": "api/classes",
+  "method": "POST",
+  "path_tested": "/api/classes",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\ClassController@store",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/classes -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/classes -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/classes -> 422 {\"message\":\"The name field is required. (and 1 more error)\",\"errors\":{\"name\":[\"The name field is req"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/classes -> 422 {\"message\":\"The name field is required. (and 1 more error)\",\"errors\":{\"name\":[\"The name field is req"
+   }
+  }
+ },
+ {
+  "route": "api/classes/{classId}/exams",
+  "method": "GET",
+  "path_tested": "/api/classes/01a03ca9-8452-71d3-ae89-c7f664491055/exams",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\ExamController@index",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/classes/01a03ca9-8452-71d3-ae89-c7f664491055/exams -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/classes/01a03ca9-8452-71d3-ae89-c7f664491055/exams -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/classes/01a03ca9-8452-71d3-ae89-c7f664491055/exams -> 200 []"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/classes/01a03ca9-8452-71d3-ae89-c7f664491055/exams -> 200 []"
+   }
+  }
+ },
+ {
+  "route": "api/classes/{classId}/exams",
+  "method": "POST",
+  "path_tested": "/api/classes/01a03ca9-8452-71d3-ae89-c7f664491055/exams",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\ExamController@store",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/classes/01a03ca9-8452-71d3-ae89-c7f664491055/exams -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/classes/01a03ca9-8452-71d3-ae89-c7f664491055/exams -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/classes/01a03ca9-8452-71d3-ae89-c7f664491055/exams -> 422 {\"message\":\"The title field is required. (and 2 more errors)\",\"errors\":{\"title\":[\"The title field is"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/classes/01a03ca9-8452-71d3-ae89-c7f664491055/exams -> 422 {\"message\":\"The title field is required. (and 2 more errors)\",\"errors\":{\"title\":[\"The title field is"
+   }
+  }
+ },
+ {
+  "route": "api/classes/{classId}/homework",
+  "method": "GET",
+  "path_tested": "/api/classes/01a03ca9-8452-71d3-ae89-c7f664491055/homework",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\HomeworkController@index",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/classes/01a03ca9-8452-71d3-ae89-c7f664491055/homework -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/classes/01a03ca9-8452-71d3-ae89-c7f664491055/homework -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/classes/01a03ca9-8452-71d3-ae89-c7f664491055/homework -> 200 []"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/classes/01a03ca9-8452-71d3-ae89-c7f664491055/homework -> 200 []"
+   }
+  }
+ },
+ {
+  "route": "api/classes/{classId}/homework",
+  "method": "POST",
+  "path_tested": "/api/classes/01a03ca9-8452-71d3-ae89-c7f664491055/homework",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\HomeworkController@store",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/classes/01a03ca9-8452-71d3-ae89-c7f664491055/homework -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/classes/01a03ca9-8452-71d3-ae89-c7f664491055/homework -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/classes/01a03ca9-8452-71d3-ae89-c7f664491055/homework -> 422 {\"message\":\"The session id field is required. (and 1 more error)\",\"errors\":{\"session_id\":[\"The sessi"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/classes/01a03ca9-8452-71d3-ae89-c7f664491055/homework -> 422 {\"message\":\"The session id field is required. (and 1 more error)\",\"errors\":{\"session_id\":[\"The sessi"
+   }
+  }
+ },
+ {
+  "route": "api/classes/{classId}/sessions",
+  "method": "GET",
+  "path_tested": "/api/classes/01a03ca9-8452-71d3-ae89-c7f664491055/sessions",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\SessionController@index",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/classes/01a03ca9-8452-71d3-ae89-c7f664491055/sessions -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/classes/01a03ca9-8452-71d3-ae89-c7f664491055/sessions -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/classes/01a03ca9-8452-71d3-ae89-c7f664491055/sessions -> 200 [{\"id\":\"01a03ca9-848b-70a0-b70b-13e5a6f4969d\",\"class_id\":\"01a03ca9-8452-71d3-ae89-c7f664491055\",\"dat"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/classes/01a03ca9-8452-71d3-ae89-c7f664491055/sessions -> 200 [{\"id\":\"01a03ca9-848b-70a0-b70b-13e5a6f4969d\",\"class_id\":\"01a03ca9-8452-71d3-ae89-c7f664491055\",\"dat"
+   }
+  }
+ },
+ {
+  "route": "api/classes/{classId}/sessions",
+  "method": "POST",
+  "path_tested": "/api/classes/01a03ca9-8452-71d3-ae89-c7f664491055/sessions",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\SessionController@store",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/classes/01a03ca9-8452-71d3-ae89-c7f664491055/sessions -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/classes/01a03ca9-8452-71d3-ae89-c7f664491055/sessions -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/classes/01a03ca9-8452-71d3-ae89-c7f664491055/sessions -> 422 {\"message\":\"The date field is required. (and 2 more errors)\",\"errors\":{\"date\":[\"The date field is re"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/classes/01a03ca9-8452-71d3-ae89-c7f664491055/sessions -> 422 {\"message\":\"The date field is required. (and 2 more errors)\",\"errors\":{\"date\":[\"The date field is re"
+   }
+  }
+ },
+ {
+  "route": "api/classes/{id}",
+  "method": "GET",
+  "path_tested": "/api/classes/01a03ca9-8452-71d3-ae89-c7f664491055",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\ClassController@show",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/classes/01a03ca9-8452-71d3-ae89-c7f664491055 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/classes/01a03ca9-8452-71d3-ae89-c7f664491055 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/classes/01a03ca9-8452-71d3-ae89-c7f664491055 -> 200 {\"class\":{\"id\":\"01a03ca9-8452-71d3-ae89-c7f664491055\",\"name\":\"General English - Level 1\",\"teacher_id"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/classes/01a03ca9-8452-71d3-ae89-c7f664491055 -> 200 {\"class\":{\"id\":\"01a03ca9-8452-71d3-ae89-c7f664491055\",\"name\":\"General English - Level 1\",\"teacher_id"
+   }
+  }
+ },
+ {
+  "route": "api/classes/{id}",
+  "method": "PATCH",
+  "path_tested": "/api/classes/01a03ca9-8452-71d3-ae89-c7f664491055",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\ClassController@update",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "PATCH /api/classes/01a03ca9-8452-71d3-ae89-c7f664491055 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "PATCH /api/classes/01a03ca9-8452-71d3-ae89-c7f664491055 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "PATCH /api/classes/01a03ca9-8452-71d3-ae89-c7f664491055 -> 200 {\"id\":\"01a03ca9-8452-71d3-ae89-c7f664491055\",\"name\":\"General English - Level 1\",\"teacher_id\":null,\"p"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "PATCH /api/classes/01a03ca9-8452-71d3-ae89-c7f664491055 -> 200 {\"id\":\"01a03ca9-8452-71d3-ae89-c7f664491055\",\"name\":\"General English - Level 1\",\"teacher_id\":null,\"p"
+   }
+  }
+ },
+ {
+  "route": "api/dashboard",
+  "method": "GET",
+  "path_tested": "/api/dashboard",
+  "action": "App\\Modules\\Iam\\Http\\Controllers\\DashboardController@index",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/dashboard -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/dashboard -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/dashboard -> 200 {\"students\":{\"total\":23,\"active\":20,\"graduated\":1,\"new_this_month\":23},\"classes\":{\"total\":9,\"active\""
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/dashboard -> 200 {\"students\":{\"total\":23,\"active\":20,\"graduated\":1,\"new_this_month\":23},\"classes\":{\"total\":9,\"active\""
+   }
+  }
+ },
+ {
+  "route": "api/donations",
+  "method": "GET",
+  "path_tested": "/api/donations",
+  "action": "App\\Modules\\FundingImpact\\Http\\Controllers\\FundingController@indexDonations",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/donations -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/donations -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/donations -> 200 [{\"id\":\"683b81bb-332d-4c5a-92a6-4cc9b849281c\",\"campaign_id\":\"0dd5ef91-349e-465d-8ef5-40e9806e0e96\",\""
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/donations -> 200 [{\"id\":\"683b81bb-332d-4c5a-92a6-4cc9b849281c\",\"campaign_id\":\"0dd5ef91-349e-465d-8ef5-40e9806e0e96\",\""
+   }
+  }
+ },
+ {
+  "route": "api/donations",
+  "method": "POST",
+  "path_tested": "/api/donations",
+  "action": "App\\Modules\\FundingImpact\\Http\\Controllers\\FundingController@storeDonation",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/donations -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/donations -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/donations -> 422 {\"message\":\"The donor id field is required. (and 3 more errors)\",\"errors\":{\"donor_id\":[\"The donor id"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/donations -> 422 {\"message\":\"The donor id field is required. (and 3 more errors)\",\"errors\":{\"donor_id\":[\"The donor id"
+   }
+  }
+ },
+ {
+  "route": "api/donors",
+  "method": "GET",
+  "path_tested": "/api/donors",
+  "action": "App\\Modules\\FundingImpact\\Http\\Controllers\\FundingController@indexDonors",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/donors -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/donors -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/donors -> 200 [{\"id\":\"131c0e46-3eb1-4fdd-bb61-385fcf5aa3b0\",\"full_name\":\"Afghan Education Foundation\",\"type\":\"ngo\""
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/donors -> 200 [{\"id\":\"131c0e46-3eb1-4fdd-bb61-385fcf5aa3b0\",\"full_name\":\"Afghan Education Foundation\",\"type\":\"ngo\""
+   }
+  }
+ },
+ {
+  "route": "api/donors",
+  "method": "POST",
+  "path_tested": "/api/donors",
+  "action": "App\\Modules\\FundingImpact\\Http\\Controllers\\FundingController@storeDonor",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/donors -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/donors -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/donors -> 422 {\"message\":\"The full name field is required. (and 1 more error)\",\"errors\":{\"full_name\":[\"The full na"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/donors -> 422 {\"message\":\"The full name field is required. (and 1 more error)\",\"errors\":{\"full_name\":[\"The full na"
+   }
+  }
+ },
+ {
+  "route": "api/employees",
+  "method": "GET",
+  "path_tested": "/api/employees",
+  "action": "App\\Modules\\PeopleHr\\Http\\Controllers\\EmployeeController@index",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/employees -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/employees -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/employees -> 200 [{\"id\":\"fec4b407-5755-4741-89f4-8c933b3fc8be\",\"full_name\":\"Omar Faizi\",\"phone\":null,\"email\":null,\"ro"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/employees -> 200 [{\"id\":\"fec4b407-5755-4741-89f4-8c933b3fc8be\",\"full_name\":\"Omar Faizi\",\"phone\":null,\"email\":null,\"ro"
+   }
+  }
+ },
+ {
+  "route": "api/employees",
+  "method": "POST",
+  "path_tested": "/api/employees",
+  "action": "App\\Modules\\PeopleHr\\Http\\Controllers\\EmployeeController@store",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/employees -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/employees -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/employees -> 422 {\"message\":\"The full name field is required. (and 2 more errors)\",\"errors\":{\"full_name\":[\"The full n"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/employees -> 422 {\"message\":\"The full name field is required. (and 2 more errors)\",\"errors\":{\"full_name\":[\"The full n"
+   }
+  }
+ },
+ {
+  "route": "api/employees/{id}",
+  "method": "GET",
+  "path_tested": "/api/employees/75d421b2-daca-4643-8594-07655d8a8992",
+  "action": "App\\Modules\\PeopleHr\\Http\\Controllers\\EmployeeController@show",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/employees/75d421b2-daca-4643-8594-07655d8a8992 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/employees/75d421b2-daca-4643-8594-07655d8a8992 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/employees/75d421b2-daca-4643-8594-07655d8a8992 -> 200 {\"id\":\"75d421b2-daca-4643-8594-07655d8a8992\",\"full_name\":\"Zahra Rezai\",\"phone\":null,\"email\":null,\"ro"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/employees/75d421b2-daca-4643-8594-07655d8a8992 -> 200 {\"id\":\"75d421b2-daca-4643-8594-07655d8a8992\",\"full_name\":\"Zahra Rezai\",\"phone\":null,\"email\":null,\"ro"
+   }
+  }
+ },
+ {
+  "route": "api/employees/{id}",
+  "method": "PATCH",
+  "path_tested": "/api/employees/75d421b2-daca-4643-8594-07655d8a8992",
+  "action": "App\\Modules\\PeopleHr\\Http\\Controllers\\EmployeeController@update",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "PATCH /api/employees/75d421b2-daca-4643-8594-07655d8a8992 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "PATCH /api/employees/75d421b2-daca-4643-8594-07655d8a8992 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "PATCH /api/employees/75d421b2-daca-4643-8594-07655d8a8992 -> 200 {\"id\":\"75d421b2-daca-4643-8594-07655d8a8992\",\"full_name\":\"Zahra Rezai\",\"phone\":null,\"email\":null,\"ro"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "PATCH /api/employees/75d421b2-daca-4643-8594-07655d8a8992 -> 200 {\"id\":\"75d421b2-daca-4643-8594-07655d8a8992\",\"full_name\":\"Zahra Rezai\",\"phone\":null,\"email\":null,\"ro"
+   }
+  }
+ },
+ {
+  "route": "api/employees/{id}",
+  "method": "DELETE",
+  "path_tested": "/api/employees/75d421b2-daca-4643-8594-07655d8a8992",
+  "action": "App\\Modules\\PeopleHr\\Http\\Controllers\\EmployeeController@destroy",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "DELETE /api/employees/56c9c8c6-6770-4222-93a5-e05ad19f2c6c -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "DELETE /api/employees/533daef4-be5a-43ad-9a61-925e7c7610b0 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 404,
+    "result": "PASS",
+    "evidence": "DELETE /api/employees/000f29d2-5f94-44bd-a98c-00eaddbf172b -> 404 {\n    \"message\": \"No query results for model [App\\\\Modules\\\\PeopleHr\\\\Models\\\\Employee] 000f29d2-5f9"
+   },
+   "limited": {
+    "status": 404,
+    "result": "PASS",
+    "evidence": "DELETE /api/employees/7a7231af-90f9-4c2c-b2c4-90696d24df53 -> 404 {\n    \"message\": \"No query results for model [App\\\\Modules\\\\PeopleHr\\\\Models\\\\Employee] 7a7231af-90f"
+   }
+  }
+ },
+ {
+  "route": "api/employees/{id}/transfer",
+  "method": "POST",
+  "path_tested": "/api/employees/75d421b2-daca-4643-8594-07655d8a8992/transfer",
+  "action": "App\\Modules\\PeopleHr\\Http\\Controllers\\EmployeeController@transfer",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/employees/75d421b2-daca-4643-8594-07655d8a8992/transfer -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/employees/75d421b2-daca-4643-8594-07655d8a8992/transfer -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/employees/75d421b2-daca-4643-8594-07655d8a8992/transfer -> 422 {\"message\":\"The new branch id field is required. (and 1 more error)\",\"errors\":{\"new_branch_id\":[\"The"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/employees/75d421b2-daca-4643-8594-07655d8a8992/transfer -> 422 {\"message\":\"The new branch id field is required. (and 1 more error)\",\"errors\":{\"new_branch_id\":[\"The"
+   }
+  }
+ },
+ {
+  "route": "api/exams/{examId}/results",
+  "method": "GET",
+  "path_tested": "/api/exams/4db8f07d-d7cc-4f59-8f50-073709618583/results",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\ExamController@results",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/exams/4db8f07d-d7cc-4f59-8f50-073709618583/results -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/exams/4db8f07d-d7cc-4f59-8f50-073709618583/results -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/exams/4db8f07d-d7cc-4f59-8f50-073709618583/results -> 200 {\"exam\":{\"id\":\"4db8f07d-d7cc-4f59-8f50-073709618583\",\"title\":\"Mid-term Assessment\",\"date\":\"2026-08-1"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/exams/4db8f07d-d7cc-4f59-8f50-073709618583/results -> 200 {\"exam\":{\"id\":\"4db8f07d-d7cc-4f59-8f50-073709618583\",\"title\":\"Mid-term Assessment\",\"date\":\"2026-08-1"
+   }
+  }
+ },
+ {
+  "route": "api/exams/{examId}/results",
+  "method": "POST",
+  "path_tested": "/api/exams/4db8f07d-d7cc-4f59-8f50-073709618583/results",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\ExamController@storeResult",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/exams/4db8f07d-d7cc-4f59-8f50-073709618583/results -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/exams/4db8f07d-d7cc-4f59-8f50-073709618583/results -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/exams/4db8f07d-d7cc-4f59-8f50-073709618583/results -> 422 {\"message\":\"The student id field is required. (and 1 more error)\",\"errors\":{\"student_id\":[\"The stude"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/exams/4db8f07d-d7cc-4f59-8f50-073709618583/results -> 422 {\"message\":\"The student id field is required. (and 1 more error)\",\"errors\":{\"student_id\":[\"The stude"
+   }
+  }
+ },
+ {
+  "route": "api/expense-requests",
+  "method": "GET",
+  "path_tested": "/api/expense-requests",
+  "action": "App\\Modules\\FinancePayroll\\Http\\Controllers\\ExpenseController@index",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/expense-requests -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/expense-requests -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/expense-requests -> 200 []"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/expense-requests -> 200 []"
+   }
+  }
+ },
+ {
+  "route": "api/expense-requests",
+  "method": "POST",
+  "path_tested": "/api/expense-requests",
+  "action": "App\\Modules\\FinancePayroll\\Http\\Controllers\\ExpenseController@store",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/expense-requests -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/expense-requests -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/expense-requests -> 422 {\"message\":\"The title field is required. (and 3 more errors)\",\"errors\":{\"title\":[\"The title field is"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/expense-requests -> 422 {\"message\":\"The title field is required. (and 3 more errors)\",\"errors\":{\"title\":[\"The title field is"
+   }
+  }
+ },
+ {
+  "route": "api/expense-requests/{id}/approve",
+  "method": "POST",
+  "path_tested": "/api/expense-requests/515d116f-ae63-4a63-ac7e-b478d2a96cc5/approve",
+  "action": "App\\Modules\\FinancePayroll\\Http\\Controllers\\ExpenseController@approve",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [
+   "id"
+  ],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/expense-requests/515d116f-ae63-4a63-ac7e-b478d2a96cc5/approve -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/expense-requests/515d116f-ae63-4a63-ac7e-b478d2a96cc5/approve -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 404,
+    "result": "PASS",
+    "evidence": "POST /api/expense-requests/515d116f-ae63-4a63-ac7e-b478d2a96cc5/approve -> 404 {\"message\":\"Not found\"}"
+   },
+   "limited": {
+    "status": 404,
+    "result": "PASS",
+    "evidence": "POST /api/expense-requests/515d116f-ae63-4a63-ac7e-b478d2a96cc5/approve -> 404 {\"message\":\"Not found\"}"
+   }
+  }
+ },
+ {
+  "route": "api/expense-requests/{id}/reject",
+  "method": "POST",
+  "path_tested": "/api/expense-requests/39aa5133-5c5f-4186-89cf-f6033920f534/reject",
+  "action": "App\\Modules\\FinancePayroll\\Http\\Controllers\\ExpenseController@reject",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [
+   "id"
+  ],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/expense-requests/39aa5133-5c5f-4186-89cf-f6033920f534/reject -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/expense-requests/39aa5133-5c5f-4186-89cf-f6033920f534/reject -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 404,
+    "result": "PASS",
+    "evidence": "POST /api/expense-requests/39aa5133-5c5f-4186-89cf-f6033920f534/reject -> 404 {\"message\":\"Not found\"}"
+   },
+   "limited": {
+    "status": 404,
+    "result": "PASS",
+    "evidence": "POST /api/expense-requests/39aa5133-5c5f-4186-89cf-f6033920f534/reject -> 404 {\"message\":\"Not found\"}"
+   }
+  }
+ },
+ {
+  "route": "api/funding-campaigns",
+  "method": "GET",
+  "path_tested": "/api/funding-campaigns",
+  "action": "App\\Modules\\FundingImpact\\Http\\Controllers\\FundingController@indexCampaigns",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/funding-campaigns -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/funding-campaigns -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/funding-campaigns -> 200 [{\"id\":\"0dd5ef91-349e-465d-8ef5-40e9806e0e96\",\"name\":\"Winter Scholarship Fund 2026\",\"description\":nu"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/funding-campaigns -> 200 [{\"id\":\"0dd5ef91-349e-465d-8ef5-40e9806e0e96\",\"name\":\"Winter Scholarship Fund 2026\",\"description\":nu"
+   }
+  }
+ },
+ {
+  "route": "api/funding-campaigns",
+  "method": "POST",
+  "path_tested": "/api/funding-campaigns",
+  "action": "App\\Modules\\FundingImpact\\Http\\Controllers\\FundingController@storeCampaign",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/funding-campaigns -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/funding-campaigns -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/funding-campaigns -> 422 {\"message\":\"The name field is required. (and 3 more errors)\",\"errors\":{\"name\":[\"The name field is re"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/funding-campaigns -> 422 {\"message\":\"The name field is required. (and 3 more errors)\",\"errors\":{\"name\":[\"The name field is re"
+   }
+  }
+ },
+ {
+  "route": "api/health",
+  "method": "GET",
+  "path_tested": "/api/health",
+  "action": "App\\Http\\Controllers\\HealthController@health",
+  "middleware": "api",
+  "public": true,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/health -> 200 {\"status\":\"healthy\",\"timestamp\":\"2026-08-26T11:33:20+04:30\",\"service\":\"TOEFL House ERP\",\"version\":\"3"
+   },
+   "badauth": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/health -> 200 {\"status\":\"healthy\",\"timestamp\":\"2026-08-26T11:33:20+04:30\",\"service\":\"TOEFL House ERP\",\"version\":\"3"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/health -> 200 {\"status\":\"healthy\",\"timestamp\":\"2026-08-26T11:33:21+04:30\",\"service\":\"TOEFL House ERP\",\"version\":\"3"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/health -> 200 {\"status\":\"healthy\",\"timestamp\":\"2026-08-26T11:33:21+04:30\",\"service\":\"TOEFL House ERP\",\"version\":\"3"
+   }
+  }
+ },
+ {
+  "route": "api/health/live",
+  "method": "GET",
+  "path_tested": "/api/health/live",
+  "action": "App\\Http\\Controllers\\HealthController@live",
+  "middleware": "api",
+  "public": true,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/health/live -> 200 {\"status\":\"alive\",\"timestamp\":\"2026-08-26T11:33:22+04:30\"}"
+   },
+   "badauth": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/health/live -> 200 {\"status\":\"alive\",\"timestamp\":\"2026-08-26T11:33:23+04:30\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/health/live -> 200 {\"status\":\"alive\",\"timestamp\":\"2026-08-26T11:33:23+04:30\"}"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/health/live -> 200 {\"status\":\"alive\",\"timestamp\":\"2026-08-26T11:33:24+04:30\"}"
+   }
+  }
+ },
+ {
+  "route": "api/health/ping",
+  "method": "GET",
+  "path_tested": "/api/health/ping",
+  "action": "App\\Http\\Controllers\\HealthController@ping",
+  "middleware": "api",
+  "public": true,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/health/ping -> 200 {\"status\":\"ok\",\"timestamp\":\"2026-08-26T11:33:24+04:30\",\"service\":\"TOEFL House ERP\"}"
+   },
+   "badauth": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/health/ping -> 200 {\"status\":\"ok\",\"timestamp\":\"2026-08-26T11:33:25+04:30\",\"service\":\"TOEFL House ERP\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/health/ping -> 200 {\"status\":\"ok\",\"timestamp\":\"2026-08-26T11:33:25+04:30\",\"service\":\"TOEFL House ERP\"}"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/health/ping -> 200 {\"status\":\"ok\",\"timestamp\":\"2026-08-26T11:33:26+04:30\",\"service\":\"TOEFL House ERP\"}"
+   }
+  }
+ },
+ {
+  "route": "api/health/ready",
+  "method": "GET",
+  "path_tested": "/api/health/ready",
+  "action": "App\\Http\\Controllers\\HealthController@ready",
+  "middleware": "api",
+  "public": true,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/health/ready -> 200 {\"status\":\"ready\",\"timestamp\":\"2026-08-26T11:33:26+04:30\"}"
+   },
+   "badauth": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/health/ready -> 200 {\"status\":\"ready\",\"timestamp\":\"2026-08-26T11:33:27+04:30\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/health/ready -> 200 {\"status\":\"ready\",\"timestamp\":\"2026-08-26T11:33:28+04:30\"}"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/health/ready -> 200 {\"status\":\"ready\",\"timestamp\":\"2026-08-26T11:33:28+04:30\"}"
+   }
+  }
+ },
+ {
+  "route": "api/homework/{homeworkId}",
+  "method": "PATCH",
+  "path_tested": "/api/homework/cf88fda9-e55f-4852-a914-f9bc1babbd81",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\HomeworkController@update",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [
+   "homeworkId"
+  ],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "PATCH /api/homework/cf88fda9-e55f-4852-a914-f9bc1babbd81 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "PATCH /api/homework/cf88fda9-e55f-4852-a914-f9bc1babbd81 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 404,
+    "result": "PASS",
+    "evidence": "PATCH /api/homework/cf88fda9-e55f-4852-a914-f9bc1babbd81 -> 404 {\"message\":\"Not found\"}"
+   },
+   "limited": {
+    "status": 404,
+    "result": "PASS",
+    "evidence": "PATCH /api/homework/cf88fda9-e55f-4852-a914-f9bc1babbd81 -> 404 {\"message\":\"Not found\"}"
+   }
+  }
+ },
+ {
+  "route": "api/homework/{homeworkId}/mark-done",
+  "method": "POST",
+  "path_tested": "/api/homework/8ee973bd-6350-498c-97b2-005c3169a5d1/mark-done",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\HomeworkController@markDone",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [
+   "homeworkId"
+  ],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/homework/8ee973bd-6350-498c-97b2-005c3169a5d1/mark-done -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/homework/8ee973bd-6350-498c-97b2-005c3169a5d1/mark-done -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 404,
+    "result": "PASS",
+    "evidence": "POST /api/homework/8ee973bd-6350-498c-97b2-005c3169a5d1/mark-done -> 404 {\"message\":\"Not found\"}"
+   },
+   "limited": {
+    "status": 404,
+    "result": "PASS",
+    "evidence": "POST /api/homework/8ee973bd-6350-498c-97b2-005c3169a5d1/mark-done -> 404 {\"message\":\"Not found\"}"
+   }
+  }
+ },
+ {
+  "route": "api/impact-metrics",
+  "method": "GET",
+  "path_tested": "/api/impact-metrics",
+  "action": "App\\Modules\\FundingImpact\\Http\\Controllers\\FundingController@indexImpactMetrics",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/impact-metrics -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/impact-metrics -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/impact-metrics -> 200 [{\"id\":\"7a6032e1-871b-4310-bb1f-95cd51d3229b\",\"name\":\"Students Supported by Scholarships\",\"category\""
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/impact-metrics -> 200 [{\"id\":\"7a6032e1-871b-4310-bb1f-95cd51d3229b\",\"name\":\"Students Supported by Scholarships\",\"category\""
+   }
+  }
+ },
+ {
+  "route": "api/invoices",
+  "method": "GET",
+  "path_tested": "/api/invoices",
+  "action": "App\\Modules\\FinancePayroll\\Http\\Controllers\\InvoiceController@index",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/invoices -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/invoices -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/invoices -> 200 []"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/invoices -> 200 []"
+   }
+  }
+ },
+ {
+  "route": "api/invoices",
+  "method": "POST",
+  "path_tested": "/api/invoices",
+  "action": "App\\Modules\\FinancePayroll\\Http\\Controllers\\InvoiceController@store",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/invoices -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/invoices -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/invoices -> 422 {\"message\":\"The student id field is required. (and 3 more errors)\",\"errors\":{\"student_id\":[\"The stud"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/invoices -> 422 {\"message\":\"The student id field is required. (and 3 more errors)\",\"errors\":{\"student_id\":[\"The stud"
+   }
+  }
+ },
+ {
+  "route": "api/invoices/{id}/mark-paid",
+  "method": "POST",
+  "path_tested": "/api/invoices/e151838b-8ecf-451f-8c70-450524b184ed/mark-paid",
+  "action": "App\\Modules\\FinancePayroll\\Http\\Controllers\\InvoiceController@markPaid",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [
+   "id"
+  ],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/invoices/e151838b-8ecf-451f-8c70-450524b184ed/mark-paid -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/invoices/e151838b-8ecf-451f-8c70-450524b184ed/mark-paid -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 404,
+    "result": "PASS",
+    "evidence": "POST /api/invoices/e151838b-8ecf-451f-8c70-450524b184ed/mark-paid -> 404 {\"message\":\"Not found\"}"
+   },
+   "limited": {
+    "status": 404,
+    "result": "PASS",
+    "evidence": "POST /api/invoices/e151838b-8ecf-451f-8c70-450524b184ed/mark-paid -> 404 {\"message\":\"Not found\"}"
+   }
+  }
+ },
+ {
+  "route": "api/notifications",
+  "method": "GET",
+  "path_tested": "/api/notifications",
+  "action": "App\\Modules\\PlatformServices\\Http\\Controllers\\NotificationController@index",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/notifications -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/notifications -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/notifications -> 200 {\"notifications\":[{\"id\":\"067b54ce-a896-42e7-81e5-ec2e85f45ffb\",\"title\":\"New Student Registered\",\"mes"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/notifications -> 200 {\"notifications\":[{\"id\":\"067b54ce-a896-42e7-81e5-ec2e85f45ffb\",\"title\":\"New Student Registered\",\"mes"
+   }
+  }
+ },
+ {
+  "route": "api/notifications/read-all",
+  "method": "POST",
+  "path_tested": "/api/notifications/read-all",
+  "action": "App\\Modules\\PlatformServices\\Http\\Controllers\\NotificationController@markAllAsRead",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/notifications/read-all -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/notifications/read-all -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "POST /api/notifications/read-all -> 200 {\"message\":\"Marked 0 notifications as read\"}"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "POST /api/notifications/read-all -> 200 {\"message\":\"Marked 0 notifications as read\"}"
+   }
+  }
+ },
+ {
+  "route": "api/notifications/{id}/read",
+  "method": "PATCH",
+  "path_tested": "/api/notifications/067b54ce-a896-42e7-81e5-ec2e85f45ffb/read",
+  "action": "App\\Modules\\PlatformServices\\Http\\Controllers\\NotificationController@markAsRead",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "PATCH /api/notifications/067b54ce-a896-42e7-81e5-ec2e85f45ffb/read -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "PATCH /api/notifications/067b54ce-a896-42e7-81e5-ec2e85f45ffb/read -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "PATCH /api/notifications/067b54ce-a896-42e7-81e5-ec2e85f45ffb/read -> 200 {\"message\":\"Marked as read\"}"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "PATCH /api/notifications/067b54ce-a896-42e7-81e5-ec2e85f45ffb/read -> 200 {\"message\":\"Marked as read\"}"
+   }
+  }
+ },
+ {
+  "route": "api/organizations",
+  "method": "GET",
+  "path_tested": "/api/organizations",
+  "action": "App\\Modules\\Iam\\Http\\Controllers\\OrganizationController@index",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/organizations -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/organizations -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/organizations -> 200 [{\"id\":\"01863589-8f94-4527-9fbe-4feb82d6aca3\",\"name\":\"TOEFL House\",\"created_at\":\"2026-08-26T06:02:12"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/organizations -> 200 [{\"id\":\"01863589-8f94-4527-9fbe-4feb82d6aca3\",\"name\":\"TOEFL House\",\"created_at\":\"2026-08-26T06:02:12"
+   }
+  }
+ },
+ {
+  "route": "api/organizations",
+  "method": "POST",
+  "path_tested": "/api/organizations",
+  "action": "App\\Modules\\Iam\\Http\\Controllers\\OrganizationController@store",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/organizations -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/organizations -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/organizations -> 422 {\"message\":\"The name field is required.\",\"errors\":{\"name\":[\"The name field is required.\"]}}"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/organizations -> 422 {\"message\":\"The name field is required.\",\"errors\":{\"name\":[\"The name field is required.\"]}}"
+   }
+  }
+ },
+ {
+  "route": "api/organizations/{id}",
+  "method": "GET",
+  "path_tested": "/api/organizations/01863589-8f94-4527-9fbe-4feb82d6aca3",
+  "action": "App\\Modules\\Iam\\Http\\Controllers\\OrganizationController@show",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/organizations/01863589-8f94-4527-9fbe-4feb82d6aca3 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/organizations/01863589-8f94-4527-9fbe-4feb82d6aca3 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/organizations/01863589-8f94-4527-9fbe-4feb82d6aca3 -> 200 {\"id\":\"01863589-8f94-4527-9fbe-4feb82d6aca3\",\"name\":\"TOEFL House\",\"created_at\":\"2026-08-26T06:02:12."
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/organizations/01863589-8f94-4527-9fbe-4feb82d6aca3 -> 200 {\"id\":\"01863589-8f94-4527-9fbe-4feb82d6aca3\",\"name\":\"TOEFL House\",\"created_at\":\"2026-08-26T06:02:12."
+   }
+  }
+ },
+ {
+  "route": "api/organizations/{id}",
+  "method": "PATCH",
+  "path_tested": "/api/organizations/01863589-8f94-4527-9fbe-4feb82d6aca3",
+  "action": "App\\Modules\\Iam\\Http\\Controllers\\OrganizationController@update",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "PATCH /api/organizations/01863589-8f94-4527-9fbe-4feb82d6aca3 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "PATCH /api/organizations/01863589-8f94-4527-9fbe-4feb82d6aca3 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "PATCH /api/organizations/01863589-8f94-4527-9fbe-4feb82d6aca3 -> 200 {\"id\":\"01863589-8f94-4527-9fbe-4feb82d6aca3\",\"name\":\"TOEFL House\",\"created_at\":\"2026-08-26T06:02:12."
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "PATCH /api/organizations/01863589-8f94-4527-9fbe-4feb82d6aca3 -> 200 {\"id\":\"01863589-8f94-4527-9fbe-4feb82d6aca3\",\"name\":\"TOEFL House\",\"created_at\":\"2026-08-26T06:02:12."
+   }
+  }
+ },
+ {
+  "route": "api/organizations/{id}",
+  "method": "DELETE",
+  "path_tested": "/api/organizations/01863589-8f94-4527-9fbe-4feb82d6aca3",
+  "action": "App\\Modules\\Iam\\Http\\Controllers\\OrganizationController@destroy",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "DELETE /api/organizations/b865e383-184a-4202-913d-a5872e6e0f60 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "DELETE /api/organizations/5b65e032-eb3f-4adb-835d-902023056786 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 404,
+    "result": "PASS",
+    "evidence": "DELETE /api/organizations/a5444735-f496-4ee9-be41-1b87f7e7e838 -> 404 {\n    \"message\": \"No query results for model [App\\\\Modules\\\\Iam\\\\Models\\\\Organization] a5444735-f496"
+   },
+   "limited": {
+    "status": 404,
+    "result": "PASS",
+    "evidence": "DELETE /api/organizations/c97233a9-42de-49b8-923b-847de9bcd696 -> 404 {\n    \"message\": \"No query results for model [App\\\\Modules\\\\Iam\\\\Models\\\\Organization] c97233a9-42de"
+   }
+  }
+ },
+ {
+  "route": "api/payments",
+  "method": "GET",
+  "path_tested": "/api/payments",
+  "action": "App\\Modules\\FinancePayroll\\Http\\Controllers\\PaymentController@index",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/payments -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/payments -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/payments -> 200 [{\"id\":\"40aea646-6c8b-4342-b550-942590fedd9f\",\"student_id\":\"01a03ccc-183a-736c-b446-93e4bd31ddb8\",\"i"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/payments -> 200 [{\"id\":\"40aea646-6c8b-4342-b550-942590fedd9f\",\"student_id\":\"01a03ccc-183a-736c-b446-93e4bd31ddb8\",\"i"
+   }
+  }
+ },
+ {
+  "route": "api/payments",
+  "method": "POST",
+  "path_tested": "/api/payments",
+  "action": "App\\Modules\\FinancePayroll\\Http\\Controllers\\PaymentController@store",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/payments -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/payments -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/payments -> 422 {\"message\":\"The amount field is required. (and 4 more errors)\",\"errors\":{\"amount\":[\"The amount field"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/payments -> 422 {\"message\":\"The amount field is required. (and 4 more errors)\",\"errors\":{\"amount\":[\"The amount field"
+   }
+  }
+ },
+ {
+  "route": "api/payroll/ledger",
+  "method": "GET",
+  "path_tested": "/api/payroll/ledger",
+  "action": "App\\Modules\\FinancePayroll\\Http\\Controllers\\PaymentController@payrollLedger",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/payroll/ledger -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/payroll/ledger -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/payroll/ledger -> 200 [{\"id\":\"cc2aff63-7d0e-49b7-85b3-d10284791b1e\",\"teacher_id\":\"d2046fc7-82bb-4b8e-8b5e-1b24837628ef\",\"p"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/payroll/ledger -> 200 [{\"id\":\"cc2aff63-7d0e-49b7-85b3-d10284791b1e\",\"teacher_id\":\"d2046fc7-82bb-4b8e-8b5e-1b24837628ef\",\"p"
+   }
+  }
+ },
+ {
+  "route": "api/payroll/process",
+  "method": "POST",
+  "path_tested": "/api/payroll/process",
+  "action": "App\\Modules\\FinancePayroll\\Http\\Controllers\\PaymentController@processPayroll",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/payroll/process -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/payroll/process -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "POST /api/payroll/process -> 200 {\"processed\":4,\"total_paid\":0,\"period\":\"2026-08\",\"results\":[{\"teacher_id\":\"d2046fc7-82bb-4b8e-8b5e-1"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "POST /api/payroll/process -> 200 {\"processed\":4,\"total_paid\":0,\"period\":\"2026-08\",\"results\":[{\"teacher_id\":\"d2046fc7-82bb-4b8e-8b5e-1"
+   }
+  }
+ },
+ {
+  "route": "api/permissions",
+  "method": "GET",
+  "path_tested": "/api/permissions",
+  "action": "App\\Modules\\Iam\\Http\\Controllers\\RoleController@indexPermissions",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/permissions -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/permissions -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/permissions -> 200 [{\"id\":\"c0cf6928-b447-4b78-9b06-ac6ab76d45b9\",\"code\":\"Attendance.Edit\",\"resource\":\"Attendance\",\"acti"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/permissions -> 200 [{\"id\":\"c0cf6928-b447-4b78-9b06-ac6ab76d45b9\",\"code\":\"Attendance.Edit\",\"resource\":\"Attendance\",\"acti"
+   }
+  }
+ },
+ {
+  "route": "api/program-versions/{programVersionId}/promotion-rules",
+  "method": "GET",
+  "path_tested": "/api/program-versions/9d0f3e89-c59d-40fe-b81b-b54e1c0a690e/promotion-rules",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\PromotionController@rules",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/program-versions/9d0f3e89-c59d-40fe-b81b-b54e1c0a690e/promotion-rules -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/program-versions/9d0f3e89-c59d-40fe-b81b-b54e1c0a690e/promotion-rules -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/program-versions/9d0f3e89-c59d-40fe-b81b-b54e1c0a690e/promotion-rules -> 200 []"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/program-versions/9d0f3e89-c59d-40fe-b81b-b54e1c0a690e/promotion-rules -> 200 []"
+   }
+  }
+ },
+ {
+  "route": "api/programs",
+  "method": "GET",
+  "path_tested": "/api/programs",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\ProgramController@index",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/programs -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/programs -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/programs -> 200 [{\"id\":\"fe3024b7-7c14-4484-bdd7-2ecd87d32b9d\",\"name\":\"General English\",\"description\":null,\"duration_"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/programs -> 200 [{\"id\":\"fe3024b7-7c14-4484-bdd7-2ecd87d32b9d\",\"name\":\"General English\",\"description\":null,\"duration_"
+   }
+  }
+ },
+ {
+  "route": "api/programs",
+  "method": "POST",
+  "path_tested": "/api/programs",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\ProgramController@store",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/programs -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/programs -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/programs -> 422 {\"message\":\"The name field is required. (and 1 more error)\",\"errors\":{\"name\":[\"The name field is req"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/programs -> 422 {\"message\":\"The name field is required. (and 1 more error)\",\"errors\":{\"name\":[\"The name field is req"
+   }
+  }
+ },
+ {
+  "route": "api/programs/{programId}/versions",
+  "method": "GET",
+  "path_tested": "/api/programs/fe3024b7-7c14-4484-bdd7-2ecd87d32b9d/versions",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\ProgramController@versions",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/programs/fe3024b7-7c14-4484-bdd7-2ecd87d32b9d/versions -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/programs/fe3024b7-7c14-4484-bdd7-2ecd87d32b9d/versions -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/programs/fe3024b7-7c14-4484-bdd7-2ecd87d32b9d/versions -> 200 [{\"id\":\"9d0f3e89-c59d-40fe-b81b-b54e1c0a690e\",\"program_id\":\"fe3024b7-7c14-4484-bdd7-2ecd87d32b9d\",\"v"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/programs/fe3024b7-7c14-4484-bdd7-2ecd87d32b9d/versions -> 200 [{\"id\":\"9d0f3e89-c59d-40fe-b81b-b54e1c0a690e\",\"program_id\":\"fe3024b7-7c14-4484-bdd7-2ecd87d32b9d\",\"v"
+   }
+  }
+ },
+ {
+  "route": "api/reports/certificates/{certificateId}",
+  "method": "GET",
+  "path_tested": "/api/reports/certificates/2ad94b1c-917f-42e1-aba0-d45681a19b8f",
+  "action": "App\\Http\\Controllers\\ReportController@certificate",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default,App\\Http\\Middleware\\ApiRateLimiter:read",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/reports/certificates/2ad94b1c-917f-42e1-aba0-d45681a19b8f -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/reports/certificates/2ad94b1c-917f-42e1-aba0-d45681a19b8f -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/reports/certificates/2ad94b1c-917f-42e1-aba0-d45681a19b8f -> 200 {\"success\":true,\"message\":\"Certificate generated successfully\",\"data\":{\"view\":\"reports.certificate\","
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/reports/certificates/2ad94b1c-917f-42e1-aba0-d45681a19b8f -> 200 {\"success\":true,\"message\":\"Certificate generated successfully\",\"data\":{\"view\":\"reports.certificate\","
+   }
+  }
+ },
+ {
+  "route": "api/reports/classes/{classId}/roster",
+  "method": "GET",
+  "path_tested": "/api/reports/classes/01a03ca9-8452-71d3-ae89-c7f664491055/roster",
+  "action": "App\\Http\\Controllers\\ReportController@classRoster",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default,App\\Http\\Middleware\\ApiRateLimiter:read",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/reports/classes/01a03ca9-8452-71d3-ae89-c7f664491055/roster -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/reports/classes/01a03ca9-8452-71d3-ae89-c7f664491055/roster -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/reports/classes/01a03ca9-8452-71d3-ae89-c7f664491055/roster -> 200 {\"success\":true,\"message\":\"Class roster generated successfully\",\"data\":{\"view\":\"reports.class-roster"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/reports/classes/01a03ca9-8452-71d3-ae89-c7f664491055/roster -> 200 {\"success\":true,\"message\":\"Class roster generated successfully\",\"data\":{\"view\":\"reports.class-roster"
+   }
+  }
+ },
+ {
+  "route": "api/reports/financial",
+  "method": "POST",
+  "path_tested": "/api/reports/financial",
+  "action": "App\\Http\\Controllers\\ReportController@financialReport",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default,App\\Http\\Middleware\\ApiRateLimiter:read",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/reports/financial -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/reports/financial -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/reports/financial -> 422 {\"message\":\"The branch id field is required. (and 2 more errors)\",\"errors\":{\"branch_id\":[\"The branch"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/reports/financial -> 422 {\"message\":\"The branch id field is required. (and 2 more errors)\",\"errors\":{\"branch_id\":[\"The branch"
+   }
+  }
+ },
+ {
+  "route": "api/reports/payroll",
+  "method": "POST",
+  "path_tested": "/api/reports/payroll",
+  "action": "App\\Http\\Controllers\\ReportController@payrollReport",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default,App\\Http\\Middleware\\ApiRateLimiter:read",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/reports/payroll -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/reports/payroll -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/reports/payroll -> 422 {\"message\":\"The branch id field is required. (and 1 more error)\",\"errors\":{\"branch_id\":[\"The branch "
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/reports/payroll -> 422 {\"message\":\"The branch id field is required. (and 1 more error)\",\"errors\":{\"branch_id\":[\"The branch "
+   }
+  }
+ },
+ {
+  "route": "api/reports/students/{studentId}/transcript",
+  "method": "GET",
+  "path_tested": "/api/reports/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/transcript",
+  "action": "App\\Http\\Controllers\\ReportController@studentTranscript",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default,App\\Http\\Middleware\\ApiRateLimiter:read",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/reports/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/transcript -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/reports/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/transcript -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/reports/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/transcript -> 200 {\"success\":true,\"message\":\"Student transcript generated successfully\",\"data\":{\"view\":\"reports.studen"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/reports/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/transcript -> 200 {\"success\":true,\"message\":\"Student transcript generated successfully\",\"data\":{\"view\":\"reports.studen"
+   }
+  }
+ },
+ {
+  "route": "api/roles",
+  "method": "GET",
+  "path_tested": "/api/roles",
+  "action": "App\\Modules\\Iam\\Http\\Controllers\\RoleController@indexRoles",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/roles -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/roles -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/roles -> 200 [{\"id\":\"dc88765e-97c6-4d78-8d84-d4e78a28c6fb\",\"code\":\"owner\",\"name\":\"Course Owner\",\"description\":nul"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/roles -> 200 [{\"id\":\"dc88765e-97c6-4d78-8d84-d4e78a28c6fb\",\"code\":\"owner\",\"name\":\"Course Owner\",\"description\":nul"
+   }
+  }
+ },
+ {
+  "route": "api/rules",
+  "method": "GET",
+  "path_tested": "/api/rules",
+  "action": "App\\Modules\\PlatformServices\\Http\\Controllers\\RuleController@index",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/rules -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/rules -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/rules -> 200 [{\"id\":\"baaf67e3-f913-4a93-b48a-6c809d08b7ea\",\"name\":\"Discount Cap Enforcement\",\"description\":\"Caps "
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/rules -> 200 [{\"id\":\"baaf67e3-f913-4a93-b48a-6c809d08b7ea\",\"name\":\"Discount Cap Enforcement\",\"description\":\"Caps "
+   }
+  }
+ },
+ {
+  "route": "api/rules",
+  "method": "POST",
+  "path_tested": "/api/rules",
+  "action": "App\\Modules\\PlatformServices\\Http\\Controllers\\RuleController@store",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/rules -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/rules -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/rules -> 422 {\"message\":\"The name field is required. (and 3 more errors)\",\"errors\":{\"name\":[\"The name field is re"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/rules -> 422 {\"message\":\"The name field is required. (and 3 more errors)\",\"errors\":{\"name\":[\"The name field is re"
+   }
+  }
+ },
+ {
+  "route": "api/rules/{id}",
+  "method": "GET",
+  "path_tested": "/api/rules/07de21b4-e8da-441d-9c74-38d55882a576",
+  "action": "App\\Modules\\PlatformServices\\Http\\Controllers\\RuleController@show",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/rules/07de21b4-e8da-441d-9c74-38d55882a576 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/rules/07de21b4-e8da-441d-9c74-38d55882a576 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/rules/07de21b4-e8da-441d-9c74-38d55882a576 -> 200 {\"rule\":{\"id\":\"07de21b4-e8da-441d-9c74-38d55882a576\",\"name\":\"Profit Withdrawal Tier \\u2014 20%\",\"des"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/rules/07de21b4-e8da-441d-9c74-38d55882a576 -> 200 {\"rule\":{\"id\":\"07de21b4-e8da-441d-9c74-38d55882a576\",\"name\":\"Profit Withdrawal Tier \\u2014 20%\",\"des"
+   }
+  }
+ },
+ {
+  "route": "api/rules/{id}/evaluate",
+  "method": "POST",
+  "path_tested": "/api/rules/07de21b4-e8da-441d-9c74-38d55882a576/evaluate",
+  "action": "App\\Modules\\PlatformServices\\Http\\Controllers\\RuleController@evaluate",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/rules/07de21b4-e8da-441d-9c74-38d55882a576/evaluate -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/rules/07de21b4-e8da-441d-9c74-38d55882a576/evaluate -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/rules/07de21b4-e8da-441d-9c74-38d55882a576/evaluate -> 422 {\"message\":\"The data field is required.\",\"errors\":{\"data\":[\"The data field is required.\"]}}"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/rules/07de21b4-e8da-441d-9c74-38d55882a576/evaluate -> 422 {\"message\":\"The data field is required.\",\"errors\":{\"data\":[\"The data field is required.\"]}}"
+   }
+  }
+ },
+ {
+  "route": "api/scholarships",
+  "method": "GET",
+  "path_tested": "/api/scholarships",
+  "action": "App\\Modules\\FundingImpact\\Http\\Controllers\\FundingController@indexScholarships",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/scholarships -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/scholarships -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/scholarships -> 200 [{\"id\":\"a75c58c1-5464-474c-a2f3-52bfcdee5aa0\",\"name\":\"Merit Scholarship\",\"donor_id\":null,\"campaign_i"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/scholarships -> 200 [{\"id\":\"a75c58c1-5464-474c-a2f3-52bfcdee5aa0\",\"name\":\"Merit Scholarship\",\"donor_id\":null,\"campaign_i"
+   }
+  }
+ },
+ {
+  "route": "api/scholarships/{scholarshipId}/awards",
+  "method": "POST",
+  "path_tested": "/api/scholarships/a75c58c1-5464-474c-a2f3-52bfcdee5aa0/awards",
+  "action": "App\\Modules\\FundingImpact\\Http\\Controllers\\FundingController@awardScholarship",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/scholarships/a75c58c1-5464-474c-a2f3-52bfcdee5aa0/awards -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/scholarships/a75c58c1-5464-474c-a2f3-52bfcdee5aa0/awards -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/scholarships/a75c58c1-5464-474c-a2f3-52bfcdee5aa0/awards -> 422 {\"message\":\"The student id field is required. (and 1 more error)\",\"errors\":{\"student_id\":[\"The stude"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/scholarships/a75c58c1-5464-474c-a2f3-52bfcdee5aa0/awards -> 422 {\"message\":\"The student id field is required. (and 1 more error)\",\"errors\":{\"student_id\":[\"The stude"
+   }
+  }
+ },
+ {
+  "route": "api/search",
+  "method": "GET",
+  "path_tested": "/api/search",
+  "action": "App\\Modules\\PlatformServices\\Http\\Controllers\\SearchController@globalSearch",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/search -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/search -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/search -> 200 {\"results\":[],\"total\":0}"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/search -> 200 {\"results\":[],\"total\":0}"
+   }
+  }
+ },
+ {
+  "route": "api/sessions/{sessionId}/attendance",
+  "method": "POST",
+  "path_tested": "/api/sessions/01a03ca9-845e-70a0-84fe-a68c764a13aa/attendance",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\SessionController@updateAttendance",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/sessions/01a03ca9-845e-70a0-84fe-a68c764a13aa/attendance -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/sessions/01a03ca9-845e-70a0-84fe-a68c764a13aa/attendance -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/sessions/01a03ca9-845e-70a0-84fe-a68c764a13aa/attendance -> 422 {\"message\":\"The attendance field is required.\",\"errors\":{\"attendance\":[\"The attendance field is requ"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/sessions/01a03ca9-845e-70a0-84fe-a68c764a13aa/attendance -> 422 {\"message\":\"The attendance field is required.\",\"errors\":{\"attendance\":[\"The attendance field is requ"
+   }
+  }
+ },
+ {
+  "route": "api/sessions/{sessionId}/roster",
+  "method": "GET",
+  "path_tested": "/api/sessions/01a03ca9-845e-70a0-84fe-a68c764a13aa/roster",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\SessionController@roster",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/sessions/01a03ca9-845e-70a0-84fe-a68c764a13aa/roster -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/sessions/01a03ca9-845e-70a0-84fe-a68c764a13aa/roster -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/sessions/01a03ca9-845e-70a0-84fe-a68c764a13aa/roster -> 200 []"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/sessions/01a03ca9-845e-70a0-84fe-a68c764a13aa/roster -> 200 []"
+   }
+  }
+ },
+ {
+  "route": "api/settings",
+  "method": "GET",
+  "path_tested": "/api/settings",
+  "action": "App\\Modules\\PlatformServices\\Http\\Controllers\\SettingsController@index",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/settings -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/settings -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/settings -> 200 {\"daily_saving_percent\":\"5\",\"saving_balance\":\"128375\",\"main_account_balance\":\"890000\",\"reserve_fund_"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/settings -> 200 {\"daily_saving_percent\":\"5\",\"saving_balance\":\"128375\",\"main_account_balance\":\"890000\",\"reserve_fund_"
+   }
+  }
+ },
+ {
+  "route": "api/settings/batch",
+  "method": "POST",
+  "path_tested": "/api/settings/batch",
+  "action": "App\\Modules\\PlatformServices\\Http\\Controllers\\SettingsController@batchUpdate",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/settings/batch -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/settings/batch -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/settings/batch -> 422 {\"message\":\"The settings field is required.\",\"errors\":{\"settings\":[\"The settings field is required.\""
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/settings/batch -> 422 {\"message\":\"The settings field is required.\",\"errors\":{\"settings\":[\"The settings field is required.\""
+   }
+  }
+ },
+ {
+  "route": "api/settings/{key}",
+  "method": "GET",
+  "path_tested": "/api/settings/maintenance_mode",
+  "action": "App\\Modules\\PlatformServices\\Http\\Controllers\\SettingsController@show",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/settings/maintenance_mode -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/settings/maintenance_mode -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 404,
+    "result": "WARN",
+    "evidence": "GET /api/settings/maintenance_mode -> 404 {\"message\":\"Setting not found\"}"
+   },
+   "limited": {
+    "status": 404,
+    "result": "WARN",
+    "evidence": "GET /api/settings/maintenance_mode -> 404 {\"message\":\"Setting not found\"}"
+   }
+  }
+ },
+ {
+  "route": "api/settings/{key}",
+  "method": "PATCH",
+  "path_tested": "/api/settings/maintenance_mode",
+  "action": "App\\Modules\\PlatformServices\\Http\\Controllers\\SettingsController@update",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "PATCH /api/settings/maintenance_mode -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "PATCH /api/settings/maintenance_mode -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "PATCH /api/settings/maintenance_mode -> 422 {\"message\":\"The value field is required.\",\"errors\":{\"value\":[\"The value field is required.\"]}}"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "PATCH /api/settings/maintenance_mode -> 422 {\"message\":\"The value field is required.\",\"errors\":{\"value\":[\"The value field is required.\"]}}"
+   }
+  }
+ },
+ {
+  "route": "api/students",
+  "method": "GET",
+  "path_tested": "/api/students",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\StudentController@index",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/students -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/students -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/students -> 200 [{\"id\":\"01a03ccf-a4cd-7053-b0d7-149b46e9d212\",\"student_code\":\"STU-2026-0022\",\"full_name\":\"Transcript"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/students -> 200 [{\"id\":\"01a03ccf-a4cd-7053-b0d7-149b46e9d212\",\"student_code\":\"STU-2026-0022\",\"full_name\":\"Transcript"
+   }
+  }
+ },
+ {
+  "route": "api/students",
+  "method": "POST",
+  "path_tested": "/api/students",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\StudentController@store",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/students -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/students -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/students -> 422 {\"message\":\"The full name field is required. (and 1 more error)\",\"errors\":{\"full_name\":[\"The full na"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/students -> 422 {\"message\":\"The full name field is required. (and 1 more error)\",\"errors\":{\"full_name\":[\"The full na"
+   }
+  }
+ },
+ {
+  "route": "api/students/{id}",
+  "method": "GET",
+  "path_tested": "/api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\StudentController@show",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6 -> 200 {\"id\":\"01a03ca9-83c7-71f3-82bb-86700427f2f6\",\"student_code\":\"STU-2026-0001\",\"full_name\":\"Ahmad Rahim"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6 -> 200 {\"id\":\"01a03ca9-83c7-71f3-82bb-86700427f2f6\",\"student_code\":\"STU-2026-0001\",\"full_name\":\"Ahmad Rahim"
+   }
+  }
+ },
+ {
+  "route": "api/students/{id}",
+  "method": "PATCH",
+  "path_tested": "/api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\StudentController@update",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "PATCH /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "PATCH /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "PATCH /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6 -> 200 {\"id\":\"01a03ca9-83c7-71f3-82bb-86700427f2f6\",\"student_code\":\"STU-2026-0001\",\"full_name\":\"Ahmad Rahim"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "PATCH /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6 -> 200 {\"id\":\"01a03ca9-83c7-71f3-82bb-86700427f2f6\",\"student_code\":\"STU-2026-0001\",\"full_name\":\"Ahmad Rahim"
+   }
+  }
+ },
+ {
+  "route": "api/students/{id}",
+  "method": "DELETE",
+  "path_tested": "/api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\StudentController@destroy",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "DELETE /api/students/7581f251-44ca-4152-9d16-59c92d4cb957 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "DELETE /api/students/1fed1118-8a09-4781-9e7c-93914838de43 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 404,
+    "result": "PASS",
+    "evidence": "DELETE /api/students/07dd407e-37ca-438d-88a6-2e28a0537ddc -> 404 {\n    \"message\": \"No query results for model [App\\\\Modules\\\\Academic\\\\Models\\\\Student] 07dd407e-37ca"
+   },
+   "limited": {
+    "status": 404,
+    "result": "PASS",
+    "evidence": "DELETE /api/students/6ffba5a1-af70-499d-8334-5176c04f200b -> 404 {\n    \"message\": \"No query results for model [App\\\\Modules\\\\Academic\\\\Models\\\\Student] 6ffba5a1-af70"
+   }
+  }
+ },
+ {
+  "route": "api/students/{id}/enroll",
+  "method": "POST",
+  "path_tested": "/api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/enroll",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\StudentController@enroll",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/enroll -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/enroll -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/enroll -> 422 {\"message\":\"The program id field is required.\",\"errors\":{\"program_id\":[\"The program id field is requ"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/enroll -> 422 {\"message\":\"The program id field is required.\",\"errors\":{\"program_id\":[\"The program id field is requ"
+   }
+  }
+ },
+ {
+  "route": "api/students/{id}/journey",
+  "method": "GET",
+  "path_tested": "/api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/journey",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\StudentController@journey",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/journey -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/journey -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/journey -> 200 [{\"id\":\"01a03cdf-a103-70c1-8f6e-1d2f402c1452\",\"student_id\":\"01a03ca9-83c7-71f3-82bb-86700427f2f6\",\"e"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/journey -> 200 [{\"id\":\"01a03cdf-a103-70c1-8f6e-1d2f402c1452\",\"student_id\":\"01a03ca9-83c7-71f3-82bb-86700427f2f6\",\"e"
+   }
+  }
+ },
+ {
+  "route": "api/students/{studentId}/exams",
+  "method": "GET",
+  "path_tested": "/api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/exams",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\StudentController@exams",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/exams -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/exams -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/exams -> 200 []"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/exams -> 200 []"
+   }
+  }
+ },
+ {
+  "route": "api/students/{studentId}/finance-summary",
+  "method": "GET",
+  "path_tested": "/api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/finance-summary",
+  "action": "App\\Modules\\FinancePayroll\\Http\\Controllers\\PaymentController@studentFinanceSummary",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/finance-summary -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/finance-summary -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/finance-summary -> 200 {\"grossTuition\":0,\"discountPercent\":9,\"scholarshipPercent\":0,\"discountAmount\":0,\"scholarshipAmount\":"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/finance-summary -> 200 {\"grossTuition\":0,\"discountPercent\":9,\"scholarshipPercent\":0,\"discountAmount\":0,\"scholarshipAmount\":"
+   }
+  }
+ },
+ {
+  "route": "api/students/{studentId}/homework",
+  "method": "GET",
+  "path_tested": "/api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/homework",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\StudentController@homework",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/homework -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/homework -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/homework -> 200 []"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/homework -> 200 []"
+   }
+  }
+ },
+ {
+  "route": "api/students/{studentId}/promote",
+  "method": "POST",
+  "path_tested": "/api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/promote",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\PromotionController@promote",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/promote -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/promote -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/promote -> 422 {\"message\":\"The to level id field is required.\",\"errors\":{\"to_level_id\":[\"The to level id field is r"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/promote -> 422 {\"message\":\"The to level id field is required.\",\"errors\":{\"to_level_id\":[\"The to level id field is r"
+   }
+  }
+ },
+ {
+  "route": "api/students/{studentId}/promotion-recommend",
+  "method": "GET",
+  "path_tested": "/api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/promotion-recommend",
+  "action": "App\\Modules\\Academic\\Http\\Controllers\\PromotionController@recommend",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/promotion-recommend -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/promotion-recommend -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "WARN",
+    "evidence": "GET /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/promotion-recommend -> 422 {\"message\":\"No active enrollment with program version\"}"
+   },
+   "limited": {
+    "status": 422,
+    "result": "WARN",
+    "evidence": "GET /api/students/01a03ca9-83c7-71f3-82bb-86700427f2f6/promotion-recommend -> 422 {\"message\":\"No active enrollment with program version\"}"
+   }
+  }
+ },
+ {
+  "route": "api/teachers",
+  "method": "GET",
+  "path_tested": "/api/teachers",
+  "action": "App\\Modules\\PeopleHr\\Http\\Controllers\\TeacherController@index",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/teachers -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/teachers -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/teachers -> 200 [{\"id\":\"d2046fc7-82bb-4b8e-8b5e-1b24837628ef\",\"full_name\":\"Ahmad Karimi\",\"phone\":null,\"email\":null,\""
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/teachers -> 200 [{\"id\":\"d2046fc7-82bb-4b8e-8b5e-1b24837628ef\",\"full_name\":\"Ahmad Karimi\",\"phone\":null,\"email\":null,\""
+   }
+  }
+ },
+ {
+  "route": "api/teachers",
+  "method": "POST",
+  "path_tested": "/api/teachers",
+  "action": "App\\Modules\\PeopleHr\\Http\\Controllers\\TeacherController@store",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/teachers -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/teachers -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/teachers -> 422 {\"message\":\"The full name field is required. (and 2 more errors)\",\"errors\":{\"full_name\":[\"The full n"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/teachers -> 422 {\"message\":\"The full name field is required. (and 2 more errors)\",\"errors\":{\"full_name\":[\"The full n"
+   }
+  }
+ },
+ {
+  "route": "api/teachers/{id}",
+  "method": "GET",
+  "path_tested": "/api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d",
+  "action": "App\\Modules\\PeopleHr\\Http\\Controllers\\TeacherController@show",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d -> 200 {\"id\":\"08b83754-a5d1-4ad2-ac97-e349dd9b102d\",\"full_name\":\"Hacked\",\"phone\":null,\"email\":null,\"base_sa"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d -> 200 {\"id\":\"08b83754-a5d1-4ad2-ac97-e349dd9b102d\",\"full_name\":\"Hacked\",\"phone\":null,\"email\":null,\"base_sa"
+   }
+  }
+ },
+ {
+  "route": "api/teachers/{id}",
+  "method": "PATCH",
+  "path_tested": "/api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d",
+  "action": "App\\Modules\\PeopleHr\\Http\\Controllers\\TeacherController@update",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "PATCH /api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "PATCH /api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "PATCH /api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d -> 200 {\"id\":\"08b83754-a5d1-4ad2-ac97-e349dd9b102d\",\"full_name\":\"Hacked\",\"phone\":null,\"email\":null,\"base_sa"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "PATCH /api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d -> 200 {\"id\":\"08b83754-a5d1-4ad2-ac97-e349dd9b102d\",\"full_name\":\"Hacked\",\"phone\":null,\"email\":null,\"base_sa"
+   }
+  }
+ },
+ {
+  "route": "api/teachers/{id}",
+  "method": "DELETE",
+  "path_tested": "/api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d",
+  "action": "App\\Modules\\PeopleHr\\Http\\Controllers\\TeacherController@destroy",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "DELETE /api/teachers/565061b6-b83f-48c9-9cef-9424fdd0934c -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "DELETE /api/teachers/16040ff1-c3db-4488-8080-f85a594fa34e -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 404,
+    "result": "PASS",
+    "evidence": "DELETE /api/teachers/1c79542d-649b-4942-98ab-9af404f3420f -> 404 {\n    \"message\": \"No query results for model [App\\\\Modules\\\\PeopleHr\\\\Models\\\\Teacher] 1c79542d-649b"
+   },
+   "limited": {
+    "status": 404,
+    "result": "PASS",
+    "evidence": "DELETE /api/teachers/3e7a104e-536e-4a73-88c5-fca25a8693a6 -> 404 {\n    \"message\": \"No query results for model [App\\\\Modules\\\\PeopleHr\\\\Models\\\\Teacher] 3e7a104e-536e"
+   }
+  }
+ },
+ {
+  "route": "api/teachers/{id}/evaluations",
+  "method": "GET",
+  "path_tested": "/api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d/evaluations",
+  "action": "App\\Modules\\PeopleHr\\Http\\Controllers\\TeacherController@evaluations",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d/evaluations -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d/evaluations -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d/evaluations -> 200 []"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d/evaluations -> 200 []"
+   }
+  }
+ },
+ {
+  "route": "api/teachers/{id}/evaluations",
+  "method": "POST",
+  "path_tested": "/api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d/evaluations",
+  "action": "App\\Modules\\PeopleHr\\Http\\Controllers\\TeacherController@storeEvaluation",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d/evaluations -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d/evaluations -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d/evaluations -> 422 {\"message\":\"The date field is required. (and 1 more error)\",\"errors\":{\"date\":[\"The date field is req"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d/evaluations -> 422 {\"message\":\"The date field is required. (and 1 more error)\",\"errors\":{\"date\":[\"The date field is req"
+   }
+  }
+ },
+ {
+  "route": "api/teachers/{id}/transfer",
+  "method": "POST",
+  "path_tested": "/api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d/transfer",
+  "action": "App\\Modules\\PeopleHr\\Http\\Controllers\\TeacherController@transfer",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d/transfer -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d/transfer -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 429,
+    "result": "PASS",
+    "evidence": "POST /api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d/transfer -> 429 {\"message\":\"Too many requests. Please try again later.\",\"retry_after\":23}"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d/transfer -> 422 {\"message\":\"The new branch id field is required. (and 1 more error)\",\"errors\":{\"new_branch_id\":[\"The"
+   }
+  }
+ },
+ {
+  "route": "api/teachers/{teacherId}/computed-salary",
+  "method": "GET",
+  "path_tested": "/api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d/computed-salary",
+  "action": "App\\Modules\\FinancePayroll\\Http\\Controllers\\PaymentController@teacherComputedSalary",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d/computed-salary -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d/computed-salary -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d/computed-salary -> 200 {\"dueAmount\":0,\"model\":\"per_session\",\"breakdown\":[]}"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d/computed-salary -> 200 {\"dueAmount\":0,\"model\":\"per_session\",\"breakdown\":[]}"
+   }
+  }
+ },
+ {
+  "route": "api/teachers/{teacherId}/pay-salary",
+  "method": "POST",
+  "path_tested": "/api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d/pay-salary",
+  "action": "App\\Modules\\FinancePayroll\\Http\\Controllers\\PaymentController@payTeacherSalary",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d/pay-salary -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d/pay-salary -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 429,
+    "result": "PASS",
+    "evidence": "POST /api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d/pay-salary -> 429 {\"message\":\"Too many requests. Please try again later.\",\"retry_after\":17}"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/teachers/08b83754-a5d1-4ad2-ac97-e349dd9b102d/pay-salary -> 422 {\"message\":\"The period key field is required. (and 3 more errors)\",\"errors\":{\"period_key\":[\"The peri"
+   }
+  }
+ },
+ {
+  "route": "api/users",
+  "method": "GET",
+  "path_tested": "/api/users",
+  "action": "App\\Modules\\Iam\\Http\\Controllers\\UserController@index",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/users -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/users -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/users -> 200 [{\"id\":\"5efbde29-2fbe-4943-9888-b53442742004\",\"username\":\"admin\",\"full_name\":\"Ahmad Rahimi\",\"employe"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/users -> 200 [{\"id\":\"5efbde29-2fbe-4943-9888-b53442742004\",\"username\":\"admin\",\"full_name\":\"Ahmad Rahimi\",\"employe"
+   }
+  }
+ },
+ {
+  "route": "api/users",
+  "method": "POST",
+  "path_tested": "/api/users",
+  "action": "App\\Modules\\Iam\\Http\\Controllers\\UserController@store",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/users -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/users -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 429,
+    "result": "PASS",
+    "evidence": "POST /api/users -> 429 {\"message\":\"Too many requests. Please try again later.\",\"retry_after\":10}"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/users -> 422 {\"message\":\"The username field is required. (and 4 more errors)\",\"errors\":{\"username\":[\"The username"
+   }
+  }
+ },
+ {
+  "route": "api/users/{id}",
+  "method": "GET",
+  "path_tested": "/api/users/0a11840c-dad5-4c85-a483-ef74d6a4ce60",
+  "action": "App\\Modules\\Iam\\Http\\Controllers\\UserController@show",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/users/0a11840c-dad5-4c85-a483-ef74d6a4ce60 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/users/0a11840c-dad5-4c85-a483-ef74d6a4ce60 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/users/0a11840c-dad5-4c85-a483-ef74d6a4ce60 -> 200 {\"id\":\"0a11840c-dad5-4c85-a483-ef74d6a4ce60\",\"username\":\"teacher2\",\"full_name\":\"Ms. Sarah Noori\",\"em"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/users/0a11840c-dad5-4c85-a483-ef74d6a4ce60 -> 200 {\"id\":\"0a11840c-dad5-4c85-a483-ef74d6a4ce60\",\"username\":\"teacher2\",\"full_name\":\"Ms. Sarah Noori\",\"em"
+   }
+  }
+ },
+ {
+  "route": "api/users/{id}",
+  "method": "PATCH",
+  "path_tested": "/api/users/0a11840c-dad5-4c85-a483-ef74d6a4ce60",
+  "action": "App\\Modules\\Iam\\Http\\Controllers\\UserController@update",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "PATCH /api/users/0a11840c-dad5-4c85-a483-ef74d6a4ce60 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "PATCH /api/users/0a11840c-dad5-4c85-a483-ef74d6a4ce60 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 429,
+    "result": "PASS",
+    "evidence": "PATCH /api/users/0a11840c-dad5-4c85-a483-ef74d6a4ce60 -> 429 {\"message\":\"Too many requests. Please try again later.\",\"retry_after\":2}"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "PATCH /api/users/0a11840c-dad5-4c85-a483-ef74d6a4ce60 -> 200 {\"id\":\"0a11840c-dad5-4c85-a483-ef74d6a4ce60\",\"username\":\"teacher2\",\"full_name\":\"Ms. Sarah Noori\",\"em"
+   }
+  }
+ },
+ {
+  "route": "api/users/{id}",
+  "method": "DELETE",
+  "path_tested": "/api/users/0a11840c-dad5-4c85-a483-ef74d6a4ce60",
+  "action": "App\\Modules\\Iam\\Http\\Controllers\\UserController@destroy",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "DELETE /api/users/9675fe62-e48a-434a-abca-9f878bf97548 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "DELETE /api/users/4c4bf851-fd86-4cf7-a332-d28d38be2a59 -> 401 {\"message\":\"Unauthenticated.\"}"
+   },
+   "admin": {
+    "status": 404,
+    "result": "PASS",
+    "evidence": "DELETE /api/users/73635bdc-6876-499a-80b3-2df79c2176e5 -> 404 {\n    \"message\": \"No query results for model [App\\\\Modules\\\\Iam\\\\Models\\\\User] 73635bdc-6876-499a-80"
+   },
+   "limited": {
+    "status": 404,
+    "result": "PASS",
+    "evidence": "DELETE /api/users/88915c5e-8386-4077-90ee-b9ecf153e92e -> 404 {\n    \"message\": \"No query results for model [App\\\\Modules\\\\Iam\\\\Models\\\\User] 88915c5e-8386-4077-90"
+   }
+  }
+ },
+ {
+  "route": "api/visitors",
+  "method": "GET",
+  "path_tested": "/api/visitors",
+  "action": "App\\Modules\\CrmEnrollment\\Http\\Controllers\\VisitorController@index",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/visitors -> 401 {\"message\":\"Unauthenticated.\"} (re-tested after restarting the php-wasm bridge)"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/visitors -> 401 {\"message\":\"Unauthenticated.\"} (re-tested after restarting the php-wasm bridge)"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/visitors -> 200 [{\"id\":\"07f20925-0bbd-4c0e-af7a-891b490b9a3e\",\"serial_no\":\"V-MAPMX1\",\"full_name\" (re-tested after restarting the php-wasm bridge)"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/visitors -> 200 [{\"id\":\"a81feb80-b28b-4f85-8f49-5ddcebf75e27\",\"serial_no\":\"V-VIFJE7\",\"full_name\" (re-tested after restarting the php-wasm bridge)"
+   }
+  }
+ },
+ {
+  "route": "api/visitors",
+  "method": "POST",
+  "path_tested": "/api/visitors",
+  "action": "App\\Modules\\CrmEnrollment\\Http\\Controllers\\VisitorController@store",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/visitors -> 401 {\"message\":\"Unauthenticated.\"} (re-tested after restarting the php-wasm bridge)"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/visitors -> 401 {\"message\":\"Unauthenticated.\"} (re-tested after restarting the php-wasm bridge)"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/visitors -> 422 {\"message\":\"The full name field is required. (and 1 more error)\",\"errors\":{\"full (re-tested after restarting the php-wasm bridge)"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/visitors -> 422 {\"message\":\"The full name field is required. (and 1 more error)\",\"errors\":{\"full (re-tested after restarting the php-wasm bridge)"
+   }
+  }
+ },
+ {
+  "route": "api/visitors/{id}",
+  "method": "GET",
+  "path_tested": "/api/visitors/07f20925-0bbd-4c0e-af7a-891b490b9a3e",
+  "action": "App\\Modules\\CrmEnrollment\\Http\\Controllers\\VisitorController@show",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/visitors/07f20925-0bbd-4c0e-af7a-891b490b9a3e -> 401 {\"message\":\"Unauthenticated.\"} (re-tested after restarting the php-wasm bridge)"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/visitors/07f20925-0bbd-4c0e-af7a-891b490b9a3e -> 401 {\"message\":\"Unauthenticated.\"} (re-tested after restarting the php-wasm bridge)"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/visitors/07f20925-0bbd-4c0e-af7a-891b490b9a3e -> 200 {\"visitor\":{\"id\":\"07f20925-0bbd-4c0e-af7a-891b490b9a3e\",\"serial_no\":\"V-MAPMX1\",\" (re-tested after restarting the php-wasm bridge)"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/visitors/07f20925-0bbd-4c0e-af7a-891b490b9a3e -> 200 {\"visitor\":{\"id\":\"07f20925-0bbd-4c0e-af7a-891b490b9a3e\",\"serial_no\":\"V-MAPMX1\",\" (re-tested after restarting the php-wasm bridge)"
+   }
+  }
+ },
+ {
+  "route": "api/visitors/{id}/conversion-readiness",
+  "method": "GET",
+  "path_tested": "/api/visitors/07f20925-0bbd-4c0e-af7a-891b490b9a3e/conversion-readiness",
+  "action": "App\\Modules\\CrmEnrollment\\Http\\Controllers\\VisitorController@conversionReadiness",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/visitors/07f20925-0bbd-4c0e-af7a-891b490b9a3e/conversion-readiness -> 401 {\"message\":\"Unauthenticated.\"} (re-tested after restarting the php-wasm bridge)"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "GET /api/visitors/07f20925-0bbd-4c0e-af7a-891b490b9a3e/conversion-readiness -> 401 {\"message\":\"Unauthenticated.\"} (re-tested after restarting the php-wasm bridge)"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/visitors/07f20925-0bbd-4c0e-af7a-891b490b9a3e/conversion-readiness -> 200 {\"canConvert\":false,\"reasons\":[\"Visitor stage is 'placement_booking'; complete p (re-tested after restarting the php-wasm bridge)"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /api/visitors/07f20925-0bbd-4c0e-af7a-891b490b9a3e/conversion-readiness -> 200 {\"canConvert\":false,\"reasons\":[\"Visitor stage is 'placement_booking'; complete p (re-tested after restarting the php-wasm bridge)"
+   }
+  }
+ },
+ {
+  "route": "api/visitors/{id}/convert",
+  "method": "POST",
+  "path_tested": "/api/visitors/07f20925-0bbd-4c0e-af7a-891b490b9a3e/convert",
+  "action": "App\\Modules\\CrmEnrollment\\Http\\Controllers\\VisitorController@convert",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/visitors/07f20925-0bbd-4c0e-af7a-891b490b9a3e/convert -> 401 {\"message\":\"Unauthenticated.\"} (re-tested after restarting the php-wasm bridge)"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/visitors/07f20925-0bbd-4c0e-af7a-891b490b9a3e/convert -> 401 {\"message\":\"Unauthenticated.\"} (re-tested after restarting the php-wasm bridge)"
+   },
+   "admin": {
+    "status": 400,
+    "result": "PASS",
+    "evidence": "POST /api/visitors/07f20925-0bbd-4c0e-af7a-891b490b9a3e/convert -> 400 {\"message\":\"Cannot convert: Visitor stage is 'placement_booking'; complete place (re-tested after restarting the php-wasm bridge)"
+   },
+   "limited": {
+    "status": 400,
+    "result": "PASS",
+    "evidence": "POST /api/visitors/07f20925-0bbd-4c0e-af7a-891b490b9a3e/convert -> 400 {\"message\":\"Cannot convert: Visitor stage is 'placement_booking'; complete place (re-tested after restarting the php-wasm bridge)"
+   }
+  }
+ },
+ {
+  "route": "api/visitors/{id}/followups",
+  "method": "POST",
+  "path_tested": "/api/visitors/07f20925-0bbd-4c0e-af7a-891b490b9a3e/followups",
+  "action": "App\\Modules\\CrmEnrollment\\Http\\Controllers\\VisitorController@addFollowup",
+  "middleware": "api,Illuminate\\Auth\\Middleware\\Authenticate:sanctum,App\\Http\\Middleware\\ApiVersioning,App\\Http\\Middleware\\ApiRateLimiter:default",
+  "public": false,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/visitors/07f20925-0bbd-4c0e-af7a-891b490b9a3e/followups -> 401 {\"message\":\"Unauthenticated.\"} (re-tested after restarting the php-wasm bridge)"
+   },
+   "badauth": {
+    "status": 401,
+    "result": "PASS",
+    "evidence": "POST /api/visitors/07f20925-0bbd-4c0e-af7a-891b490b9a3e/followups -> 401 {\"message\":\"Unauthenticated.\"} (re-tested after restarting the php-wasm bridge)"
+   },
+   "admin": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/visitors/07f20925-0bbd-4c0e-af7a-891b490b9a3e/followups -> 422 {\"message\":\"The date field is required. (and 1 more error)\",\"errors\":{\"date\":[\"T (re-tested after restarting the php-wasm bridge)"
+   },
+   "limited": {
+    "status": 422,
+    "result": "PASS",
+    "evidence": "POST /api/visitors/07f20925-0bbd-4c0e-af7a-891b490b9a3e/followups -> 422 {\"message\":\"The date field is required. (and 1 more error)\",\"errors\":{\"date\":[\"T (re-tested after restarting the php-wasm bridge)"
+   }
+  }
+ },
+ {
+  "route": "broadcasting/auth",
+  "method": "GET",
+  "path_tested": "/broadcasting/auth",
+  "action": "Illuminate\\Broadcasting\\BroadcastController@authenticate",
+  "middleware": "web",
+  "public": true,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /broadcasting/auth -> 200  (re-tested after restarting the php-wasm bridge)"
+   },
+   "badauth": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /broadcasting/auth -> 200  (re-tested after restarting the php-wasm bridge)"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /broadcasting/auth -> 200  (re-tested after restarting the php-wasm bridge)"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /broadcasting/auth -> 200  (re-tested after restarting the php-wasm bridge)"
+   }
+  }
+ },
+ {
+  "route": "sanctum/csrf-cookie",
+  "method": "GET",
+  "path_tested": "/sanctum/csrf-cookie",
+  "action": "Laravel\\Sanctum\\Http\\Controllers\\CsrfCookieController@show",
+  "middleware": "web",
+  "public": true,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 204,
+    "result": "PASS",
+    "evidence": "GET /sanctum/csrf-cookie -> 204  (re-tested after restarting the php-wasm bridge)"
+   },
+   "badauth": {
+    "status": 204,
+    "result": "PASS",
+    "evidence": "GET /sanctum/csrf-cookie -> 204  (re-tested after restarting the php-wasm bridge)"
+   },
+   "admin": {
+    "status": 204,
+    "result": "PASS",
+    "evidence": "GET /sanctum/csrf-cookie -> 204  (re-tested after restarting the php-wasm bridge)"
+   },
+   "limited": {
+    "status": 204,
+    "result": "PASS",
+    "evidence": "GET /sanctum/csrf-cookie -> 204  (re-tested after restarting the php-wasm bridge)"
+   }
+  }
+ },
+ {
+  "route": "storage/{path}",
+  "method": "GET",
+  "path_tested": "/storage/does-not-exist.png",
+  "action": "Closure",
+  "middleware": "",
+  "public": true,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 404,
+    "result": "PASS",
+    "evidence": "GET /storage/does-not-exist.png -> 404 not found"
+   },
+   "badauth": {
+    "status": 404,
+    "result": "PASS",
+    "evidence": "GET /storage/does-not-exist.png -> 404 not found"
+   },
+   "admin": {
+    "status": 404,
+    "result": "WARN",
+    "evidence": "GET /storage/does-not-exist.png -> 404 not found"
+   },
+   "limited": {
+    "status": 404,
+    "result": "WARN",
+    "evidence": "GET /storage/does-not-exist.png -> 404 not found"
+   }
+  }
+ },
+ {
+  "route": "storage/{path}",
+  "method": "PUT",
+  "path_tested": "/storage/does-not-exist.png",
+  "action": "Closure",
+  "middleware": "",
+  "public": true,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 404,
+    "result": "PASS",
+    "evidence": "PUT /storage/does-not-exist.png -> 404 not found"
+   },
+   "badauth": {
+    "status": 404,
+    "result": "PASS",
+    "evidence": "PUT /storage/does-not-exist.png -> 404 not found"
+   },
+   "admin": {
+    "status": 404,
+    "result": "PASS",
+    "evidence": "PUT /storage/does-not-exist.png -> 404 not found"
+   },
+   "limited": {
+    "status": 404,
+    "result": "PASS",
+    "evidence": "PUT /storage/does-not-exist.png -> 404 not found"
+   }
+  }
+ },
+ {
+  "route": "up",
+  "method": "GET",
+  "path_tested": "/up",
+  "action": "Closure",
+  "middleware": "",
+  "public": true,
+  "unresolved_params": [],
+  "modes": {
+   "noauth": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /up -> 200 <!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"utf-8\">\n    <meta nam (re-tested after restarting the php-wasm bridge)"
+   },
+   "badauth": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /up -> 200 <!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"utf-8\">\n    <meta nam (re-tested after restarting the php-wasm bridge)"
+   },
+   "admin": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /up -> 200 <!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"utf-8\">\n    <meta nam (re-tested after restarting the php-wasm bridge)"
+   },
+   "limited": {
+    "status": 200,
+    "result": "PASS",
+    "evidence": "GET /up -> 200 <!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"utf-8\">\n    <meta nam (re-tested after restarting the php-wasm bridge)"
+   }
+  }
+ }
+]
